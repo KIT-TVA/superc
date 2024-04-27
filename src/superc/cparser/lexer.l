@@ -86,6 +86,9 @@ import superc.core.Syntax.EOF;
   /** Used to track whether comments have newline characters. */
   private boolean commentnl = false;
 
+  /** Used to track where a multiline comment starts. */
+  private Location commentStart = null;
+
   /** The name of the file being lexed. */
   private String fileName = null;
 
@@ -172,13 +175,26 @@ whitespace=({horizontal_white})+|({v_tab}|{c_return})+|{continuation}
 
 // JFLex increments its line counter for form-feeds, but GCC does not.
 {form_feed}
-{ yyline--; return new Layout(yytext(), false); }
+{
+  yyline--;
+  Layout syntax = new Layout(yytext(), false);
+  syntax.setLocation(new Location(fileName, yyline+1, yycolumn));
+  return syntax;
+}
 
 {whitespace}+
-{ return new Layout(yytext(), false); }
+{
+  Layout syntax = new Layout(yytext(), false);
+  syntax.setLocation(new Location(fileName, yyline+1, yycolumn));
+  return syntax;
+}
 
 {whitespace}*({newline}|{linecomment})+{whitespace}*
-{ return new Layout(yytext(), true); }
+{
+  Layout syntax = new Layout(yytext(), true);
+  syntax.setLocation(new Location(fileName, yyline+1, yycolumn));
+  return syntax;
+}
 
 
 #else // Generate the CTag enumeration.
@@ -353,13 +369,18 @@ yybegin(COMMENT);
 comment = new StringBuilder();
 comment.append(yytext());
 commentnl = false;
+commentStart = new Location(fileName, yyline+1, yycolumn);
 }
 }
 
 <COMMENT> {
 "*/" {
 comment.append(yytext()); yybegin(YYINITIAL);
-return new Layout(comment.toString(), false);
+
+Layout syntax = new Layout(comment.toString(), false);
+syntax.setLocation(commentStart);
+
+return syntax;
 }
 [^*\n]+ {comment.append(yytext());}
 "*" {comment.append(yytext());}

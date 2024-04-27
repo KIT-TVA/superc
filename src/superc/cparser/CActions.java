@@ -122,277 +122,277 @@ public class CActions implements SemanticActions {
 
   public Object action(int production, Subparser subparser, Object value) {
     switch (production) {
-  case 12:
+  case 12: /* $@1: %empty  */
                            { ReenterScope(subparser); }
     break;
 
-  case 13:
+  case 13: /* $@2: %empty  */
                                                                                          { ExitScope(subparser); }
     break;
 
-  case 15:
+  case 15: /* $@3: %empty  */
                                { ReenterScope(subparser); }
     break;
 
-  case 16:
+  case 16: /* $@4: %empty  */
                                                                                                              { ExitScope(subparser); }
     break;
 
-  case 19:
+  case 19: /* FunctionPrototype: IdentifierDeclarator  */
                                { bindFunDef(subparser, null, getNodeAt(subparser, 1)); }
     break;
 
-  case 20:
+  case 20: /* FunctionPrototype: DeclarationSpecifier IdentifierDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 21:
+  case 21: /* FunctionPrototype: TypeSpecifier IdentifierDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 22:
+  case 22: /* FunctionPrototype: DeclarationQualifierList IdentifierDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 23:
+  case 23: /* FunctionPrototype: TypeQualifierList IdentifierDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 24:
+  case 24: /* FunctionPrototype: OldFunctionDeclarator  */
                                                          { bindFunDef(subparser, null, getNodeAt(subparser, 1)); }
     break;
 
-  case 25:
+  case 25: /* FunctionPrototype: DeclarationSpecifier OldFunctionDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 26:
+  case 26: /* FunctionPrototype: TypeSpecifier OldFunctionDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 27:
+  case 27: /* FunctionPrototype: DeclarationQualifierList OldFunctionDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 28:
+  case 28: /* FunctionPrototype: TypeQualifierList OldFunctionDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 29:
+  case 29: /* FunctionOldPrototype: OldFunctionDeclarator  */
                                 { bindFunDef(subparser, null, getNodeAt(subparser, 1)); }
     break;
 
-  case 30:
+  case 30: /* FunctionOldPrototype: DeclarationSpecifier OldFunctionDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 31:
+  case 31: /* FunctionOldPrototype: TypeSpecifier OldFunctionDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 32:
+  case 32: /* FunctionOldPrototype: DeclarationQualifierList OldFunctionDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 33:
+  case 33: /* FunctionOldPrototype: TypeQualifierList OldFunctionDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 34:
+  case 34: /* $@5: %empty  */
                                  { ReenterScope(subparser); }
     break;
 
-  case 35:
+  case 35: /* $@6: %empty  */
                                                                                                                              { ExitScope(subparser); }
     break;
 
-  case 37:
+  case 37: /* $@7: %empty  */
                                      { ReenterScope(subparser); }
     break;
 
-  case 38:
+  case 38: /* $@8: %empty  */
                                                                                                                                                  { ExitScope(subparser); }
     break;
 
-  case 40:
+  case 40: /* NestedFunctionPrototype: DeclarationSpecifier IdentifierDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 41:
+  case 41: /* NestedFunctionPrototype: TypeSpecifier IdentifierDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 42:
+  case 42: /* NestedFunctionPrototype: DeclarationQualifierList IdentifierDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 43:
+  case 43: /* NestedFunctionPrototype: TypeQualifierList IdentifierDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 44:
+  case 44: /* NestedFunctionPrototype: DeclarationSpecifier OldFunctionDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 45:
+  case 45: /* NestedFunctionPrototype: TypeSpecifier OldFunctionDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 46:
+  case 46: /* NestedFunctionPrototype: DeclarationQualifierList OldFunctionDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 47:
+  case 47: /* NestedFunctionPrototype: TypeQualifierList OldFunctionDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 48:
+  case 48: /* NestedFunctionOldPrototype: DeclarationSpecifier OldFunctionDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 49:
+  case 49: /* NestedFunctionOldPrototype: TypeSpecifier OldFunctionDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 50:
+  case 50: /* NestedFunctionOldPrototype: DeclarationQualifierList OldFunctionDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 51:
+  case 51: /* NestedFunctionOldPrototype: TypeQualifierList OldFunctionDeclarator  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 54:
+  case 54: /* $@9: %empty  */
                                 { KillReentrantScope(subparser); }
     break;
 
-  case 56:
+  case 56: /* $@10: %empty  */
                            { KillReentrantScope(subparser); }
     break;
 
-  case 58:
+  case 58: /* $@11: %empty  */
                         { KillReentrantScope(subparser); }
     break;
 
-  case 60:
+  case 60: /* $@12: %empty  */
                                { KillReentrantScope(subparser); }
     break;
 
-  case 62:
+  case 62: /* $@13: %empty  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindIdent(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 64:
+  case 64: /* $@14: %empty  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindIdent(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 66:
+  case 66: /* $@15: %empty  */
         {
           // reuses saved base type
           bindIdent(subparser, getNodeAt(subparser, 4), getNodeAt(subparser, 1));
         }
     break;
 
-  case 68:
+  case 68: /* $@16: %empty  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindIdent(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 70:
+  case 70: /* $@17: %empty  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindIdent(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 72:
+  case 72: /* $@18: %empty  */
         {
           // reuses saved base type
           bindIdent(subparser, getNodeAt(subparser, 4), getNodeAt(subparser, 1));
         }
     break;
 
-  case 84:
+  case 84: /* DeclarationQualifierList: StorageClass  */
                      {
           updateSpecs(subparser,
                       getSpecsAt(subparser, 1),
@@ -400,7 +400,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 85:
+  case 85: /* DeclarationQualifierList: TypeQualifierList StorageClass  */
                                          {
           updateSpecs(subparser,
                       getSpecsAt(subparser, 2),
@@ -409,7 +409,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 86:
+  case 86: /* DeclarationQualifierList: DeclarationQualifierList DeclarationQualifier  */
                                                         {
           updateSpecs(subparser,
                       getSpecsAt(subparser, 2),
@@ -418,7 +418,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 87:
+  case 87: /* TypeQualifierList: TypeQualifier  */
                       {
           updateSpecs(subparser,
                       getSpecsAt(subparser, 1),
@@ -426,7 +426,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 88:
+  case 88: /* TypeQualifierList: TypeQualifierList TypeQualifier  */
                                           {
           updateSpecs(subparser,
                       getSpecsAt(subparser, 2),
@@ -435,7 +435,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 91:
+  case 91: /* TypeQualifier: ConstQualifier  */
         {
           getSpecsAt(subparser, 1).add(Constants.ATT_CONSTANT);
           updateSpecs(subparser,
@@ -444,7 +444,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 92:
+  case 92: /* TypeQualifier: VolatileQualifier  */
         {
           getSpecsAt(subparser, 1).add(Constants.ATT_VOLATILE);
           updateSpecs(subparser,
@@ -453,7 +453,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 93:
+  case 93: /* TypeQualifier: RestrictQualifier  */
         {
           getSpecsAt(subparser, 1).add(Constants.ATT_RESTRICT);
           updateSpecs(subparser,
@@ -462,7 +462,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 94:
+  case 94: /* TypeQualifier: AttributeSpecifier  */
         {
           /* TODO AttributeSpecifier */
           updateSpecs(subparser,
@@ -471,7 +471,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 95:
+  case 95: /* TypeQualifier: FunctionSpecifier  */
         {
           getSpecsAt(subparser, 1).add(Constants.ATT_INLINE);
           updateSpecs(subparser,
@@ -480,7 +480,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 108:
+  case 108: /* BasicDeclarationSpecifier: BasicTypeSpecifier StorageClass  */
                                          {
           updateSpecs(subparser,
                       getSpecsAt(subparser, 2),
@@ -489,7 +489,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 109:
+  case 109: /* BasicDeclarationSpecifier: DeclarationQualifierList BasicTypeName  */
                                                  {
           updateSpecs(subparser,
                       getSpecsAt(subparser, 2),
@@ -498,7 +498,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 110:
+  case 110: /* BasicDeclarationSpecifier: BasicDeclarationSpecifier DeclarationQualifier  */
                                                          {
           updateSpecs(subparser,
                       getSpecsAt(subparser, 2),
@@ -507,7 +507,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 111:
+  case 111: /* BasicDeclarationSpecifier: BasicDeclarationSpecifier BasicTypeName  */
                                                   {
           updateSpecs(subparser,
                       getSpecsAt(subparser, 2),
@@ -516,7 +516,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 112:
+  case 112: /* BasicTypeSpecifier: BasicTypeName  */
                       {           /* Arithmetic or void */
           updateSpecs(subparser,
                       getSpecsAt(subparser, 1),
@@ -524,7 +524,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 113:
+  case 113: /* BasicTypeSpecifier: TypeQualifierList BasicTypeName  */
                                           {
           updateSpecs(subparser,
                       getSpecsAt(subparser, 2),
@@ -533,7 +533,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 114:
+  case 114: /* BasicTypeSpecifier: BasicTypeSpecifier TypeQualifier  */
                                            {
           updateSpecs(subparser,
                       getSpecsAt(subparser, 2),
@@ -542,7 +542,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 115:
+  case 115: /* BasicTypeSpecifier: BasicTypeSpecifier BasicTypeName  */
                                            {
           updateSpecs(subparser,
                       getSpecsAt(subparser, 2),
@@ -551,7 +551,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 141:
+  case 141: /* VarArgDeclarationSpecifier: VarArgTypeSpecifier StorageClass  */
                                          {
           updateSpecs(subparser,
                       getSpecsAt(subparser, 2),
@@ -560,7 +560,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 142:
+  case 142: /* VarArgDeclarationSpecifier: DeclarationQualifierList VarArgTypeName  */
                                                   {
           updateSpecs(subparser,
                       getSpecsAt(subparser, 2),
@@ -569,7 +569,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 143:
+  case 143: /* VarArgDeclarationSpecifier: VarArgDeclarationSpecifier DeclarationQualifier  */
                                                           {
           updateSpecs(subparser,
                       getSpecsAt(subparser, 2),
@@ -578,7 +578,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 144:
+  case 144: /* VarArgDeclarationSpecifier: VarArgDeclarationSpecifier VarArgTypeName  */
                                                     {
           updateSpecs(subparser,
                       getSpecsAt(subparser, 2),
@@ -587,7 +587,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 145:
+  case 145: /* VarArgTypeSpecifier: VarArgTypeName  */
                        {
           updateSpecs(subparser,
                       getSpecsAt(subparser, 1),
@@ -595,7 +595,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 146:
+  case 146: /* VarArgTypeSpecifier: TypeQualifierList VarArgTypeName  */
                                            {
           updateSpecs(subparser,
                       getSpecsAt(subparser, 2),
@@ -604,7 +604,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 147:
+  case 147: /* VarArgTypeSpecifier: VarArgTypeSpecifier TypeQualifier  */
                                             {
           updateSpecs(subparser,
                       getSpecsAt(subparser, 2),
@@ -613,7 +613,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 148:
+  case 148: /* VarArgTypeSpecifier: VarArgTypeSpecifier VarArgTypeName  */
                                              {
           updateSpecs(subparser,
                       getSpecsAt(subparser, 2),
@@ -622,87 +622,87 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 149:
+  case 149: /* VarArgTypeName: __BUILTIN_VA_LIST  */
                           { getSpecsAt(subparser, 1).type = InternalT.VA_LIST; }
     break;
 
-  case 150:
+  case 150: /* StorageClass: TYPEDEF  */
                     { getSpecsAt(subparser, 1).storage = Constants.ATT_STORAGE_TYPEDEF; }
     break;
 
-  case 151:
+  case 151: /* StorageClass: EXTERN  */
                     { getSpecsAt(subparser, 1).storage = Constants.ATT_STORAGE_EXTERN; }
     break;
 
-  case 152:
+  case 152: /* StorageClass: STATIC  */
                     { getSpecsAt(subparser, 1).storage = Constants.ATT_STORAGE_STATIC; }
     break;
 
-  case 153:
+  case 153: /* StorageClass: AUTO  */
                     { getSpecsAt(subparser, 1).storage = Constants.ATT_STORAGE_AUTO; }
     break;
 
-  case 154:
+  case 154: /* StorageClass: REGISTER  */
                     { getSpecsAt(subparser, 1).storage = Constants.ATT_STORAGE_REGISTER; }
     break;
 
-  case 155:
+  case 155: /* BasicTypeName: VOID  */
                           { getSpecsAt(subparser, 1).type = VoidT.TYPE; }
     break;
 
-  case 156:
+  case 156: /* BasicTypeName: CHAR  */
                           { getSpecsAt(subparser, 1).seenChar = true; }
     break;
 
-  case 157:
+  case 157: /* BasicTypeName: SHORT  */
                           { getSpecsAt(subparser, 1).seenShort = true; }
     break;
 
-  case 158:
+  case 158: /* BasicTypeName: INT  */
                           { getSpecsAt(subparser, 1).seenInt = true; }
     break;
 
-  case 159:
+  case 159: /* BasicTypeName: __INT128  */
                           { getSpecsAt(subparser, 1).seenInt = true; }
     break;
 
-  case 160:
+  case 160: /* BasicTypeName: LONG  */
                           { getSpecsAt(subparser, 1).longCount++; }
     break;
 
-  case 161:
+  case 161: /* BasicTypeName: FLOAT  */
                           { getSpecsAt(subparser, 1).seenFloat = true; }
     break;
 
-  case 162:
+  case 162: /* BasicTypeName: DOUBLE  */
                           { getSpecsAt(subparser, 1).seenDouble = true; }
     break;
 
-  case 163:
+  case 163: /* BasicTypeName: SignedKeyword  */
                           { getSpecsAt(subparser, 1).seenSigned = true; }
     break;
 
-  case 164:
+  case 164: /* BasicTypeName: UNSIGNED  */
                           { getSpecsAt(subparser, 1).seenUnsigned = true; }
     break;
 
-  case 165:
+  case 165: /* BasicTypeName: _BOOL  */
                           { getSpecsAt(subparser, 1).seenBool = true; }
     break;
 
-  case 166:
+  case 166: /* BasicTypeName: ComplexKeyword  */
                           { getSpecsAt(subparser, 1).seenComplex = true; }
     break;
 
-  case 175:
+  case 175: /* $@19: %empty  */
                { EnterScope(subparser); }
     break;
 
-  case 176:
+  case 176: /* $@20: %empty  */
                                 { ExitScope(subparser); }
     break;
 
-  case 177:
+  case 177: /* StructSpecifier: STRUCT $@19 LBRACE StructDeclarationList $@20 RBRACE  */
         {
           Node tag     = null;
           Node members = getNodeAt(subparser, 3);
@@ -713,15 +713,15 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 178:
+  case 178: /* $@21: %empty  */
                                          { EnterScope(subparser); }
     break;
 
-  case 179:
+  case 179: /* $@22: %empty  */
                                 { ExitScope(subparser); }
     break;
 
-  case 180:
+  case 180: /* StructSpecifier: STRUCT IdentifierOrTypedefName $@21 LBRACE StructDeclarationList $@22 RBRACE  */
         {
           Node tag     = getNodeAt(subparser, 6);
           Node members = getNodeAt(subparser, 3);
@@ -732,15 +732,15 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 182:
+  case 182: /* $@23: %empty  */
                                         { EnterScope(subparser); }
     break;
 
-  case 183:
+  case 183: /* $@24: %empty  */
                                 { ExitScope(subparser); }
     break;
 
-  case 184:
+  case 184: /* StructSpecifier: STRUCT AttributeSpecifierList $@23 LBRACE StructDeclarationList $@24 RBRACE  */
         {
           Node tag     = null;
           Node members = getNodeAt(subparser, 3);
@@ -751,15 +751,15 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 185:
+  case 185: /* $@25: %empty  */
                                                                 { EnterScope(subparser); }
     break;
 
-  case 186:
+  case 186: /* $@26: %empty  */
                                 { ExitScope(subparser); }
     break;
 
-  case 187:
+  case 187: /* StructSpecifier: STRUCT AttributeSpecifierList IdentifierOrTypedefName $@25 LBRACE StructDeclarationList $@26 RBRACE  */
         {
           Node tag     = getNodeAt(subparser, 6);
           Node members = getNodeAt(subparser, 3);
@@ -770,45 +770,45 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 189:
+  case 189: /* $@27: %empty  */
               { EnterScope(subparser); }
     break;
 
-  case 190:
+  case 190: /* $@28: %empty  */
                                 { ExitScope(subparser); }
     break;
 
-  case 192:
+  case 192: /* $@29: %empty  */
                                         { EnterScope(subparser); }
     break;
 
-  case 193:
+  case 193: /* $@30: %empty  */
                                 { ExitScope(subparser); }
     break;
 
-  case 196:
+  case 196: /* $@31: %empty  */
                                        { EnterScope(subparser); }
     break;
 
-  case 197:
+  case 197: /* $@32: %empty  */
                                 { ExitScope(subparser); }
     break;
 
-  case 199:
+  case 199: /* $@33: %empty  */
                                                                { EnterScope(subparser); }
     break;
 
-  case 200:
+  case 200: /* $@34: %empty  */
                                 { ExitScope(subparser); }
     break;
 
-  case 203:
+  case 203: /* StructDeclarationList: %empty  */
         {
           ((Node) value).setProperty(SPECS, new Specifiers());
         }
     break;
 
-  case 204:
+  case 204: /* StructDeclarationList: StructDeclarationList StructDeclarationExtension  */
                                                            {
           updateSpecs(subparser,
                       getSpecsAt(subparser, 2),
@@ -817,68 +817,68 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 235:
+  case 235: /* $@35: %empty  */
                    { BindEnum(subparser); }
     break;
 
-  case 237:
+  case 237: /* $@36: %empty  */
                       { BindEnum(subparser); }
     break;
 
-  case 255:
+  case 255: /* $@37: %empty  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindIdent(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 257:
+  case 257: /* $@38: %empty  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindIdent(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 259:
+  case 259: /* $@39: %empty  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindIdent(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 261:
+  case 261: /* $@40: %empty  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindIdent(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 263:
+  case 263: /* $@41: %empty  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindIdent(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 265:
+  case 265: /* $@42: %empty  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindIdent(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 269:
+  case 269: /* Identifier: IDENTIFIER  */
                   { BindVar(subparser); }
     break;
 
-  case 326:
+  case 326: /* UnaryIdentifierDeclarator: STAR IdentifierDeclarator  */
         {
           /* setDecl(value, new PointerT(getDecl(getNodeAt(subparser, 1)))); */
           /* copyName(subparser, value, 1); */
         }
     break;
 
-  case 327:
+  case 327: /* UnaryIdentifierDeclarator: STAR TypeQualifierList IdentifierDeclarator  */
         {
           /* Specifiers spec = getSpecsAt(subparser, 2); */
           /* Type baseType = getDecl(getNodeAt(subparser, 1));; */
@@ -888,74 +888,74 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 332:
+  case 332: /* AttributedDeclarator: LPAREN UnaryIdentifierDeclarator RPAREN  */
         {
           /* copyDeclName(subparser, value, 2); */
         }
     break;
 
-  case 334:
+  case 334: /* $@43: %empty  */
                { EnterScope(subparser); }
     break;
 
-  case 335:
+  case 335: /* $@44: %empty  */
                                                                { ExitReentrantScope(subparser); }
     break;
 
-  case 338:
+  case 338: /* ParenIdentifierDeclarator: SimpleDeclarator  */
                          { /* copyDeclName(subparser, value, 1); */ }
     break;
 
-  case 339:
+  case 339: /* ParenIdentifierDeclarator: LPAREN ParenIdentifierDeclarator RPAREN  */
                                                   { /* copyDeclName(subparser, value, 2); */ }
     break;
 
-  case 340:
+  case 340: /* SimpleDeclarator: IDENTIFIER  */
         {
           /* setDecl(value, lastSeenType(subparser)); */
           /* setName(value, getStringAt(subparser, 1)); */
         }
     break;
 
-  case 344:
+  case 344: /* $@45: %empty  */
                                          { EnterScope(subparser); }
     break;
 
-  case 345:
+  case 345: /* $@46: %empty  */
                                                                                    { ExitReentrantScope(subparser); }
     break;
 
-  case 356:
+  case 356: /* ArrayAbstractDeclarator: LBRACK RBRACK  */
         {
           /* setDecl(value, new ArrayT(getDecl(getNodeAt(subparser, 1)))); */
           /* copyName(subparser, value, 1); */
         }
     break;
 
-  case 357:
+  case 357: /* ArrayAbstractDeclarator: LBRACK ConstantExpression RBRACK  */
         {
           /* setDecl(value, new ArrayT(getDecl())); */
           /* copyName(subparser, value, 1); */
         }
     break;
 
-  case 423:
+  case 423: /* PrimaryIdentifier: IDENTIFIER  */
                    { useIdent(subparser, getNodeAt(subparser, 1)); }
     break;
 
-  case 425:
+  case 425: /* $@47: %empty  */
                { EnterScope(subparser); }
     break;
 
-  case 426:
+  case 426: /* $@48: %empty  */
                                                             { ExitScope(subparser); }
     break;
 
-  case 437:
+  case 437: /* FunctionCall: PostfixExpression LPAREN RPAREN  */
                                           { callFunction(subparser, getNodeAt(subparser, 3), null); }
     break;
 
-  case 438:
+  case 438: /* FunctionCall: PostfixExpression LPAREN ExpressionList RPAREN  */
                                                           { callFunction(subparser, getNodeAt(subparser, 4), getNodeAt(subparser, 2)); }
     break;
 

@@ -29,14 +29,13 @@ public class CParseTables extends ParseTables {
           233, // YYNNTS
           628, // YYNRULES
           972, // YYNSTATES
-          2, // YYUNDEFTOK
+          257, // YYUNDEF
           383, // YYMAXUTOK
           0, // YYEOF
           -781, // YYPACT_NINF
           -518, // YYTABLE_NINF
           yytranslate_wrapper.yytranslate,
           yytname_wrapper.yytname,
-          yytoknum_wrapper.yytoknum,
           yyr1_wrapper.yyr1,
           yyr2_wrapper.yyr2,
           yydefact_wrapper.yydefact,
@@ -106,9 +105,9 @@ public class CParseTables extends ParseTables {
 
   public static class yytname_wrapper {
     public static final String[] yytname = {
-    "$end",
+    "\"end of file" + "\"",
     "error",
-    "$undefined",
+    "\"invalid token" + "\"",
     "AUTO",
     "DOUBLE",
     "INT",
@@ -471,24 +470,6 @@ public class CParseTables extends ParseTables {
     };
   }
 
-  public static class yytoknum_wrapper {
-    public static final int[] yytoknum = {
-    0, 256, 257, 258, 259, 260, 261, 262, 263, 264,
-    265, 266, 267, 268, 269, 270, 271, 272, 273, 274,
-    275, 276, 277, 278, 279, 280, 281, 282, 283, 284,
-    285, 286, 287, 288, 289, 290, 291, 292, 293, 294,
-    295, 296, 297, 298, 299, 300, 301, 302, 303, 304,
-    305, 306, 307, 308, 309, 310, 311, 312, 313, 314,
-    315, 316, 317, 318, 319, 320, 321, 322, 323, 324,
-    325, 326, 327, 328, 329, 330, 331, 332, 333, 334,
-    335, 336, 337, 338, 339, 340, 341, 342, 343, 344,
-    345, 346, 347, 348, 349, 350, 351, 352, 353, 354,
-    355, 356, 357, 358, 359, 360, 361, 362, 363, 364,
-    365, 366, 367, 368, 369, 370, 371, 372, 373, 374,
-    375, 376, 377, 378, 379, 380, 381, 382, 383
-    };
-  }
-
   public static class yyr1_wrapper {
     public static final int[] yyr1 = {
     0, 129, 130, 131, 131, 132, 132, 132, 132, 133,
@@ -730,7 +711,7 @@ public class CParseTables extends ParseTables {
 
   public static class yydefgoto_wrapper {
     public static final int[] yydefgoto = {
-    -1, 1, 2, 54, 55, 56, 57, 130, 558, 131,
+    0, 1, 2, 54, 55, 56, 57, 130, 558, 131,
     715, 350, 58, 59, 689, 788, 923, 789, 940, 690,
     691, 692, 61, 176, 178, 135, 133, 62, 251, 252,
     567, 63, 249, 250, 568, 226, 279, 228, 280, 153,

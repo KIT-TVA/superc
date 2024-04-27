@@ -50,7 +50,19 @@ int l() {}
 // Include the Bison parse tables
 #include str(BISON_PARSER_FILE)
 
-#define TABLEPRINTER(fname, ctype, pftype, jtype, limit) \
+#define NUMBER_FORMAT_STRING(fname, ctype) \
+const char *fname ## _format_string(ctype number) { \
+  return "%d"; \
+}
+
+const char *string_format_string(const char *const string) {
+  if (*string == '\"')
+    return "\"\\%s + \"\\\"\"";
+  else
+    return "\"%s\"";
+}
+
+#define TABLEPRINTER(fname, ctype, pftype_generator, jtype, limit) \
 int print_ ## fname(char *name, ctype table[], int max) { \
   int i; \
    \
@@ -61,21 +73,25 @@ int print_ ## fname(char *name, ctype table[], int max) { \
     if (i > 0) printf(","); \
     if ((i % limit) == 0) printf("\n    "); \
     else printf(" "); \
-    printf(pftype, table[i]); \
+    printf(pftype_generator(table[i]), table[i]); \
   } \
   printf("\n    };\n"); \
   printf("  }\n\n"); \
 }
 
-TABLEPRINTER(uint16, const yytype_uint16, "%d", int, 10)
+NUMBER_FORMAT_STRING(uint16, const yytype_uint16)
+TABLEPRINTER(uint16, const yytype_uint16, uint16_format_string, int, 10)
 
-TABLEPRINTER(int16, const yytype_int16, "%d", int, 10)
+NUMBER_FORMAT_STRING(int16, const yytype_int16)
+TABLEPRINTER(int16, const yytype_int16, uint16_format_string, int, 10)
 
-TABLEPRINTER(uint8, const yytype_uint8, "%d", int, 10)
+NUMBER_FORMAT_STRING(uint8, const yytype_uint8)
+TABLEPRINTER(uint8, const yytype_uint8, uint16_format_string, int, 10)
 
-TABLEPRINTER(int8, const yytype_int8, "%d", int, 10)
+NUMBER_FORMAT_STRING(int8, const yytype_int8)
+TABLEPRINTER(int8, const yytype_int8, uint16_format_string, int, 10)
 
-TABLEPRINTER(char, const char *const, "\"%s\"", String, 1)
+TABLEPRINTER(char, const char *const, string_format_string, String, 1)
 
 int main() {
   int i;
@@ -114,7 +130,7 @@ int main() {
   constructor_entry(YYNNTS);
   constructor_entry(YYNRULES);
   constructor_entry(YYNSTATES);
-  constructor_entry(YYUNDEFTOK);
+  constructor_entry(YYUNDEF);
   constructor_entry(YYMAXUTOK);
   constructor_entry(YYEOF);
   constructor_entry(YYPACT_NINF);
@@ -125,7 +141,6 @@ int main() {
   /* constructor_entry_table(yyprhs); */
   /* constructor_entry_table(yyrhs); */
   constructor_entry_table(yytname);
-  constructor_entry_table(yytoknum);
   constructor_entry_table(yyr1);
   constructor_entry_table(yyr2);
   constructor_entry_table(yydefact);
@@ -157,7 +172,6 @@ int main() {
   /* print_uint16("yyprhs", yyprhs, YYNRULES); */
   /* print_int16("yyrhs", yyrhs, yyprhs[YYNRULES] + yyr2[YYNRULES]); */
   print_char("yytname", yytname, YYNTOKENS + YYNNTS - 1);
-  print_uint16("yytoknum", yytoknum, YYNTOKENS - 1);
   print_uint16("yyr1", yyr1, YYNRULES);
   print_int8("yyr2", yyr2, YYNRULES);
   print_uint16("yydefact", yydefact, YYNSTATES - 1);

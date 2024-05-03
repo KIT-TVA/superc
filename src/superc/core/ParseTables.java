@@ -35,7 +35,6 @@ public class ParseTables {
   // public final int[] yyprhs;
   // public final int[] yyrhs;
   public final String[] yytname;
-  public final int[] yytoknum;
   public final int[] yyr1;
   public final int[] yyr2;
   public final int[] yydefact;
@@ -51,7 +50,7 @@ public class ParseTables {
                         int YYMAXUTOK, int YYEOF, int YYPACT_NINF,
                         int YYTABLE_NINF, int[] yytranslate,
                         // int[] yyprhs, int[] yyrhs,
-                        String[] yytname, int[] yytoknum,
+                        String[] yytname,
                         int[] yyr1, int[] yyr2, int[] yydefact, int[] yydefgoto,
                         int[] yypact, int[] yypgoto, int[] yytable,
                         int[] yycheck, int[] yystos) {
@@ -70,7 +69,6 @@ public class ParseTables {
     // this.yyprhs = yyprhs;
     // this.yyrhs = yyrhs;
     this.yytname = yytname;
-    this.yytoknum = yytoknum;
     this.yyr1 = yyr1;
     this.yyr2 = yyr2;
     this.yydefact = yydefact;

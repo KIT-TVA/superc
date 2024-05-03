@@ -1,8 +1,9 @@
-/* A Bison parser, made by GNU Bison 3.0.4.  */
+/* A Bison parser, made by GNU Bison 3.8.2.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2021 Free Software Foundation,
+   Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,7 +16,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -33,6 +34,10 @@
 /* C LALR(1) parser skeleton written by Richard Stallman, by
    simplifying the original so-called "semantic" parser.  */
 
+/* DO NOT RELY ON FEATURES THAT ARE NOT DOCUMENTED in the manual,
+   especially those whose name start with YY_ or yy_.  They are
+   private implementation details that can be changed or removed.  */
+
 /* All symbols defined below should begin with yy or YY, to avoid
    infringing on user name space.  This should be done even for local
    variables, as they might otherwise be expanded by user macros.
@@ -40,11 +45,11 @@
    define necessary library symbols; they are noted "INFRINGES ON
    USER NAME SPACE" below.  */
 
-/* Identify Bison output.  */
-#define YYBISON 1
+/* Identify Bison output, and Bison version.  */
+#define YYBISON 30802
 
-/* Bison version.  */
-#define YYBISON_VERSION "3.0.4"
+/* Bison version string.  */
+#define YYBISON_VERSION "3.8.2"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -61,8 +66,8 @@
 
 
 
-/* Copy the first part of user declarations.  */
-#line 115 "p4parser.y" /* yacc.c:339  */
+/* First part of user prologue.  */
+#line 115 "p4parser.y"
 
 
 import xtc.Constants;
@@ -145,23 +150,28 @@ import org.sat4j.specs.TimeoutException;
 import org.sat4j.tools.ModelIterator;
 
 
-#line 149 "p4parser.tab.c" /* yacc.c:339  */
+#line 154 "p4parser.tab.c"
 
-# ifndef YY_NULLPTR
-#  if defined __cplusplus && 201103L <= __cplusplus
-#   define YY_NULLPTR nullptr
+# ifndef YY_CAST
+#  ifdef __cplusplus
+#   define YY_CAST(Type, Val) static_cast<Type> (Val)
+#   define YY_REINTERPRET_CAST(Type, Val) reinterpret_cast<Type> (Val)
 #  else
-#   define YY_NULLPTR 0
+#   define YY_CAST(Type, Val) ((Type) (Val))
+#   define YY_REINTERPRET_CAST(Type, Val) ((Type) (Val))
 #  endif
 # endif
-
-/* Enabling verbose error messages.  */
-#ifdef YYERROR_VERBOSE
-# undef YYERROR_VERBOSE
-# define YYERROR_VERBOSE 1
-#else
-# define YYERROR_VERBOSE 0
-#endif
+# ifndef YY_NULLPTR
+#  if defined __cplusplus
+#   if 201103L <= __cplusplus
+#    define YY_NULLPTR nullptr
+#   else
+#    define YY_NULLPTR 0
+#   endif
+#  else
+#   define YY_NULLPTR ((void*)0)
+#  endif
+# endif
 
 
 /* Debug traces.  */
@@ -172,127 +182,132 @@ import org.sat4j.tools.ModelIterator;
 extern int yydebug;
 #endif
 
-/* Token type.  */
+/* Token kinds.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
   enum yytokentype
   {
-    START_PROGRAM = 258,
-    START_EXPRESSION_LIST = 259,
-    START_KV_LIST = 260,
-    START_INTEGER_LIST = 261,
-    START_INTEGER_OR_STRING_LITERAL_LIST = 262,
-    START_STRING_LITERAL_LIST = 263,
-    START_EXPRESSION = 264,
-    START_INTEGER = 265,
-    START_INTEGER_OR_STRING_LITERAL = 266,
-    START_STRING_LITERAL = 267,
-    START_EXPRESSION_PAIR = 268,
-    START_INTEGER_PAIR = 269,
-    START_STRING_LITERAL_PAIR = 270,
-    START_EXPRESSION_TRIPLE = 271,
-    START_INTEGER_TRIPLE = 272,
-    START_STRING_LITERAL_TRIPLE = 273,
-    START_P4RT_TRANSLATION_ANNOTATION = 274,
-    END = 275,
-    END_ANNOTATION = 276,
-    UNEXPECTED_TOKEN = 277,
-    END_PRAGMA = 278,
-    HASH = 279,
-    DHASH = 280,
-    LE = 281,
-    GE = 282,
-    SHL = 283,
-    AND = 284,
-    OR = 285,
-    NE = 286,
-    EQ = 287,
-    PLUS = 288,
-    MINUS = 289,
-    PLUS_SAT = 290,
-    MINUS_SAT = 291,
-    MUL = 292,
-    DIV = 293,
-    MOD = 294,
-    BIT_OR = 295,
-    BIT_AND = 296,
-    BIT_XOR = 297,
-    COMPLEMENT = 298,
-    L_BRACKET = 299,
-    R_BRACKET = 300,
-    L_BRACE = 301,
-    R_BRACE = 302,
-    L_ANGLE = 303,
-    L_ANGLE_ARGS = 304,
-    R_ANGLE = 305,
-    R_ANGLE_SHIFT = 306,
-    L_PAREN = 307,
-    R_PAREN = 308,
-    NOT = 309,
-    COLON = 310,
-    COMMA = 311,
-    QUESTION = 312,
-    DOT = 313,
-    ASSIGN = 314,
-    SEMICOLON = 315,
-    AT = 316,
-    PP = 317,
-    DONTCARE = 318,
-    MASK = 319,
-    RANGE = 320,
-    TRUE = 321,
-    FALSE = 322,
-    THIS = 323,
-    ABSTRACT = 324,
-    ACTION = 325,
-    ACTIONS = 326,
-    APPLY = 327,
-    BOOL = 328,
-    BIT = 329,
-    CONST = 330,
-    CONTROL = 331,
-    DEFAULT = 332,
-    ELSE = 333,
-    ENTRIES = 334,
-    ENUM = 335,
-    ERROR = 336,
-    EXIT = 337,
-    EXTERN = 338,
-    HEADER = 339,
-    HEADER_UNION = 340,
-    IF = 341,
-    IN = 342,
-    INOUT = 343,
-    INT = 344,
-    KEY = 345,
-    SELECT = 346,
-    MATCH_KIND = 347,
-    TYPE = 348,
-    OUT = 349,
-    PACKAGE = 350,
-    PARSER = 351,
-    PRAGMA = 352,
-    RETURN = 353,
-    STATE = 354,
-    STRING = 355,
-    STRUCT = 356,
-    SWITCH = 357,
-    TABLE = 358,
-    TRANSITION = 359,
-    TUPLE = 360,
-    TYPEDEF = 361,
-    VARBIT = 362,
-    VALUESET = 363,
-    VOID = 364,
-    IDENTIFIER = 365,
-    TYPE_IDENTIFIER = 366,
-    STRING_LITERAL = 367,
-    INTEGER = 368,
-    FLOATING_CONSTANT = 369,
-    PPNUM = 370,
-    PREFIX = 371,
-    THEN = 372
+    YYEMPTY = -2,
+    YYEOF = 0,                     /* "end of file"  */
+    YYerror = 256,                 /* error  */
+    YYUNDEF = 257,                 /* "invalid token"  */
+    START_PROGRAM = 258,           /* START_PROGRAM  */
+    START_EXPRESSION_LIST = 259,   /* START_EXPRESSION_LIST  */
+    START_KV_LIST = 260,           /* START_KV_LIST  */
+    START_INTEGER_LIST = 261,      /* START_INTEGER_LIST  */
+    START_INTEGER_OR_STRING_LITERAL_LIST = 262, /* START_INTEGER_OR_STRING_LITERAL_LIST  */
+    START_STRING_LITERAL_LIST = 263, /* START_STRING_LITERAL_LIST  */
+    START_EXPRESSION = 264,        /* START_EXPRESSION  */
+    START_INTEGER = 265,           /* START_INTEGER  */
+    START_INTEGER_OR_STRING_LITERAL = 266, /* START_INTEGER_OR_STRING_LITERAL  */
+    START_STRING_LITERAL = 267,    /* START_STRING_LITERAL  */
+    START_EXPRESSION_PAIR = 268,   /* START_EXPRESSION_PAIR  */
+    START_INTEGER_PAIR = 269,      /* START_INTEGER_PAIR  */
+    START_STRING_LITERAL_PAIR = 270, /* START_STRING_LITERAL_PAIR  */
+    START_EXPRESSION_TRIPLE = 271, /* START_EXPRESSION_TRIPLE  */
+    START_INTEGER_TRIPLE = 272,    /* START_INTEGER_TRIPLE  */
+    START_STRING_LITERAL_TRIPLE = 273, /* START_STRING_LITERAL_TRIPLE  */
+    START_P4RT_TRANSLATION_ANNOTATION = 274, /* START_P4RT_TRANSLATION_ANNOTATION  */
+    END = 275,                     /* END  */
+    END_ANNOTATION = 276,          /* END_ANNOTATION  */
+    UNEXPECTED_TOKEN = 277,        /* UNEXPECTED_TOKEN  */
+    END_PRAGMA = 278,              /* END_PRAGMA  */
+    HASH = 279,                    /* HASH  */
+    DHASH = 280,                   /* DHASH  */
+    LE = 281,                      /* LE  */
+    GE = 282,                      /* GE  */
+    SHL = 283,                     /* SHL  */
+    AND = 284,                     /* AND  */
+    OR = 285,                      /* OR  */
+    NE = 286,                      /* NE  */
+    EQ = 287,                      /* EQ  */
+    PLUS = 288,                    /* PLUS  */
+    MINUS = 289,                   /* MINUS  */
+    PLUS_SAT = 290,                /* PLUS_SAT  */
+    MINUS_SAT = 291,               /* MINUS_SAT  */
+    MUL = 292,                     /* MUL  */
+    DIV = 293,                     /* DIV  */
+    MOD = 294,                     /* MOD  */
+    BIT_OR = 295,                  /* BIT_OR  */
+    BIT_AND = 296,                 /* BIT_AND  */
+    BIT_XOR = 297,                 /* BIT_XOR  */
+    COMPLEMENT = 298,              /* COMPLEMENT  */
+    L_BRACKET = 299,               /* L_BRACKET  */
+    R_BRACKET = 300,               /* R_BRACKET  */
+    L_BRACE = 301,                 /* L_BRACE  */
+    R_BRACE = 302,                 /* R_BRACE  */
+    L_ANGLE = 303,                 /* L_ANGLE  */
+    L_ANGLE_ARGS = 304,            /* L_ANGLE_ARGS  */
+    R_ANGLE = 305,                 /* R_ANGLE  */
+    R_ANGLE_SHIFT = 306,           /* R_ANGLE_SHIFT  */
+    L_PAREN = 307,                 /* L_PAREN  */
+    R_PAREN = 308,                 /* R_PAREN  */
+    NOT = 309,                     /* NOT  */
+    COLON = 310,                   /* COLON  */
+    COMMA = 311,                   /* COMMA  */
+    QUESTION = 312,                /* QUESTION  */
+    DOT = 313,                     /* DOT  */
+    ASSIGN = 314,                  /* ASSIGN  */
+    SEMICOLON = 315,               /* SEMICOLON  */
+    AT = 316,                      /* AT  */
+    PP = 317,                      /* PP  */
+    DONTCARE = 318,                /* DONTCARE  */
+    MASK = 319,                    /* MASK  */
+    RANGE = 320,                   /* RANGE  */
+    TRUE = 321,                    /* TRUE  */
+    FALSE = 322,                   /* FALSE  */
+    THIS = 323,                    /* THIS  */
+    ABSTRACT = 324,                /* ABSTRACT  */
+    ACTION = 325,                  /* ACTION  */
+    ACTIONS = 326,                 /* ACTIONS  */
+    APPLY = 327,                   /* APPLY  */
+    BOOL = 328,                    /* BOOL  */
+    BIT = 329,                     /* BIT  */
+    CONST = 330,                   /* CONST  */
+    CONTROL = 331,                 /* CONTROL  */
+    DEFAULT = 332,                 /* DEFAULT  */
+    ELSE = 333,                    /* ELSE  */
+    ENTRIES = 334,                 /* ENTRIES  */
+    ENUM = 335,                    /* ENUM  */
+    ERROR = 336,                   /* ERROR  */
+    EXIT = 337,                    /* EXIT  */
+    EXTERN = 338,                  /* EXTERN  */
+    HEADER = 339,                  /* HEADER  */
+    HEADER_UNION = 340,            /* HEADER_UNION  */
+    IF = 341,                      /* IF  */
+    IN = 342,                      /* IN  */
+    INOUT = 343,                   /* INOUT  */
+    INT = 344,                     /* INT  */
+    KEY = 345,                     /* KEY  */
+    SELECT = 346,                  /* SELECT  */
+    MATCH_KIND = 347,              /* MATCH_KIND  */
+    TYPE = 348,                    /* TYPE  */
+    OUT = 349,                     /* OUT  */
+    PACKAGE = 350,                 /* PACKAGE  */
+    PARSER = 351,                  /* PARSER  */
+    PRAGMA = 352,                  /* PRAGMA  */
+    RETURN = 353,                  /* RETURN  */
+    STATE = 354,                   /* STATE  */
+    STRING = 355,                  /* STRING  */
+    STRUCT = 356,                  /* STRUCT  */
+    SWITCH = 357,                  /* SWITCH  */
+    TABLE = 358,                   /* TABLE  */
+    TRANSITION = 359,              /* TRANSITION  */
+    TUPLE = 360,                   /* TUPLE  */
+    TYPEDEF = 361,                 /* TYPEDEF  */
+    VARBIT = 362,                  /* VARBIT  */
+    VALUESET = 363,                /* VALUESET  */
+    VOID = 364,                    /* VOID  */
+    IDENTIFIER = 365,              /* IDENTIFIER  */
+    TYPE_IDENTIFIER = 366,         /* TYPE_IDENTIFIER  */
+    STRING_LITERAL = 367,          /* STRING_LITERAL  */
+    INTEGER = 368,                 /* INTEGER  */
+    FLOATING_CONSTANT = 369,       /* FLOATING_CONSTANT  */
+    PPNUM = 370,                   /* PPNUM  */
+    PREFIX = 371,                  /* PREFIX  */
+    THEN = 372                     /* THEN  */
   };
+  typedef enum yytokentype yytoken_kind_t;
 #endif
 
 /* Value type.  */
@@ -305,40 +320,371 @@ typedef int YYSTYPE;
 
 extern YYSTYPE yylval;
 
+
 int yyparse (void);
 
 
 
-/* Copy the second part of user declarations.  */
+/* Symbol kind.  */
+enum yysymbol_kind_t
+{
+  YYSYMBOL_YYEMPTY = -2,
+  YYSYMBOL_YYEOF = 0,                      /* "end of file"  */
+  YYSYMBOL_YYerror = 1,                    /* error  */
+  YYSYMBOL_YYUNDEF = 2,                    /* "invalid token"  */
+  YYSYMBOL_START_PROGRAM = 3,              /* START_PROGRAM  */
+  YYSYMBOL_START_EXPRESSION_LIST = 4,      /* START_EXPRESSION_LIST  */
+  YYSYMBOL_START_KV_LIST = 5,              /* START_KV_LIST  */
+  YYSYMBOL_START_INTEGER_LIST = 6,         /* START_INTEGER_LIST  */
+  YYSYMBOL_START_INTEGER_OR_STRING_LITERAL_LIST = 7, /* START_INTEGER_OR_STRING_LITERAL_LIST  */
+  YYSYMBOL_START_STRING_LITERAL_LIST = 8,  /* START_STRING_LITERAL_LIST  */
+  YYSYMBOL_START_EXPRESSION = 9,           /* START_EXPRESSION  */
+  YYSYMBOL_START_INTEGER = 10,             /* START_INTEGER  */
+  YYSYMBOL_START_INTEGER_OR_STRING_LITERAL = 11, /* START_INTEGER_OR_STRING_LITERAL  */
+  YYSYMBOL_START_STRING_LITERAL = 12,      /* START_STRING_LITERAL  */
+  YYSYMBOL_START_EXPRESSION_PAIR = 13,     /* START_EXPRESSION_PAIR  */
+  YYSYMBOL_START_INTEGER_PAIR = 14,        /* START_INTEGER_PAIR  */
+  YYSYMBOL_START_STRING_LITERAL_PAIR = 15, /* START_STRING_LITERAL_PAIR  */
+  YYSYMBOL_START_EXPRESSION_TRIPLE = 16,   /* START_EXPRESSION_TRIPLE  */
+  YYSYMBOL_START_INTEGER_TRIPLE = 17,      /* START_INTEGER_TRIPLE  */
+  YYSYMBOL_START_STRING_LITERAL_TRIPLE = 18, /* START_STRING_LITERAL_TRIPLE  */
+  YYSYMBOL_START_P4RT_TRANSLATION_ANNOTATION = 19, /* START_P4RT_TRANSLATION_ANNOTATION  */
+  YYSYMBOL_END = 20,                       /* END  */
+  YYSYMBOL_END_ANNOTATION = 21,            /* END_ANNOTATION  */
+  YYSYMBOL_UNEXPECTED_TOKEN = 22,          /* UNEXPECTED_TOKEN  */
+  YYSYMBOL_END_PRAGMA = 23,                /* END_PRAGMA  */
+  YYSYMBOL_HASH = 24,                      /* HASH  */
+  YYSYMBOL_DHASH = 25,                     /* DHASH  */
+  YYSYMBOL_LE = 26,                        /* LE  */
+  YYSYMBOL_GE = 27,                        /* GE  */
+  YYSYMBOL_SHL = 28,                       /* SHL  */
+  YYSYMBOL_AND = 29,                       /* AND  */
+  YYSYMBOL_OR = 30,                        /* OR  */
+  YYSYMBOL_NE = 31,                        /* NE  */
+  YYSYMBOL_EQ = 32,                        /* EQ  */
+  YYSYMBOL_PLUS = 33,                      /* PLUS  */
+  YYSYMBOL_MINUS = 34,                     /* MINUS  */
+  YYSYMBOL_PLUS_SAT = 35,                  /* PLUS_SAT  */
+  YYSYMBOL_MINUS_SAT = 36,                 /* MINUS_SAT  */
+  YYSYMBOL_MUL = 37,                       /* MUL  */
+  YYSYMBOL_DIV = 38,                       /* DIV  */
+  YYSYMBOL_MOD = 39,                       /* MOD  */
+  YYSYMBOL_BIT_OR = 40,                    /* BIT_OR  */
+  YYSYMBOL_BIT_AND = 41,                   /* BIT_AND  */
+  YYSYMBOL_BIT_XOR = 42,                   /* BIT_XOR  */
+  YYSYMBOL_COMPLEMENT = 43,                /* COMPLEMENT  */
+  YYSYMBOL_L_BRACKET = 44,                 /* L_BRACKET  */
+  YYSYMBOL_R_BRACKET = 45,                 /* R_BRACKET  */
+  YYSYMBOL_L_BRACE = 46,                   /* L_BRACE  */
+  YYSYMBOL_R_BRACE = 47,                   /* R_BRACE  */
+  YYSYMBOL_L_ANGLE = 48,                   /* L_ANGLE  */
+  YYSYMBOL_L_ANGLE_ARGS = 49,              /* L_ANGLE_ARGS  */
+  YYSYMBOL_R_ANGLE = 50,                   /* R_ANGLE  */
+  YYSYMBOL_R_ANGLE_SHIFT = 51,             /* R_ANGLE_SHIFT  */
+  YYSYMBOL_L_PAREN = 52,                   /* L_PAREN  */
+  YYSYMBOL_R_PAREN = 53,                   /* R_PAREN  */
+  YYSYMBOL_NOT = 54,                       /* NOT  */
+  YYSYMBOL_COLON = 55,                     /* COLON  */
+  YYSYMBOL_COMMA = 56,                     /* COMMA  */
+  YYSYMBOL_QUESTION = 57,                  /* QUESTION  */
+  YYSYMBOL_DOT = 58,                       /* DOT  */
+  YYSYMBOL_ASSIGN = 59,                    /* ASSIGN  */
+  YYSYMBOL_SEMICOLON = 60,                 /* SEMICOLON  */
+  YYSYMBOL_AT = 61,                        /* AT  */
+  YYSYMBOL_PP = 62,                        /* PP  */
+  YYSYMBOL_DONTCARE = 63,                  /* DONTCARE  */
+  YYSYMBOL_MASK = 64,                      /* MASK  */
+  YYSYMBOL_RANGE = 65,                     /* RANGE  */
+  YYSYMBOL_TRUE = 66,                      /* TRUE  */
+  YYSYMBOL_FALSE = 67,                     /* FALSE  */
+  YYSYMBOL_THIS = 68,                      /* THIS  */
+  YYSYMBOL_ABSTRACT = 69,                  /* ABSTRACT  */
+  YYSYMBOL_ACTION = 70,                    /* ACTION  */
+  YYSYMBOL_ACTIONS = 71,                   /* ACTIONS  */
+  YYSYMBOL_APPLY = 72,                     /* APPLY  */
+  YYSYMBOL_BOOL = 73,                      /* BOOL  */
+  YYSYMBOL_BIT = 74,                       /* BIT  */
+  YYSYMBOL_CONST = 75,                     /* CONST  */
+  YYSYMBOL_CONTROL = 76,                   /* CONTROL  */
+  YYSYMBOL_DEFAULT = 77,                   /* DEFAULT  */
+  YYSYMBOL_ELSE = 78,                      /* ELSE  */
+  YYSYMBOL_ENTRIES = 79,                   /* ENTRIES  */
+  YYSYMBOL_ENUM = 80,                      /* ENUM  */
+  YYSYMBOL_ERROR = 81,                     /* ERROR  */
+  YYSYMBOL_EXIT = 82,                      /* EXIT  */
+  YYSYMBOL_EXTERN = 83,                    /* EXTERN  */
+  YYSYMBOL_HEADER = 84,                    /* HEADER  */
+  YYSYMBOL_HEADER_UNION = 85,              /* HEADER_UNION  */
+  YYSYMBOL_IF = 86,                        /* IF  */
+  YYSYMBOL_IN = 87,                        /* IN  */
+  YYSYMBOL_INOUT = 88,                     /* INOUT  */
+  YYSYMBOL_INT = 89,                       /* INT  */
+  YYSYMBOL_KEY = 90,                       /* KEY  */
+  YYSYMBOL_SELECT = 91,                    /* SELECT  */
+  YYSYMBOL_MATCH_KIND = 92,                /* MATCH_KIND  */
+  YYSYMBOL_TYPE = 93,                      /* TYPE  */
+  YYSYMBOL_OUT = 94,                       /* OUT  */
+  YYSYMBOL_PACKAGE = 95,                   /* PACKAGE  */
+  YYSYMBOL_PARSER = 96,                    /* PARSER  */
+  YYSYMBOL_PRAGMA = 97,                    /* PRAGMA  */
+  YYSYMBOL_RETURN = 98,                    /* RETURN  */
+  YYSYMBOL_STATE = 99,                     /* STATE  */
+  YYSYMBOL_STRING = 100,                   /* STRING  */
+  YYSYMBOL_STRUCT = 101,                   /* STRUCT  */
+  YYSYMBOL_SWITCH = 102,                   /* SWITCH  */
+  YYSYMBOL_TABLE = 103,                    /* TABLE  */
+  YYSYMBOL_TRANSITION = 104,               /* TRANSITION  */
+  YYSYMBOL_TUPLE = 105,                    /* TUPLE  */
+  YYSYMBOL_TYPEDEF = 106,                  /* TYPEDEF  */
+  YYSYMBOL_VARBIT = 107,                   /* VARBIT  */
+  YYSYMBOL_VALUESET = 108,                 /* VALUESET  */
+  YYSYMBOL_VOID = 109,                     /* VOID  */
+  YYSYMBOL_IDENTIFIER = 110,               /* IDENTIFIER  */
+  YYSYMBOL_TYPE_IDENTIFIER = 111,          /* TYPE_IDENTIFIER  */
+  YYSYMBOL_STRING_LITERAL = 112,           /* STRING_LITERAL  */
+  YYSYMBOL_INTEGER = 113,                  /* INTEGER  */
+  YYSYMBOL_FLOATING_CONSTANT = 114,        /* FLOATING_CONSTANT  */
+  YYSYMBOL_PPNUM = 115,                    /* PPNUM  */
+  YYSYMBOL_PREFIX = 116,                   /* PREFIX  */
+  YYSYMBOL_THEN = 117,                     /* THEN  */
+  YYSYMBOL_YYACCEPT = 118,                 /* $accept  */
+  YYSYMBOL_start = 119,                    /* start  */
+  YYSYMBOL_program = 120,                  /* program  */
+  YYSYMBOL_input = 121,                    /* input  */
+  YYSYMBOL_declaration = 122,              /* declaration  */
+  YYSYMBOL_nonTypeName = 123,              /* nonTypeName  */
+  YYSYMBOL_name = 124,                     /* name  */
+  YYSYMBOL_nonTableKwName = 125,           /* nonTableKwName  */
+  YYSYMBOL_optCONST = 126,                 /* optCONST  */
+  YYSYMBOL_optAnnotations = 127,           /* optAnnotations  */
+  YYSYMBOL_annotations = 128,              /* annotations  */
+  YYSYMBOL_annotation = 129,               /* annotation  */
+  YYSYMBOL_annotationBody = 130,           /* annotationBody  */
+  YYSYMBOL_annotationToken = 131,          /* annotationToken  */
+  YYSYMBOL_kvList = 132,                   /* kvList  */
+  YYSYMBOL_kvPair = 133,                   /* kvPair  */
+  YYSYMBOL_parameterList = 134,            /* parameterList  */
+  YYSYMBOL_nonEmptyParameterList = 135,    /* nonEmptyParameterList  */
+  YYSYMBOL_parameter = 136,                /* parameter  */
+  YYSYMBOL_direction = 137,                /* direction  */
+  YYSYMBOL_packageTypeDeclaration = 138,   /* packageTypeDeclaration  */
+  YYSYMBOL_139_1 = 139,                    /* $@1  */
+  YYSYMBOL_140_2 = 140,                    /* $@2  */
+  YYSYMBOL_instantiation = 141,            /* instantiation  */
+  YYSYMBOL_objInitializer = 142,           /* objInitializer  */
+  YYSYMBOL_objDeclarations = 143,          /* objDeclarations  */
+  YYSYMBOL_objDeclaration = 144,           /* objDeclaration  */
+  YYSYMBOL_optConstructorParameters = 145, /* optConstructorParameters  */
+  YYSYMBOL_dotPrefix = 146,                /* dotPrefix  */
+  YYSYMBOL_parserDeclaration = 147,        /* parserDeclaration  */
+  YYSYMBOL_148_3 = 148,                    /* $@3  */
+  YYSYMBOL_149_4 = 149,                    /* $@4  */
+  YYSYMBOL_parserLocalElements = 150,      /* parserLocalElements  */
+  YYSYMBOL_parserLocalElement = 151,       /* parserLocalElement  */
+  YYSYMBOL_parserTypeDeclaration = 152,    /* parserTypeDeclaration  */
+  YYSYMBOL_153_5 = 153,                    /* $@5  */
+  YYSYMBOL_154_6 = 154,                    /* $@6  */
+  YYSYMBOL_parserStates = 155,             /* parserStates  */
+  YYSYMBOL_parserState = 156,              /* parserState  */
+  YYSYMBOL_157_7 = 157,                    /* $@7  */
+  YYSYMBOL_parserStatements = 158,         /* parserStatements  */
+  YYSYMBOL_parserStatement = 159,          /* parserStatement  */
+  YYSYMBOL_parserBlockStatement = 160,     /* parserBlockStatement  */
+  YYSYMBOL_161_8 = 161,                    /* $@8  */
+  YYSYMBOL_transitionStatement = 162,      /* transitionStatement  */
+  YYSYMBOL_stateExpression = 163,          /* stateExpression  */
+  YYSYMBOL_selectExpression = 164,         /* selectExpression  */
+  YYSYMBOL_selectCaseList = 165,           /* selectCaseList  */
+  YYSYMBOL_selectCase = 166,               /* selectCase  */
+  YYSYMBOL_keysetExpression = 167,         /* keysetExpression  */
+  YYSYMBOL_tupleKeysetExpression = 168,    /* tupleKeysetExpression  */
+  YYSYMBOL_simpleExpressionList = 169,     /* simpleExpressionList  */
+  YYSYMBOL_reducedSimpleKeysetExpression = 170, /* reducedSimpleKeysetExpression  */
+  YYSYMBOL_simpleKeysetExpression = 171,   /* simpleKeysetExpression  */
+  YYSYMBOL_valueSetDeclaration = 172,      /* valueSetDeclaration  */
+  YYSYMBOL_controlDeclaration = 173,       /* controlDeclaration  */
+  YYSYMBOL_controlTypeDeclaration = 174,   /* controlTypeDeclaration  */
+  YYSYMBOL_175_9 = 175,                    /* $@9  */
+  YYSYMBOL_176_10 = 176,                   /* $@10  */
+  YYSYMBOL_controlLocalDeclarations = 177, /* controlLocalDeclarations  */
+  YYSYMBOL_controlLocalDeclaration = 178,  /* controlLocalDeclaration  */
+  YYSYMBOL_controlBody = 179,              /* controlBody  */
+  YYSYMBOL_externDeclaration = 180,        /* externDeclaration  */
+  YYSYMBOL_181_11 = 181,                   /* $@11  */
+  YYSYMBOL_182_12 = 182,                   /* $@12  */
+  YYSYMBOL_methodPrototypes = 183,         /* methodPrototypes  */
+  YYSYMBOL_functionPrototype = 184,        /* functionPrototype  */
+  YYSYMBOL_185_13 = 185,                   /* $@13  */
+  YYSYMBOL_methodPrototype = 186,          /* methodPrototype  */
+  YYSYMBOL_typeRef = 187,                  /* typeRef  */
+  YYSYMBOL_namedType = 188,                /* namedType  */
+  YYSYMBOL_prefixedType = 189,             /* prefixedType  */
+  YYSYMBOL_typeName = 190,                 /* typeName  */
+  YYSYMBOL_tupleType = 191,                /* tupleType  */
+  YYSYMBOL_headerStackType = 192,          /* headerStackType  */
+  YYSYMBOL_specializedType = 193,          /* specializedType  */
+  YYSYMBOL_baseType = 194,                 /* baseType  */
+  YYSYMBOL_typeOrVoid = 195,               /* typeOrVoid  */
+  YYSYMBOL_optTypeParameters = 196,        /* optTypeParameters  */
+  YYSYMBOL_typeParameters = 197,           /* typeParameters  */
+  YYSYMBOL_typeParameterList = 198,        /* typeParameterList  */
+  YYSYMBOL_typeArg = 199,                  /* typeArg  */
+  YYSYMBOL_typeArgumentList = 200,         /* typeArgumentList  */
+  YYSYMBOL_realTypeArg = 201,              /* realTypeArg  */
+  YYSYMBOL_realTypeArgumentList = 202,     /* realTypeArgumentList  */
+  YYSYMBOL_typeDeclaration = 203,          /* typeDeclaration  */
+  YYSYMBOL_derivedTypeDeclaration = 204,   /* derivedTypeDeclaration  */
+  YYSYMBOL_headerTypeDeclaration = 205,    /* headerTypeDeclaration  */
+  YYSYMBOL_206_14 = 206,                   /* $@14  */
+  YYSYMBOL_207_15 = 207,                   /* $@15  */
+  YYSYMBOL_structTypeDeclaration = 208,    /* structTypeDeclaration  */
+  YYSYMBOL_headerUnionDeclaration = 209,   /* headerUnionDeclaration  */
+  YYSYMBOL_210_16 = 210,                   /* $@16  */
+  YYSYMBOL_211_17 = 211,                   /* $@17  */
+  YYSYMBOL_structFieldList = 212,          /* structFieldList  */
+  YYSYMBOL_structField = 213,              /* structField  */
+  YYSYMBOL_enumDeclaration = 214,          /* enumDeclaration  */
+  YYSYMBOL_215_18 = 215,                   /* $@18  */
+  YYSYMBOL_216_19 = 216,                   /* $@19  */
+  YYSYMBOL_specifiedIdentifierList = 217,  /* specifiedIdentifierList  */
+  YYSYMBOL_specifiedIdentifier = 218,      /* specifiedIdentifier  */
+  YYSYMBOL_errorDeclaration = 219,         /* errorDeclaration  */
+  YYSYMBOL_matchKindDeclaration = 220,     /* matchKindDeclaration  */
+  YYSYMBOL_identifierList = 221,           /* identifierList  */
+  YYSYMBOL_typedefDeclaration = 222,       /* typedefDeclaration  */
+  YYSYMBOL_assignmentOrMethodCallStatement = 223, /* assignmentOrMethodCallStatement  */
+  YYSYMBOL_emptyStatement = 224,           /* emptyStatement  */
+  YYSYMBOL_exitStatement = 225,            /* exitStatement  */
+  YYSYMBOL_returnStatement = 226,          /* returnStatement  */
+  YYSYMBOL_conditionalStatement = 227,     /* conditionalStatement  */
+  YYSYMBOL_directApplication = 228,        /* directApplication  */
+  YYSYMBOL_statement = 229,                /* statement  */
+  YYSYMBOL_blockStatement = 230,           /* blockStatement  */
+  YYSYMBOL_231_20 = 231,                   /* $@20  */
+  YYSYMBOL_statOrDeclList = 232,           /* statOrDeclList  */
+  YYSYMBOL_switchStatement = 233,          /* switchStatement  */
+  YYSYMBOL_switchCases = 234,              /* switchCases  */
+  YYSYMBOL_switchCase = 235,               /* switchCase  */
+  YYSYMBOL_switchLabel = 236,              /* switchLabel  */
+  YYSYMBOL_statementOrDeclaration = 237,   /* statementOrDeclaration  */
+  YYSYMBOL_tableDeclaration = 238,         /* tableDeclaration  */
+  YYSYMBOL_tablePropertyList = 239,        /* tablePropertyList  */
+  YYSYMBOL_tableProperty = 240,            /* tableProperty  */
+  YYSYMBOL_keyElementList = 241,           /* keyElementList  */
+  YYSYMBOL_keyElement = 242,               /* keyElement  */
+  YYSYMBOL_actionList = 243,               /* actionList  */
+  YYSYMBOL_actionRef = 244,                /* actionRef  */
+  YYSYMBOL_entry = 245,                    /* entry  */
+  YYSYMBOL_entriesList = 246,              /* entriesList  */
+  YYSYMBOL_actionDeclaration = 247,        /* actionDeclaration  */
+  YYSYMBOL_variableDeclaration = 248,      /* variableDeclaration  */
+  YYSYMBOL_constantDeclaration = 249,      /* constantDeclaration  */
+  YYSYMBOL_optInitializer = 250,           /* optInitializer  */
+  YYSYMBOL_initializer = 251,              /* initializer  */
+  YYSYMBOL_functionDeclaration = 252,      /* functionDeclaration  */
+  YYSYMBOL_argumentList = 253,             /* argumentList  */
+  YYSYMBOL_nonEmptyArgList = 254,          /* nonEmptyArgList  */
+  YYSYMBOL_argument = 255,                 /* argument  */
+  YYSYMBOL_expressionList = 256,           /* expressionList  */
+  YYSYMBOL_prefixedNonTypeName = 257,      /* prefixedNonTypeName  */
+  YYSYMBOL_dot_name = 258,                 /* dot_name  */
+  YYSYMBOL_259_21 = 259,                   /* $@21  */
+  YYSYMBOL_lvalue = 260,                   /* lvalue  */
+  YYSYMBOL_expression = 261,               /* expression  */
+  YYSYMBOL_nonBraceExpression = 262,       /* nonBraceExpression  */
+  YYSYMBOL_l_angle = 263,                  /* l_angle  */
+  YYSYMBOL_r_angle = 264                   /* r_angle  */
+};
+typedef enum yysymbol_kind_t yysymbol_kind_t;
 
-#line 315 "p4parser.tab.c" /* yacc.c:358  */
+
+
 
 #ifdef short
 # undef short
 #endif
 
-#ifdef YYTYPE_UINT8
-typedef YYTYPE_UINT8 yytype_uint8;
-#else
-typedef unsigned char yytype_uint8;
+/* On compilers that do not define __PTRDIFF_MAX__ etc., make sure
+   <limits.h> and (if available) <stdint.h> are included
+   so that the code can choose integer types of a good width.  */
+
+#ifndef __PTRDIFF_MAX__
+# include <limits.h> /* INFRINGES ON USER NAME SPACE */
+# if defined __STDC_VERSION__ && 199901 <= __STDC_VERSION__
+#  include <stdint.h> /* INFRINGES ON USER NAME SPACE */
+#  define YY_STDINT_H
+# endif
 #endif
 
-#ifdef YYTYPE_INT8
-typedef YYTYPE_INT8 yytype_int8;
+/* Narrow types that promote to a signed type and that can represent a
+   signed or unsigned integer of at least N bits.  In tables they can
+   save space and decrease cache pressure.  Promoting to a signed type
+   helps avoid bugs in integer arithmetic.  */
+
+#ifdef __INT_LEAST8_MAX__
+typedef __INT_LEAST8_TYPE__ yytype_int8;
+#elif defined YY_STDINT_H
+typedef int_least8_t yytype_int8;
 #else
 typedef signed char yytype_int8;
 #endif
 
-#ifdef YYTYPE_UINT16
-typedef YYTYPE_UINT16 yytype_uint16;
+#ifdef __INT_LEAST16_MAX__
+typedef __INT_LEAST16_TYPE__ yytype_int16;
+#elif defined YY_STDINT_H
+typedef int_least16_t yytype_int16;
 #else
-typedef unsigned short int yytype_uint16;
+typedef short yytype_int16;
 #endif
 
-#ifdef YYTYPE_INT16
-typedef YYTYPE_INT16 yytype_int16;
+/* Work around bug in HP-UX 11.23, which defines these macros
+   incorrectly for preprocessor constants.  This workaround can likely
+   be removed in 2023, as HPE has promised support for HP-UX 11.23
+   (aka HP-UX 11i v2) only through the end of 2022; see Table 2 of
+   <https://h20195.www2.hpe.com/V2/getpdf.aspx/4AA4-7673ENW.pdf>.  */
+#ifdef __hpux
+# undef UINT_LEAST8_MAX
+# undef UINT_LEAST16_MAX
+# define UINT_LEAST8_MAX 255
+# define UINT_LEAST16_MAX 65535
+#endif
+
+#if defined __UINT_LEAST8_MAX__ && __UINT_LEAST8_MAX__ <= __INT_MAX__
+typedef __UINT_LEAST8_TYPE__ yytype_uint8;
+#elif (!defined __UINT_LEAST8_MAX__ && defined YY_STDINT_H \
+       && UINT_LEAST8_MAX <= INT_MAX)
+typedef uint_least8_t yytype_uint8;
+#elif !defined __UINT_LEAST8_MAX__ && UCHAR_MAX <= INT_MAX
+typedef unsigned char yytype_uint8;
 #else
-typedef short int yytype_int16;
+typedef short yytype_uint8;
+#endif
+
+#if defined __UINT_LEAST16_MAX__ && __UINT_LEAST16_MAX__ <= __INT_MAX__
+typedef __UINT_LEAST16_TYPE__ yytype_uint16;
+#elif (!defined __UINT_LEAST16_MAX__ && defined YY_STDINT_H \
+       && UINT_LEAST16_MAX <= INT_MAX)
+typedef uint_least16_t yytype_uint16;
+#elif !defined __UINT_LEAST16_MAX__ && USHRT_MAX <= INT_MAX
+typedef unsigned short yytype_uint16;
+#else
+typedef int yytype_uint16;
+#endif
+
+#ifndef YYPTRDIFF_T
+# if defined __PTRDIFF_TYPE__ && defined __PTRDIFF_MAX__
+#  define YYPTRDIFF_T __PTRDIFF_TYPE__
+#  define YYPTRDIFF_MAXIMUM __PTRDIFF_MAX__
+# elif defined PTRDIFF_MAX
+#  ifndef ptrdiff_t
+#   include <stddef.h> /* INFRINGES ON USER NAME SPACE */
+#  endif
+#  define YYPTRDIFF_T ptrdiff_t
+#  define YYPTRDIFF_MAXIMUM PTRDIFF_MAX
+# else
+#  define YYPTRDIFF_T long
+#  define YYPTRDIFF_MAXIMUM LONG_MAX
+# endif
 #endif
 
 #ifndef YYSIZE_T
@@ -346,15 +692,28 @@ typedef short int yytype_int16;
 #  define YYSIZE_T __SIZE_TYPE__
 # elif defined size_t
 #  define YYSIZE_T size_t
-# elif ! defined YYSIZE_T
+# elif defined __STDC_VERSION__ && 199901 <= __STDC_VERSION__
 #  include <stddef.h> /* INFRINGES ON USER NAME SPACE */
 #  define YYSIZE_T size_t
 # else
-#  define YYSIZE_T unsigned int
+#  define YYSIZE_T unsigned
 # endif
 #endif
 
-#define YYSIZE_MAXIMUM ((YYSIZE_T) -1)
+#define YYSIZE_MAXIMUM                                  \
+  YY_CAST (YYPTRDIFF_T,                                 \
+           (YYPTRDIFF_MAXIMUM < YY_CAST (YYSIZE_T, -1)  \
+            ? YYPTRDIFF_MAXIMUM                         \
+            : YY_CAST (YYSIZE_T, -1)))
+
+#define YYSIZEOF(X) YY_CAST (YYPTRDIFF_T, sizeof (X))
+
+
+/* Stored state numbers (used for stacks). */
+typedef yytype_int16 yy_state_t;
+
+/* State numbers in computations.  */
+typedef int yy_state_fast_t;
 
 #ifndef YY_
 # if defined YYENABLE_NLS && YYENABLE_NLS
@@ -368,47 +727,43 @@ typedef short int yytype_int16;
 # endif
 #endif
 
-#ifndef YY_ATTRIBUTE
-# if (defined __GNUC__                                               \
-      && (2 < __GNUC__ || (__GNUC__ == 2 && 96 <= __GNUC_MINOR__)))  \
-     || defined __SUNPRO_C && 0x5110 <= __SUNPRO_C
-#  define YY_ATTRIBUTE(Spec) __attribute__(Spec)
+
+#ifndef YY_ATTRIBUTE_PURE
+# if defined __GNUC__ && 2 < __GNUC__ + (96 <= __GNUC_MINOR__)
+#  define YY_ATTRIBUTE_PURE __attribute__ ((__pure__))
 # else
-#  define YY_ATTRIBUTE(Spec) /* empty */
+#  define YY_ATTRIBUTE_PURE
 # endif
 #endif
 
-#ifndef YY_ATTRIBUTE_PURE
-# define YY_ATTRIBUTE_PURE   YY_ATTRIBUTE ((__pure__))
-#endif
-
 #ifndef YY_ATTRIBUTE_UNUSED
-# define YY_ATTRIBUTE_UNUSED YY_ATTRIBUTE ((__unused__))
-#endif
-
-#if !defined _Noreturn \
-     && (!defined __STDC_VERSION__ || __STDC_VERSION__ < 201112)
-# if defined _MSC_VER && 1200 <= _MSC_VER
-#  define _Noreturn __declspec (noreturn)
+# if defined __GNUC__ && 2 < __GNUC__ + (7 <= __GNUC_MINOR__)
+#  define YY_ATTRIBUTE_UNUSED __attribute__ ((__unused__))
 # else
-#  define _Noreturn YY_ATTRIBUTE ((__noreturn__))
+#  define YY_ATTRIBUTE_UNUSED
 # endif
 #endif
 
 /* Suppress unused-variable warnings by "using" E.  */
 #if ! defined lint || defined __GNUC__
-# define YYUSE(E) ((void) (E))
+# define YY_USE(E) ((void) (E))
 #else
-# define YYUSE(E) /* empty */
+# define YY_USE(E) /* empty */
 #endif
 
-#if defined __GNUC__ && 407 <= __GNUC__ * 100 + __GNUC_MINOR__
 /* Suppress an incorrect diagnostic about yylval being uninitialized.  */
-# define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN \
-    _Pragma ("GCC diagnostic push") \
-    _Pragma ("GCC diagnostic ignored \"-Wuninitialized\"")\
+#if defined __GNUC__ && ! defined __ICC && 406 <= __GNUC__ * 100 + __GNUC_MINOR__
+# if __GNUC__ * 100 + __GNUC_MINOR__ < 407
+#  define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN                           \
+    _Pragma ("GCC diagnostic push")                                     \
+    _Pragma ("GCC diagnostic ignored \"-Wuninitialized\"")
+# else
+#  define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN                           \
+    _Pragma ("GCC diagnostic push")                                     \
+    _Pragma ("GCC diagnostic ignored \"-Wuninitialized\"")              \
     _Pragma ("GCC diagnostic ignored \"-Wmaybe-uninitialized\"")
-# define YY_IGNORE_MAYBE_UNINITIALIZED_END \
+# endif
+# define YY_IGNORE_MAYBE_UNINITIALIZED_END      \
     _Pragma ("GCC diagnostic pop")
 #else
 # define YY_INITIAL_VALUE(Value) Value
@@ -421,8 +776,22 @@ typedef short int yytype_int16;
 # define YY_INITIAL_VALUE(Value) /* Nothing. */
 #endif
 
+#if defined __cplusplus && defined __GNUC__ && ! defined __ICC && 6 <= __GNUC__
+# define YY_IGNORE_USELESS_CAST_BEGIN                          \
+    _Pragma ("GCC diagnostic push")                            \
+    _Pragma ("GCC diagnostic ignored \"-Wuseless-cast\"")
+# define YY_IGNORE_USELESS_CAST_END            \
+    _Pragma ("GCC diagnostic pop")
+#endif
+#ifndef YY_IGNORE_USELESS_CAST_BEGIN
+# define YY_IGNORE_USELESS_CAST_BEGIN
+# define YY_IGNORE_USELESS_CAST_END
+#endif
 
-#if ! defined yyoverflow || YYERROR_VERBOSE
+
+#define YY_ASSERT(E) ((void) (0 && (E)))
+
+#if !defined yyoverflow
 
 /* The parser invokes alloca or malloc; define the necessary symbols.  */
 
@@ -487,8 +856,7 @@ void free (void *); /* INFRINGES ON USER NAME SPACE */
 #   endif
 #  endif
 # endif
-#endif /* ! defined yyoverflow || YYERROR_VERBOSE */
-
+#endif /* !defined yyoverflow */
 
 #if (! defined yyoverflow \
      && (! defined __cplusplus \
@@ -497,17 +865,17 @@ void free (void *); /* INFRINGES ON USER NAME SPACE */
 /* A type that is properly aligned for any stack member.  */
 union yyalloc
 {
-  yytype_int16 yyss_alloc;
+  yy_state_t yyss_alloc;
   YYSTYPE yyvs_alloc;
 };
 
 /* The size of the maximum gap between one aligned stack and the next.  */
-# define YYSTACK_GAP_MAXIMUM (sizeof (union yyalloc) - 1)
+# define YYSTACK_GAP_MAXIMUM (YYSIZEOF (union yyalloc) - 1)
 
 /* The size of an array large to enough to hold all stacks, each with
    N elements.  */
 # define YYSTACK_BYTES(N) \
-     ((N) * (sizeof (yytype_int16) + sizeof (YYSTYPE)) \
+     ((N) * (YYSIZEOF (yy_state_t) + YYSIZEOF (YYSTYPE)) \
       + YYSTACK_GAP_MAXIMUM)
 
 # define YYCOPY_NEEDED 1
@@ -520,11 +888,11 @@ union yyalloc
 # define YYSTACK_RELOCATE(Stack_alloc, Stack)                           \
     do                                                                  \
       {                                                                 \
-        YYSIZE_T yynewbytes;                                            \
+        YYPTRDIFF_T yynewbytes;                                         \
         YYCOPY (&yyptr->Stack_alloc, Stack, yysize);                    \
         Stack = &yyptr->Stack_alloc;                                    \
-        yynewbytes = yystacksize * sizeof (*Stack) + YYSTACK_GAP_MAXIMUM; \
-        yyptr += yynewbytes / sizeof (*yyptr);                          \
+        yynewbytes = yystacksize * YYSIZEOF (*Stack) + YYSTACK_GAP_MAXIMUM; \
+        yyptr += yynewbytes / YYSIZEOF (*yyptr);                        \
       }                                                                 \
     while (0)
 
@@ -536,12 +904,12 @@ union yyalloc
 # ifndef YYCOPY
 #  if defined __GNUC__ && 1 < __GNUC__
 #   define YYCOPY(Dst, Src, Count) \
-      __builtin_memcpy (Dst, Src, (Count) * sizeof (*(Src)))
+      __builtin_memcpy (Dst, Src, YY_CAST (YYSIZE_T, (Count)) * sizeof (*(Src)))
 #  else
 #   define YYCOPY(Dst, Src, Count)              \
       do                                        \
         {                                       \
-          YYSIZE_T yyi;                         \
+          YYPTRDIFF_T yyi;                      \
           for (yyi = 0; yyi < (Count); yyi++)   \
             (Dst)[yyi] = (Src)[yyi];            \
         }                                       \
@@ -564,17 +932,20 @@ union yyalloc
 /* YYNSTATES -- Number of states.  */
 #define YYNSTATES  888
 
-/* YYTRANSLATE[YYX] -- Symbol number corresponding to YYX as returned
-   by yylex, with out-of-bounds checking.  */
-#define YYUNDEFTOK  2
+/* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   372
 
-#define YYTRANSLATE(YYX)                                                \
-  ((unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
+
+/* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
+   as returned by yylex, with out-of-bounds checking.  */
+#define YYTRANSLATE(YYX)                                \
+  (0 <= (YYX) && (YYX) <= YYMAXUTOK                     \
+   ? YY_CAST (yysymbol_kind_t, yytranslate[YYX])        \
+   : YYSYMBOL_YYUNDEF)
 
 /* YYTRANSLATE[TOKEN-NUM] -- Symbol number corresponding to TOKEN-NUM
-   as returned by yylex, without out-of-bounds checking.  */
-static const yytype_uint8 yytranslate[] =
+   as returned by yylex.  */
+static const yytype_int8 yytranslate[] =
 {
        0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -617,8 +988,8 @@ static const yytype_uint8 yytranslate[] =
 };
 
 #if YYDEBUG
-  /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-static const yytype_uint16 yyrline[] =
+/* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
+static const yytype_int16 yyrline[] =
 {
        0,   239,   239,   244,   248,   249,   250,   254,   255,   256,
      257,   258,   259,   260,   261,   262,   263,   267,   268,   269,
@@ -672,13 +1043,20 @@ static const yytype_uint16 yyrline[] =
 };
 #endif
 
-#if YYDEBUG || YYERROR_VERBOSE || 0
+/** Accessing symbol of state STATE.  */
+#define YY_ACCESSING_SYMBOL(State) YY_CAST (yysymbol_kind_t, yystos[State])
+
+#if YYDEBUG || 0
+/* The user-facing name of the symbol whose (internal) number is
+   YYSYMBOL.  No bounds checking.  */
+static const char *yysymbol_name (yysymbol_kind_t yysymbol) YY_ATTRIBUTE_UNUSED;
+
 /* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
-  "$end", "error", "$undefined", "START_PROGRAM", "START_EXPRESSION_LIST",
-  "START_KV_LIST", "START_INTEGER_LIST",
+  "\"end of file\"", "error", "\"invalid token\"", "START_PROGRAM",
+  "START_EXPRESSION_LIST", "START_KV_LIST", "START_INTEGER_LIST",
   "START_INTEGER_OR_STRING_LITERAL_LIST", "START_STRING_LITERAL_LIST",
   "START_EXPRESSION", "START_INTEGER", "START_INTEGER_OR_STRING_LITERAL",
   "START_STRING_LITERAL", "START_EXPRESSION_PAIR", "START_INTEGER_PAIR",
@@ -738,40 +1116,26 @@ static const char *const yytname[] =
   "argument", "expressionList", "prefixedNonTypeName", "dot_name", "$@21",
   "lvalue", "expression", "nonBraceExpression", "l_angle", "r_angle", YY_NULLPTR
 };
+
+static const char *
+yysymbol_name (yysymbol_kind_t yysymbol)
+{
+  return yytname[yysymbol];
+}
 #endif
 
-# ifdef YYPRINT
-/* YYTOKNUM[NUM] -- (External) token number corresponding to the
-   (internal) symbol number NUM (which must be that of a token).  */
-static const yytype_uint16 yytoknum[] =
-{
-       0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
-     265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
-     275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
-     285,   286,   287,   288,   289,   290,   291,   292,   293,   294,
-     295,   296,   297,   298,   299,   300,   301,   302,   303,   304,
-     305,   306,   307,   308,   309,   310,   311,   312,   313,   314,
-     315,   316,   317,   318,   319,   320,   321,   322,   323,   324,
-     325,   326,   327,   328,   329,   330,   331,   332,   333,   334,
-     335,   336,   337,   338,   339,   340,   341,   342,   343,   344,
-     345,   346,   347,   348,   349,   350,   351,   352,   353,   354,
-     355,   356,   357,   358,   359,   360,   361,   362,   363,   364,
-     365,   366,   367,   368,   369,   370,   371,   372
-};
-# endif
+#define YYPACT_NINF (-765)
 
-#define YYPACT_NINF -765
+#define yypact_value_is_default(Yyn) \
+  ((Yyn) == YYPACT_NINF)
 
-#define yypact_value_is_default(Yystate) \
-  (!!((Yystate) == (-765)))
+#define YYTABLE_NINF (-243)
 
-#define YYTABLE_NINF -243
-
-#define yytable_value_is_error(Yytable_value) \
+#define yytable_value_is_error(Yyn) \
   0
 
-  /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
-     STATE-NUM.  */
+/* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
+   STATE-NUM.  */
 static const yytype_int16 yypact[] =
 {
     -765,    30,  -765,   511,  -765,  -765,  -765,   423,  -765,   125,
@@ -865,10 +1229,10 @@ static const yytype_int16 yypact[] =
     -765,  -765,  -765,   542,  -765,   423,   538,  -765
 };
 
-  /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
-     Performed when YYTABLE does not specify something else to do.  Zero
-     means the default is an error.  */
-static const yytype_uint16 yydefact[] =
+/* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
+   Performed when YYTABLE does not specify something else to do.  Zero
+   means the default is an error.  */
+static const yytype_int16 yydefact[] =
 {
        4,     0,     2,    33,     1,   158,     6,     0,   250,   252,
      251,   254,     0,     0,   253,     0,     0,   262,   263,   243,
@@ -961,7 +1325,7 @@ static const yytype_uint16 yydefact[] =
      476,   190,   192,     0,   199,     0,     0,   193
 };
 
-  /* YYPGOTO[NTERM-NUM].  */
+/* YYPGOTO[NTERM-NUM].  */
 static const yytype_int16 yypgoto[] =
 {
     -765,  -765,  -765,  -765,  -765,    -7,   117,  -765,  -765,     8,
@@ -981,10 +1345,10 @@ static const yytype_int16 yypgoto[] =
     -158,  -765,  -765,   929,  -765,   239,   -92
 };
 
-  /* YYDEFGOTO[NTERM-NUM].  */
+/* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int16 yydefgoto[] =
 {
-      -1,     1,     2,     3,    20,   173,   164,   669,   644,   143,
+       0,     1,     2,     3,    20,   173,   164,   669,   644,   143,
       95,    23,   112,   283,   181,   182,   144,   145,   146,   309,
       24,   300,   461,    25,   560,   593,   630,    91,   165,    27,
      147,   540,   391,   468,    28,   301,   462,   469,   470,   609,
@@ -1001,9 +1365,9 @@ static const yytype_int16 yydefgoto[] =
      357,   410,   504,   172,   717,   358,   189
 };
 
-  /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
-     positive, shift that token.  If negative, reduce the rule whose
-     number is the opposite.  If YYTABLE_NINF, syntax error.  */
+/* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
+   positive, shift that token.  If negative, reduce the rule whose
+   number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int16 yytable[] =
 {
       61,   130,   319,    85,    96,    22,    61,   375,   175,   331,
@@ -1804,9 +2168,9 @@ static const yytype_int16 yycheck[] =
       58,    -1,    -1,    -1,    62
 };
 
-  /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
-     symbol of state STATE-NUM.  */
-static const yytype_uint16 yystos[] =
+/* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
+   state STATE-NUM.  */
+static const yytype_int16 yystos[] =
 {
        0,   119,   120,   121,     0,    58,    60,    61,    73,    74,
       81,    89,    92,    97,   100,   105,   107,   109,   110,   111,
@@ -1899,8 +2263,8 @@ static const yytype_uint16 yystos[] =
       53,    47,   166,   167,   171,    55,   124,    60
 };
 
-  /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
-static const yytype_uint16 yyr1[] =
+/* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
+static const yytype_int16 yyr1[] =
 {
        0,   118,   119,   120,   121,   121,   121,   122,   122,   122,
      122,   122,   122,   122,   122,   122,   122,   123,   123,   123,
@@ -1953,8 +2317,8 @@ static const yytype_uint16 yyr1[] =
      263,   263,   264,   264
 };
 
-  /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
-static const yytype_uint8 yyr2[] =
+/* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
+static const yytype_int8 yyr2[] =
 {
        0,     2,     1,     1,     0,     2,     2,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
@@ -2008,39 +2372,39 @@ static const yytype_uint8 yyr2[] =
 };
 
 
+enum { YYENOMEM = -2 };
+
 #define yyerrok         (yyerrstatus = 0)
 #define yyclearin       (yychar = YYEMPTY)
-#define YYEMPTY         (-2)
-#define YYEOF           0
 
 #define YYACCEPT        goto yyacceptlab
 #define YYABORT         goto yyabortlab
 #define YYERROR         goto yyerrorlab
+#define YYNOMEM         goto yyexhaustedlab
 
 
 #define YYRECOVERING()  (!!yyerrstatus)
 
-#define YYBACKUP(Token, Value)                                  \
-do                                                              \
-  if (yychar == YYEMPTY)                                        \
-    {                                                           \
-      yychar = (Token);                                         \
-      yylval = (Value);                                         \
-      YYPOPSTACK (yylen);                                       \
-      yystate = *yyssp;                                         \
-      goto yybackup;                                            \
-    }                                                           \
-  else                                                          \
-    {                                                           \
-      yyerror (YY_("syntax error: cannot back up")); \
-      YYERROR;                                                  \
-    }                                                           \
-while (0)
+#define YYBACKUP(Token, Value)                                    \
+  do                                                              \
+    if (yychar == YYEMPTY)                                        \
+      {                                                           \
+        yychar = (Token);                                         \
+        yylval = (Value);                                         \
+        YYPOPSTACK (yylen);                                       \
+        yystate = *yyssp;                                         \
+        goto yybackup;                                            \
+      }                                                           \
+    else                                                          \
+      {                                                           \
+        yyerror (YY_("syntax error: cannot back up")); \
+        YYERROR;                                                  \
+      }                                                           \
+  while (0)
 
-/* Error token number */
-#define YYTERROR        1
-#define YYERRCODE       256
-
+/* Backward compatibility with an undocumented macro.
+   Use YYerror or YYUNDEF. */
+#define YYERRCODE YYUNDEF
 
 
 /* Enable debugging if requested.  */
@@ -2057,55 +2421,52 @@ do {                                            \
     YYFPRINTF Args;                             \
 } while (0)
 
-/* This macro is provided for backward compatibility. */
-#ifndef YY_LOCATION_PRINT
-# define YY_LOCATION_PRINT(File, Loc) ((void) 0)
-#endif
 
 
-# define YY_SYMBOL_PRINT(Title, Type, Value, Location)                    \
+
+# define YY_SYMBOL_PRINT(Title, Kind, Value, Location)                    \
 do {                                                                      \
   if (yydebug)                                                            \
     {                                                                     \
       YYFPRINTF (stderr, "%s ", Title);                                   \
       yy_symbol_print (stderr,                                            \
-                  Type, Value); \
+                  Kind, Value); \
       YYFPRINTF (stderr, "\n");                                           \
     }                                                                     \
 } while (0)
 
 
-/*----------------------------------------.
-| Print this symbol's value on YYOUTPUT.  |
-`----------------------------------------*/
+/*-----------------------------------.
+| Print this symbol's value on YYO.  |
+`-----------------------------------*/
 
 static void
-yy_symbol_value_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep)
+yy_symbol_value_print (FILE *yyo,
+                       yysymbol_kind_t yykind, YYSTYPE const * const yyvaluep)
 {
-  FILE *yyo = yyoutput;
-  YYUSE (yyo);
+  FILE *yyoutput = yyo;
+  YY_USE (yyoutput);
   if (!yyvaluep)
     return;
-# ifdef YYPRINT
-  if (yytype < YYNTOKENS)
-    YYPRINT (yyoutput, yytoknum[yytype], *yyvaluep);
-# endif
-  YYUSE (yytype);
+  YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
+  YY_USE (yykind);
+  YY_IGNORE_MAYBE_UNINITIALIZED_END
 }
 
 
-/*--------------------------------.
-| Print this symbol on YYOUTPUT.  |
-`--------------------------------*/
+/*---------------------------.
+| Print this symbol on YYO.  |
+`---------------------------*/
 
 static void
-yy_symbol_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep)
+yy_symbol_print (FILE *yyo,
+                 yysymbol_kind_t yykind, YYSTYPE const * const yyvaluep)
 {
-  YYFPRINTF (yyoutput, "%s %s (",
-             yytype < YYNTOKENS ? "token" : "nterm", yytname[yytype]);
+  YYFPRINTF (yyo, "%s %s (",
+             yykind < YYNTOKENS ? "token" : "nterm", yysymbol_name (yykind));
 
-  yy_symbol_value_print (yyoutput, yytype, yyvaluep);
-  YYFPRINTF (yyoutput, ")");
+  yy_symbol_value_print (yyo, yykind, yyvaluep);
+  YYFPRINTF (yyo, ")");
 }
 
 /*------------------------------------------------------------------.
@@ -2114,7 +2475,7 @@ yy_symbol_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep)
 `------------------------------------------------------------------*/
 
 static void
-yy_stack_print (yytype_int16 *yybottom, yytype_int16 *yytop)
+yy_stack_print (yy_state_t *yybottom, yy_state_t *yytop)
 {
   YYFPRINTF (stderr, "Stack now");
   for (; yybottom <= yytop; yybottom++)
@@ -2137,21 +2498,21 @@ do {                                                            \
 `------------------------------------------------*/
 
 static void
-yy_reduce_print (yytype_int16 *yyssp, YYSTYPE *yyvsp, int yyrule)
+yy_reduce_print (yy_state_t *yyssp, YYSTYPE *yyvsp,
+                 int yyrule)
 {
-  unsigned long int yylno = yyrline[yyrule];
+  int yylno = yyrline[yyrule];
   int yynrhs = yyr2[yyrule];
   int yyi;
-  YYFPRINTF (stderr, "Reducing stack by rule %d (line %lu):\n",
+  YYFPRINTF (stderr, "Reducing stack by rule %d (line %d):\n",
              yyrule - 1, yylno);
   /* The symbols being reduced.  */
   for (yyi = 0; yyi < yynrhs; yyi++)
     {
       YYFPRINTF (stderr, "   $%d = ", yyi + 1);
       yy_symbol_print (stderr,
-                       yystos[yyssp[yyi + 1 - yynrhs]],
-                       &(yyvsp[(yyi + 1) - (yynrhs)])
-                                              );
+                       YY_ACCESSING_SYMBOL (+yyssp[yyi + 1 - yynrhs]),
+                       &yyvsp[(yyi + 1) - (yynrhs)]);
       YYFPRINTF (stderr, "\n");
     }
 }
@@ -2166,8 +2527,8 @@ do {                                    \
    multiple parsers can coexist.  */
 int yydebug;
 #else /* !YYDEBUG */
-# define YYDPRINTF(Args)
-# define YY_SYMBOL_PRINT(Title, Type, Value, Location)
+# define YYDPRINTF(Args) ((void) 0)
+# define YY_SYMBOL_PRINT(Title, Kind, Value, Location)
 # define YY_STACK_PRINT(Bottom, Top)
 # define YY_REDUCE_PRINT(Rule)
 #endif /* !YYDEBUG */
@@ -2190,255 +2551,38 @@ int yydebug;
 #endif
 
 
-#if YYERROR_VERBOSE
 
-# ifndef yystrlen
-#  if defined __GLIBC__ && defined _STRING_H
-#   define yystrlen strlen
-#  else
-/* Return the length of YYSTR.  */
-static YYSIZE_T
-yystrlen (const char *yystr)
-{
-  YYSIZE_T yylen;
-  for (yylen = 0; yystr[yylen]; yylen++)
-    continue;
-  return yylen;
-}
-#  endif
-# endif
 
-# ifndef yystpcpy
-#  if defined __GLIBC__ && defined _STRING_H && defined _GNU_SOURCE
-#   define yystpcpy stpcpy
-#  else
-/* Copy YYSRC to YYDEST, returning the address of the terminating '\0' in
-   YYDEST.  */
-static char *
-yystpcpy (char *yydest, const char *yysrc)
-{
-  char *yyd = yydest;
-  const char *yys = yysrc;
 
-  while ((*yyd++ = *yys++) != '\0')
-    continue;
-
-  return yyd - 1;
-}
-#  endif
-# endif
-
-# ifndef yytnamerr
-/* Copy to YYRES the contents of YYSTR after stripping away unnecessary
-   quotes and backslashes, so that it's suitable for yyerror.  The
-   heuristic is that double-quoting is unnecessary unless the string
-   contains an apostrophe, a comma, or backslash (other than
-   backslash-backslash).  YYSTR is taken from yytname.  If YYRES is
-   null, do not copy; instead, return the length of what the result
-   would have been.  */
-static YYSIZE_T
-yytnamerr (char *yyres, const char *yystr)
-{
-  if (*yystr == '"')
-    {
-      YYSIZE_T yyn = 0;
-      char const *yyp = yystr;
-
-      for (;;)
-        switch (*++yyp)
-          {
-          case '\'':
-          case ',':
-            goto do_not_strip_quotes;
-
-          case '\\':
-            if (*++yyp != '\\')
-              goto do_not_strip_quotes;
-            /* Fall through.  */
-          default:
-            if (yyres)
-              yyres[yyn] = *yyp;
-            yyn++;
-            break;
-
-          case '"':
-            if (yyres)
-              yyres[yyn] = '\0';
-            return yyn;
-          }
-    do_not_strip_quotes: ;
-    }
-
-  if (! yyres)
-    return yystrlen (yystr);
-
-  return yystpcpy (yyres, yystr) - yyres;
-}
-# endif
-
-/* Copy into *YYMSG, which is of size *YYMSG_ALLOC, an error message
-   about the unexpected token YYTOKEN for the state stack whose top is
-   YYSSP.
-
-   Return 0 if *YYMSG was successfully written.  Return 1 if *YYMSG is
-   not large enough to hold the message.  In that case, also set
-   *YYMSG_ALLOC to the required number of bytes.  Return 2 if the
-   required number of bytes is too large to store.  */
-static int
-yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
-                yytype_int16 *yyssp, int yytoken)
-{
-  YYSIZE_T yysize0 = yytnamerr (YY_NULLPTR, yytname[yytoken]);
-  YYSIZE_T yysize = yysize0;
-  enum { YYERROR_VERBOSE_ARGS_MAXIMUM = 5 };
-  /* Internationalized format string. */
-  const char *yyformat = YY_NULLPTR;
-  /* Arguments of yyformat. */
-  char const *yyarg[YYERROR_VERBOSE_ARGS_MAXIMUM];
-  /* Number of reported tokens (one for the "unexpected", one per
-     "expected"). */
-  int yycount = 0;
-
-  /* There are many possibilities here to consider:
-     - If this state is a consistent state with a default action, then
-       the only way this function was invoked is if the default action
-       is an error action.  In that case, don't check for expected
-       tokens because there are none.
-     - The only way there can be no lookahead present (in yychar) is if
-       this state is a consistent state with a default action.  Thus,
-       detecting the absence of a lookahead is sufficient to determine
-       that there is no unexpected or expected token to report.  In that
-       case, just report a simple "syntax error".
-     - Don't assume there isn't a lookahead just because this state is a
-       consistent state with a default action.  There might have been a
-       previous inconsistent state, consistent state with a non-default
-       action, or user semantic action that manipulated yychar.
-     - Of course, the expected token list depends on states to have
-       correct lookahead information, and it depends on the parser not
-       to perform extra reductions after fetching a lookahead from the
-       scanner and before detecting a syntax error.  Thus, state merging
-       (from LALR or IELR) and default reductions corrupt the expected
-       token list.  However, the list is correct for canonical LR with
-       one exception: it will still contain any token that will not be
-       accepted due to an error action in a later state.
-  */
-  if (yytoken != YYEMPTY)
-    {
-      int yyn = yypact[*yyssp];
-      yyarg[yycount++] = yytname[yytoken];
-      if (!yypact_value_is_default (yyn))
-        {
-          /* Start YYX at -YYN if negative to avoid negative indexes in
-             YYCHECK.  In other words, skip the first -YYN actions for
-             this state because they are default actions.  */
-          int yyxbegin = yyn < 0 ? -yyn : 0;
-          /* Stay within bounds of both yycheck and yytname.  */
-          int yychecklim = YYLAST - yyn + 1;
-          int yyxend = yychecklim < YYNTOKENS ? yychecklim : YYNTOKENS;
-          int yyx;
-
-          for (yyx = yyxbegin; yyx < yyxend; ++yyx)
-            if (yycheck[yyx + yyn] == yyx && yyx != YYTERROR
-                && !yytable_value_is_error (yytable[yyx + yyn]))
-              {
-                if (yycount == YYERROR_VERBOSE_ARGS_MAXIMUM)
-                  {
-                    yycount = 1;
-                    yysize = yysize0;
-                    break;
-                  }
-                yyarg[yycount++] = yytname[yyx];
-                {
-                  YYSIZE_T yysize1 = yysize + yytnamerr (YY_NULLPTR, yytname[yyx]);
-                  if (! (yysize <= yysize1
-                         && yysize1 <= YYSTACK_ALLOC_MAXIMUM))
-                    return 2;
-                  yysize = yysize1;
-                }
-              }
-        }
-    }
-
-  switch (yycount)
-    {
-# define YYCASE_(N, S)                      \
-      case N:                               \
-        yyformat = S;                       \
-      break
-      YYCASE_(0, YY_("syntax error"));
-      YYCASE_(1, YY_("syntax error, unexpected %s"));
-      YYCASE_(2, YY_("syntax error, unexpected %s, expecting %s"));
-      YYCASE_(3, YY_("syntax error, unexpected %s, expecting %s or %s"));
-      YYCASE_(4, YY_("syntax error, unexpected %s, expecting %s or %s or %s"));
-      YYCASE_(5, YY_("syntax error, unexpected %s, expecting %s or %s or %s or %s"));
-# undef YYCASE_
-    }
-
-  {
-    YYSIZE_T yysize1 = yysize + yystrlen (yyformat);
-    if (! (yysize <= yysize1 && yysize1 <= YYSTACK_ALLOC_MAXIMUM))
-      return 2;
-    yysize = yysize1;
-  }
-
-  if (*yymsg_alloc < yysize)
-    {
-      *yymsg_alloc = 2 * yysize;
-      if (! (yysize <= *yymsg_alloc
-             && *yymsg_alloc <= YYSTACK_ALLOC_MAXIMUM))
-        *yymsg_alloc = YYSTACK_ALLOC_MAXIMUM;
-      return 1;
-    }
-
-  /* Avoid sprintf, as that infringes on the user's name space.
-     Don't have undefined behavior even if the translation
-     produced a string with the wrong number of "%s"s.  */
-  {
-    char *yyp = *yymsg;
-    int yyi = 0;
-    while ((*yyp = *yyformat) != '\0')
-      if (*yyp == '%' && yyformat[1] == 's' && yyi < yycount)
-        {
-          yyp += yytnamerr (yyp, yyarg[yyi++]);
-          yyformat += 2;
-        }
-      else
-        {
-          yyp++;
-          yyformat++;
-        }
-  }
-  return 0;
-}
-#endif /* YYERROR_VERBOSE */
 
 /*-----------------------------------------------.
 | Release the memory associated to this symbol.  |
 `-----------------------------------------------*/
 
 static void
-yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep)
+yydestruct (const char *yymsg,
+            yysymbol_kind_t yykind, YYSTYPE *yyvaluep)
 {
-  YYUSE (yyvaluep);
+  YY_USE (yyvaluep);
   if (!yymsg)
     yymsg = "Deleting";
-  YY_SYMBOL_PRINT (yymsg, yytype, yyvaluep, yylocationp);
+  YY_SYMBOL_PRINT (yymsg, yykind, yyvaluep, yylocationp);
 
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
-  YYUSE (yytype);
+  YY_USE (yykind);
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 }
 
 
-
-
-/* The lookahead symbol.  */
+/* Lookahead token kind.  */
 int yychar;
 
 /* The semantic value of the lookahead symbol.  */
 YYSTYPE yylval;
 /* Number of syntax errors so far.  */
 int yynerrs;
+
+
 
 
 /*----------.
@@ -2448,43 +2592,36 @@ int yynerrs;
 int
 yyparse (void)
 {
-    int yystate;
+    yy_state_fast_t yystate = 0;
     /* Number of tokens to shift before error messages enabled.  */
-    int yyerrstatus;
+    int yyerrstatus = 0;
 
-    /* The stacks and their tools:
-       'yyss': related to states.
-       'yyvs': related to semantic values.
-
-       Refer to the stacks through separate pointers, to allow yyoverflow
+    /* Refer to the stacks through separate pointers, to allow yyoverflow
        to reallocate them elsewhere.  */
 
-    /* The state stack.  */
-    yytype_int16 yyssa[YYINITDEPTH];
-    yytype_int16 *yyss;
-    yytype_int16 *yyssp;
+    /* Their size.  */
+    YYPTRDIFF_T yystacksize = YYINITDEPTH;
 
-    /* The semantic value stack.  */
+    /* The state stack: array, bottom, top.  */
+    yy_state_t yyssa[YYINITDEPTH];
+    yy_state_t *yyss = yyssa;
+    yy_state_t *yyssp = yyss;
+
+    /* The semantic value stack: array, bottom, top.  */
     YYSTYPE yyvsa[YYINITDEPTH];
-    YYSTYPE *yyvs;
-    YYSTYPE *yyvsp;
-
-    YYSIZE_T yystacksize;
+    YYSTYPE *yyvs = yyvsa;
+    YYSTYPE *yyvsp = yyvs;
 
   int yyn;
+  /* The return value of yyparse.  */
   int yyresult;
-  /* Lookahead token as an internal (translated) token number.  */
-  int yytoken = 0;
+  /* Lookahead symbol kind.  */
+  yysymbol_kind_t yytoken = YYSYMBOL_YYEMPTY;
   /* The variables used to return semantic value and location from the
      action routines.  */
   YYSTYPE yyval;
 
-#if YYERROR_VERBOSE
-  /* Buffer for error messages, and its allocated size.  */
-  char yymsgbuf[128];
-  char *yymsg = yymsgbuf;
-  YYSIZE_T yymsg_alloc = sizeof yymsgbuf;
-#endif
+
 
 #define YYPOPSTACK(N)   (yyvsp -= (N), yyssp -= (N))
 
@@ -2492,71 +2629,75 @@ yyparse (void)
      Keep to zero when no symbol should be popped.  */
   int yylen = 0;
 
-  yyssp = yyss = yyssa;
-  yyvsp = yyvs = yyvsa;
-  yystacksize = YYINITDEPTH;
-
   YYDPRINTF ((stderr, "Starting parse\n"));
 
-  yystate = 0;
-  yyerrstatus = 0;
-  yynerrs = 0;
   yychar = YYEMPTY; /* Cause a token to be read.  */
+
   goto yysetstate;
 
+
 /*------------------------------------------------------------.
-| yynewstate -- Push a new state, which is found in yystate.  |
+| yynewstate -- push a new state, which is found in yystate.  |
 `------------------------------------------------------------*/
- yynewstate:
+yynewstate:
   /* In all cases, when you get here, the value and location stacks
      have just been pushed.  So pushing a state here evens the stacks.  */
   yyssp++;
 
- yysetstate:
-  *yyssp = yystate;
+
+/*--------------------------------------------------------------------.
+| yysetstate -- set current state (the top of the stack) to yystate.  |
+`--------------------------------------------------------------------*/
+yysetstate:
+  YYDPRINTF ((stderr, "Entering state %d\n", yystate));
+  YY_ASSERT (0 <= yystate && yystate < YYNSTATES);
+  YY_IGNORE_USELESS_CAST_BEGIN
+  *yyssp = YY_CAST (yy_state_t, yystate);
+  YY_IGNORE_USELESS_CAST_END
+  YY_STACK_PRINT (yyss, yyssp);
 
   if (yyss + yystacksize - 1 <= yyssp)
+#if !defined yyoverflow && !defined YYSTACK_RELOCATE
+    YYNOMEM;
+#else
     {
       /* Get the current used size of the three stacks, in elements.  */
-      YYSIZE_T yysize = yyssp - yyss + 1;
+      YYPTRDIFF_T yysize = yyssp - yyss + 1;
 
-#ifdef yyoverflow
+# if defined yyoverflow
       {
         /* Give user a chance to reallocate the stack.  Use copies of
            these so that the &'s don't force the real ones into
            memory.  */
+        yy_state_t *yyss1 = yyss;
         YYSTYPE *yyvs1 = yyvs;
-        yytype_int16 *yyss1 = yyss;
 
         /* Each stack pointer address is followed by the size of the
            data in use in that stack, in bytes.  This used to be a
            conditional around just the two extra args, but that might
            be undefined if yyoverflow is a macro.  */
         yyoverflow (YY_("memory exhausted"),
-                    &yyss1, yysize * sizeof (*yyssp),
-                    &yyvs1, yysize * sizeof (*yyvsp),
+                    &yyss1, yysize * YYSIZEOF (*yyssp),
+                    &yyvs1, yysize * YYSIZEOF (*yyvsp),
                     &yystacksize);
-
         yyss = yyss1;
         yyvs = yyvs1;
       }
-#else /* no yyoverflow */
-# ifndef YYSTACK_RELOCATE
-      goto yyexhaustedlab;
-# else
+# else /* defined YYSTACK_RELOCATE */
       /* Extend the stack our own way.  */
       if (YYMAXDEPTH <= yystacksize)
-        goto yyexhaustedlab;
+        YYNOMEM;
       yystacksize *= 2;
       if (YYMAXDEPTH < yystacksize)
         yystacksize = YYMAXDEPTH;
 
       {
-        yytype_int16 *yyss1 = yyss;
+        yy_state_t *yyss1 = yyss;
         union yyalloc *yyptr =
-          (union yyalloc *) YYSTACK_ALLOC (YYSTACK_BYTES (yystacksize));
+          YY_CAST (union yyalloc *,
+                   YYSTACK_ALLOC (YY_CAST (YYSIZE_T, YYSTACK_BYTES (yystacksize))));
         if (! yyptr)
-          goto yyexhaustedlab;
+          YYNOMEM;
         YYSTACK_RELOCATE (yyss_alloc, yyss);
         YYSTACK_RELOCATE (yyvs_alloc, yyvs);
 #  undef YYSTACK_RELOCATE
@@ -2564,30 +2705,31 @@ yyparse (void)
           YYSTACK_FREE (yyss1);
       }
 # endif
-#endif /* no yyoverflow */
 
       yyssp = yyss + yysize - 1;
       yyvsp = yyvs + yysize - 1;
 
-      YYDPRINTF ((stderr, "Stack size increased to %lu\n",
-                  (unsigned long int) yystacksize));
+      YY_IGNORE_USELESS_CAST_BEGIN
+      YYDPRINTF ((stderr, "Stack size increased to %ld\n",
+                  YY_CAST (long, yystacksize)));
+      YY_IGNORE_USELESS_CAST_END
 
       if (yyss + yystacksize - 1 <= yyssp)
         YYABORT;
     }
+#endif /* !defined yyoverflow && !defined YYSTACK_RELOCATE */
 
-  YYDPRINTF ((stderr, "Entering state %d\n", yystate));
 
   if (yystate == YYFINAL)
     YYACCEPT;
 
   goto yybackup;
 
+
 /*-----------.
 | yybackup.  |
 `-----------*/
 yybackup:
-
   /* Do appropriate processing given the current state.  Read a
      lookahead token if we need one and don't already have one.  */
 
@@ -2598,17 +2740,28 @@ yybackup:
 
   /* Not known => get a lookahead token if don't already have one.  */
 
-  /* YYCHAR is either YYEMPTY or YYEOF or a valid lookahead symbol.  */
+  /* YYCHAR is either empty, or end-of-input, or a valid lookahead.  */
   if (yychar == YYEMPTY)
     {
-      YYDPRINTF ((stderr, "Reading a token: "));
+      YYDPRINTF ((stderr, "Reading a token\n"));
       yychar = yylex ();
     }
 
   if (yychar <= YYEOF)
     {
-      yychar = yytoken = YYEOF;
+      yychar = YYEOF;
+      yytoken = YYSYMBOL_YYEOF;
       YYDPRINTF ((stderr, "Now at end of input.\n"));
+    }
+  else if (yychar == YYerror)
+    {
+      /* The scanner already issued an error message, process directly
+         to error recovery.  But do not keep the error token as
+         lookahead, it is too special and may lead us to an endless
+         loop in error recovery. */
+      yychar = YYUNDEF;
+      yytoken = YYSYMBOL_YYerror;
+      goto yyerrlab1;
     }
   else
     {
@@ -2637,15 +2790,13 @@ yybackup:
 
   /* Shift the lookahead token.  */
   YY_SYMBOL_PRINT ("Shifting", yytoken, &yylval, &yylloc);
-
-  /* Discard the shifted token.  */
-  yychar = YYEMPTY;
-
   yystate = yyn;
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
   *++yyvsp = yylval;
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 
+  /* Discard the shifted token.  */
+  yychar = YYEMPTY;
   goto yynewstate;
 
 
@@ -2660,7 +2811,7 @@ yydefault:
 
 
 /*-----------------------------.
-| yyreduce -- Do a reduction.  |
+| yyreduce -- do a reduction.  |
 `-----------------------------*/
 yyreduce:
   /* yyn is the number of a rule to reduce with.  */
@@ -2680,2896 +2831,2897 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-        case 3:
-#line 244 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2687 "p4parser.tab.c" /* yacc.c:1646  */
+  case 3: /* program: input  */
+#line 244 "p4parser.y"
+            {}
+#line 2838 "p4parser.tab.c"
     break;
 
-  case 5:
-#line 249 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2693 "p4parser.tab.c" /* yacc.c:1646  */
+  case 5: /* input: input declaration  */
+#line 249 "p4parser.y"
+                         {}
+#line 2844 "p4parser.tab.c"
     break;
 
-  case 6:
-#line 250 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2699 "p4parser.tab.c" /* yacc.c:1646  */
+  case 6: /* input: input SEMICOLON  */
+#line 250 "p4parser.y"
+                               {}
+#line 2850 "p4parser.tab.c"
     break;
 
-  case 7:
-#line 254 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2705 "p4parser.tab.c" /* yacc.c:1646  */
+  case 7: /* declaration: constantDeclaration  */
+#line 254 "p4parser.y"
+                              {}
+#line 2856 "p4parser.tab.c"
     break;
 
-  case 8:
-#line 255 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2711 "p4parser.tab.c" /* yacc.c:1646  */
+  case 8: /* declaration: externDeclaration  */
+#line 255 "p4parser.y"
+                              {}
+#line 2862 "p4parser.tab.c"
     break;
 
-  case 9:
-#line 256 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2717 "p4parser.tab.c" /* yacc.c:1646  */
+  case 9: /* declaration: actionDeclaration  */
+#line 256 "p4parser.y"
+                              {}
+#line 2868 "p4parser.tab.c"
     break;
 
-  case 10:
-#line 257 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2723 "p4parser.tab.c" /* yacc.c:1646  */
+  case 10: /* declaration: parserDeclaration  */
+#line 257 "p4parser.y"
+                              {}
+#line 2874 "p4parser.tab.c"
     break;
 
-  case 11:
-#line 258 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2729 "p4parser.tab.c" /* yacc.c:1646  */
+  case 11: /* declaration: typeDeclaration  */
+#line 258 "p4parser.y"
+                              {}
+#line 2880 "p4parser.tab.c"
     break;
 
-  case 12:
-#line 259 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2735 "p4parser.tab.c" /* yacc.c:1646  */
+  case 12: /* declaration: controlDeclaration  */
+#line 259 "p4parser.y"
+                              {}
+#line 2886 "p4parser.tab.c"
     break;
 
-  case 13:
-#line 260 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2741 "p4parser.tab.c" /* yacc.c:1646  */
+  case 13: /* declaration: instantiation  */
+#line 260 "p4parser.y"
+                              {}
+#line 2892 "p4parser.tab.c"
     break;
 
-  case 14:
-#line 261 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2747 "p4parser.tab.c" /* yacc.c:1646  */
+  case 14: /* declaration: errorDeclaration  */
+#line 261 "p4parser.y"
+                              {}
+#line 2898 "p4parser.tab.c"
     break;
 
-  case 15:
-#line 262 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2753 "p4parser.tab.c" /* yacc.c:1646  */
+  case 15: /* declaration: matchKindDeclaration  */
+#line 262 "p4parser.y"
+                              {}
+#line 2904 "p4parser.tab.c"
     break;
 
-  case 16:
-#line 263 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2759 "p4parser.tab.c" /* yacc.c:1646  */
+  case 16: /* declaration: functionDeclaration  */
+#line 263 "p4parser.y"
+                              {}
+#line 2910 "p4parser.tab.c"
     break;
 
-  case 17:
-#line 267 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2765 "p4parser.tab.c" /* yacc.c:1646  */
+  case 17: /* nonTypeName: IDENTIFIER  */
+#line 267 "p4parser.y"
+                {}
+#line 2916 "p4parser.tab.c"
     break;
 
-  case 18:
-#line 268 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2771 "p4parser.tab.c" /* yacc.c:1646  */
+  case 18: /* nonTypeName: APPLY  */
+#line 268 "p4parser.y"
+                  {}
+#line 2922 "p4parser.tab.c"
     break;
 
-  case 19:
-#line 269 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2777 "p4parser.tab.c" /* yacc.c:1646  */
+  case 19: /* nonTypeName: KEY  */
+#line 269 "p4parser.y"
+                  {}
+#line 2928 "p4parser.tab.c"
     break;
 
-  case 20:
-#line 270 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2783 "p4parser.tab.c" /* yacc.c:1646  */
+  case 20: /* nonTypeName: ACTIONS  */
+#line 270 "p4parser.y"
+                  {}
+#line 2934 "p4parser.tab.c"
     break;
 
-  case 21:
-#line 271 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2789 "p4parser.tab.c" /* yacc.c:1646  */
+  case 21: /* nonTypeName: STATE  */
+#line 271 "p4parser.y"
+                  {}
+#line 2940 "p4parser.tab.c"
     break;
 
-  case 22:
-#line 272 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2795 "p4parser.tab.c" /* yacc.c:1646  */
+  case 22: /* nonTypeName: ENTRIES  */
+#line 272 "p4parser.y"
+                  {}
+#line 2946 "p4parser.tab.c"
     break;
 
-  case 23:
-#line 273 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2801 "p4parser.tab.c" /* yacc.c:1646  */
+  case 23: /* nonTypeName: TYPE  */
+#line 273 "p4parser.y"
+                  {}
+#line 2952 "p4parser.tab.c"
     break;
 
-  case 24:
-#line 277 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2807 "p4parser.tab.c" /* yacc.c:1646  */
+  case 24: /* name: nonTypeName  */
+#line 277 "p4parser.y"
+                {}
+#line 2958 "p4parser.tab.c"
     break;
 
-  case 25:
-#line 278 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2813 "p4parser.tab.c" /* yacc.c:1646  */
+  case 25: /* name: TYPE_IDENTIFIER  */
+#line 278 "p4parser.y"
+                       {}
+#line 2964 "p4parser.tab.c"
     break;
 
-  case 26:
-#line 282 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2819 "p4parser.tab.c" /* yacc.c:1646  */
+  case 26: /* nonTableKwName: IDENTIFIER  */
+#line 282 "p4parser.y"
+                     {}
+#line 2970 "p4parser.tab.c"
     break;
 
-  case 27:
-#line 283 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2825 "p4parser.tab.c" /* yacc.c:1646  */
+  case 27: /* nonTableKwName: TYPE_IDENTIFIER  */
+#line 283 "p4parser.y"
+                       {}
+#line 2976 "p4parser.tab.c"
     break;
 
-  case 28:
-#line 284 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2831 "p4parser.tab.c" /* yacc.c:1646  */
+  case 28: /* nonTableKwName: APPLY  */
+#line 284 "p4parser.y"
+                       {}
+#line 2982 "p4parser.tab.c"
     break;
 
-  case 29:
-#line 285 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2837 "p4parser.tab.c" /* yacc.c:1646  */
+  case 29: /* nonTableKwName: STATE  */
+#line 285 "p4parser.y"
+                       {}
+#line 2988 "p4parser.tab.c"
     break;
 
-  case 30:
-#line 286 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2843 "p4parser.tab.c" /* yacc.c:1646  */
+  case 30: /* nonTableKwName: TYPE  */
+#line 286 "p4parser.y"
+                       {}
+#line 2994 "p4parser.tab.c"
     break;
 
-  case 31:
-#line 290 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2849 "p4parser.tab.c" /* yacc.c:1646  */
+  case 31: /* optCONST: %empty  */
+#line 290 "p4parser.y"
+                {}
+#line 3000 "p4parser.tab.c"
     break;
 
-  case 32:
-#line 291 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2855 "p4parser.tab.c" /* yacc.c:1646  */
+  case 32: /* optCONST: CONST  */
+#line 291 "p4parser.y"
+                  {}
+#line 3006 "p4parser.tab.c"
     break;
 
-  case 33:
-#line 295 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2861 "p4parser.tab.c" /* yacc.c:1646  */
+  case 33: /* optAnnotations: %empty  */
+#line 295 "p4parser.y"
+                  {}
+#line 3012 "p4parser.tab.c"
     break;
 
-  case 34:
-#line 296 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2867 "p4parser.tab.c" /* yacc.c:1646  */
+  case 34: /* optAnnotations: annotations  */
+#line 296 "p4parser.y"
+                  {}
+#line 3018 "p4parser.tab.c"
     break;
 
-  case 35:
-#line 300 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2873 "p4parser.tab.c" /* yacc.c:1646  */
+  case 35: /* annotations: annotation  */
+#line 300 "p4parser.y"
+                  {}
+#line 3024 "p4parser.tab.c"
     break;
 
-  case 36:
-#line 301 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2879 "p4parser.tab.c" /* yacc.c:1646  */
+  case 36: /* annotations: annotations annotation  */
+#line 301 "p4parser.y"
+                             {}
+#line 3030 "p4parser.tab.c"
     break;
 
-  case 37:
-#line 306 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2885 "p4parser.tab.c" /* yacc.c:1646  */
+  case 37: /* annotation: AT name  */
+#line 306 "p4parser.y"
+        {}
+#line 3036 "p4parser.tab.c"
     break;
 
-  case 38:
-#line 308 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2891 "p4parser.tab.c" /* yacc.c:1646  */
+  case 38: /* annotation: AT name L_PAREN annotationBody R_PAREN  */
+#line 308 "p4parser.y"
+        {}
+#line 3042 "p4parser.tab.c"
     break;
 
-  case 39:
-#line 310 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2897 "p4parser.tab.c" /* yacc.c:1646  */
+  case 39: /* annotation: AT name L_BRACKET expressionList R_BRACKET  */
+#line 310 "p4parser.y"
+        {}
+#line 3048 "p4parser.tab.c"
     break;
 
-  case 40:
-#line 312 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2903 "p4parser.tab.c" /* yacc.c:1646  */
+  case 40: /* annotation: AT name L_BRACKET kvList R_BRACKET  */
+#line 312 "p4parser.y"
+        {}
+#line 3054 "p4parser.tab.c"
     break;
 
-  case 41:
-#line 316 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2909 "p4parser.tab.c" /* yacc.c:1646  */
+  case 41: /* annotation: PRAGMA name annotationBody END_PRAGMA  */
+#line 316 "p4parser.y"
+        {}
+#line 3060 "p4parser.tab.c"
     break;
 
-  case 42:
-#line 320 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2915 "p4parser.tab.c" /* yacc.c:1646  */
+  case 42: /* annotationBody: %empty  */
+#line 320 "p4parser.y"
+              {}
+#line 3066 "p4parser.tab.c"
     break;
 
-  case 43:
-#line 322 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2921 "p4parser.tab.c" /* yacc.c:1646  */
+  case 43: /* annotationBody: annotationBody L_PAREN annotationBody R_PAREN  */
+#line 322 "p4parser.y"
+        {}
+#line 3072 "p4parser.tab.c"
     break;
 
-  case 44:
-#line 324 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2927 "p4parser.tab.c" /* yacc.c:1646  */
+  case 44: /* annotationBody: annotationBody annotationToken  */
+#line 324 "p4parser.y"
+        {}
+#line 3078 "p4parser.tab.c"
     break;
 
-  case 45:
-#line 328 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2933 "p4parser.tab.c" /* yacc.c:1646  */
+  case 45: /* annotationToken: UNEXPECTED_TOKEN  */
+#line 328 "p4parser.y"
+                       {}
+#line 3084 "p4parser.tab.c"
     break;
 
-  case 46:
-#line 329 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2939 "p4parser.tab.c" /* yacc.c:1646  */
+  case 46: /* annotationToken: ABSTRACT  */
+#line 329 "p4parser.y"
+                       {}
+#line 3090 "p4parser.tab.c"
     break;
 
-  case 47:
-#line 330 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2945 "p4parser.tab.c" /* yacc.c:1646  */
+  case 47: /* annotationToken: ACTION  */
+#line 330 "p4parser.y"
+                       {}
+#line 3096 "p4parser.tab.c"
     break;
 
-  case 48:
-#line 331 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2951 "p4parser.tab.c" /* yacc.c:1646  */
+  case 48: /* annotationToken: ACTIONS  */
+#line 331 "p4parser.y"
+                       {}
+#line 3102 "p4parser.tab.c"
     break;
 
-  case 49:
-#line 332 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2957 "p4parser.tab.c" /* yacc.c:1646  */
+  case 49: /* annotationToken: APPLY  */
+#line 332 "p4parser.y"
+                       {}
+#line 3108 "p4parser.tab.c"
     break;
 
-  case 50:
-#line 333 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2963 "p4parser.tab.c" /* yacc.c:1646  */
+  case 50: /* annotationToken: BOOL  */
+#line 333 "p4parser.y"
+                       {}
+#line 3114 "p4parser.tab.c"
     break;
 
-  case 51:
-#line 334 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2969 "p4parser.tab.c" /* yacc.c:1646  */
+  case 51: /* annotationToken: BIT  */
+#line 334 "p4parser.y"
+                       {}
+#line 3120 "p4parser.tab.c"
     break;
 
-  case 52:
-#line 335 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2975 "p4parser.tab.c" /* yacc.c:1646  */
+  case 52: /* annotationToken: CONST  */
+#line 335 "p4parser.y"
+                       {}
+#line 3126 "p4parser.tab.c"
     break;
 
-  case 53:
-#line 336 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2981 "p4parser.tab.c" /* yacc.c:1646  */
+  case 53: /* annotationToken: CONTROL  */
+#line 336 "p4parser.y"
+                       {}
+#line 3132 "p4parser.tab.c"
     break;
 
-  case 54:
-#line 337 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2987 "p4parser.tab.c" /* yacc.c:1646  */
+  case 54: /* annotationToken: DEFAULT  */
+#line 337 "p4parser.y"
+                       {}
+#line 3138 "p4parser.tab.c"
     break;
 
-  case 55:
-#line 338 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2993 "p4parser.tab.c" /* yacc.c:1646  */
+  case 55: /* annotationToken: ELSE  */
+#line 338 "p4parser.y"
+                       {}
+#line 3144 "p4parser.tab.c"
     break;
 
-  case 56:
-#line 339 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 2999 "p4parser.tab.c" /* yacc.c:1646  */
+  case 56: /* annotationToken: ENTRIES  */
+#line 339 "p4parser.y"
+                       {}
+#line 3150 "p4parser.tab.c"
     break;
 
-  case 57:
-#line 340 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3005 "p4parser.tab.c" /* yacc.c:1646  */
+  case 57: /* annotationToken: ENUM  */
+#line 340 "p4parser.y"
+                       {}
+#line 3156 "p4parser.tab.c"
     break;
 
-  case 58:
-#line 341 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3011 "p4parser.tab.c" /* yacc.c:1646  */
+  case 58: /* annotationToken: ERROR  */
+#line 341 "p4parser.y"
+                       {}
+#line 3162 "p4parser.tab.c"
     break;
 
-  case 59:
-#line 342 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3017 "p4parser.tab.c" /* yacc.c:1646  */
+  case 59: /* annotationToken: EXIT  */
+#line 342 "p4parser.y"
+                       {}
+#line 3168 "p4parser.tab.c"
     break;
 
-  case 60:
-#line 343 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3023 "p4parser.tab.c" /* yacc.c:1646  */
+  case 60: /* annotationToken: EXTERN  */
+#line 343 "p4parser.y"
+                       {}
+#line 3174 "p4parser.tab.c"
     break;
 
-  case 61:
-#line 344 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3029 "p4parser.tab.c" /* yacc.c:1646  */
+  case 61: /* annotationToken: FALSE  */
+#line 344 "p4parser.y"
+                       {}
+#line 3180 "p4parser.tab.c"
     break;
 
-  case 62:
-#line 345 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3035 "p4parser.tab.c" /* yacc.c:1646  */
+  case 62: /* annotationToken: HEADER  */
+#line 345 "p4parser.y"
+                       {}
+#line 3186 "p4parser.tab.c"
     break;
 
-  case 63:
-#line 346 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3041 "p4parser.tab.c" /* yacc.c:1646  */
+  case 63: /* annotationToken: HEADER_UNION  */
+#line 346 "p4parser.y"
+                       {}
+#line 3192 "p4parser.tab.c"
     break;
 
-  case 64:
-#line 347 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3047 "p4parser.tab.c" /* yacc.c:1646  */
+  case 64: /* annotationToken: IF  */
+#line 347 "p4parser.y"
+                       {}
+#line 3198 "p4parser.tab.c"
     break;
 
-  case 65:
-#line 348 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3053 "p4parser.tab.c" /* yacc.c:1646  */
+  case 65: /* annotationToken: IN  */
+#line 348 "p4parser.y"
+                       {}
+#line 3204 "p4parser.tab.c"
     break;
 
-  case 66:
-#line 349 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3059 "p4parser.tab.c" /* yacc.c:1646  */
+  case 66: /* annotationToken: INOUT  */
+#line 349 "p4parser.y"
+                       {}
+#line 3210 "p4parser.tab.c"
     break;
 
-  case 67:
-#line 350 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3065 "p4parser.tab.c" /* yacc.c:1646  */
+  case 67: /* annotationToken: INT  */
+#line 350 "p4parser.y"
+                       {}
+#line 3216 "p4parser.tab.c"
     break;
 
-  case 68:
-#line 351 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3071 "p4parser.tab.c" /* yacc.c:1646  */
+  case 68: /* annotationToken: KEY  */
+#line 351 "p4parser.y"
+                       {}
+#line 3222 "p4parser.tab.c"
     break;
 
-  case 69:
-#line 352 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3077 "p4parser.tab.c" /* yacc.c:1646  */
+  case 69: /* annotationToken: MATCH_KIND  */
+#line 352 "p4parser.y"
+                       {}
+#line 3228 "p4parser.tab.c"
     break;
 
-  case 70:
-#line 353 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3083 "p4parser.tab.c" /* yacc.c:1646  */
+  case 70: /* annotationToken: TYPE  */
+#line 353 "p4parser.y"
+                       {}
+#line 3234 "p4parser.tab.c"
     break;
 
-  case 71:
-#line 354 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3089 "p4parser.tab.c" /* yacc.c:1646  */
+  case 71: /* annotationToken: OUT  */
+#line 354 "p4parser.y"
+                       {}
+#line 3240 "p4parser.tab.c"
     break;
 
-  case 72:
-#line 355 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3095 "p4parser.tab.c" /* yacc.c:1646  */
+  case 72: /* annotationToken: PARSER  */
+#line 355 "p4parser.y"
+                       {}
+#line 3246 "p4parser.tab.c"
     break;
 
-  case 73:
-#line 356 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3101 "p4parser.tab.c" /* yacc.c:1646  */
+  case 73: /* annotationToken: PACKAGE  */
+#line 356 "p4parser.y"
+                       {}
+#line 3252 "p4parser.tab.c"
     break;
 
-  case 74:
-#line 357 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3107 "p4parser.tab.c" /* yacc.c:1646  */
+  case 74: /* annotationToken: PRAGMA  */
+#line 357 "p4parser.y"
+                       {}
+#line 3258 "p4parser.tab.c"
     break;
 
-  case 75:
-#line 358 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3113 "p4parser.tab.c" /* yacc.c:1646  */
+  case 75: /* annotationToken: RETURN  */
+#line 358 "p4parser.y"
+                       {}
+#line 3264 "p4parser.tab.c"
     break;
 
-  case 76:
-#line 359 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3119 "p4parser.tab.c" /* yacc.c:1646  */
+  case 76: /* annotationToken: SELECT  */
+#line 359 "p4parser.y"
+                       {}
+#line 3270 "p4parser.tab.c"
     break;
 
-  case 77:
-#line 360 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3125 "p4parser.tab.c" /* yacc.c:1646  */
+  case 77: /* annotationToken: STATE  */
+#line 360 "p4parser.y"
+                       {}
+#line 3276 "p4parser.tab.c"
     break;
 
-  case 78:
-#line 361 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3131 "p4parser.tab.c" /* yacc.c:1646  */
+  case 78: /* annotationToken: STRING  */
+#line 361 "p4parser.y"
+                       {}
+#line 3282 "p4parser.tab.c"
     break;
 
-  case 79:
-#line 362 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3137 "p4parser.tab.c" /* yacc.c:1646  */
+  case 79: /* annotationToken: STRUCT  */
+#line 362 "p4parser.y"
+                       {}
+#line 3288 "p4parser.tab.c"
     break;
 
-  case 80:
-#line 363 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3143 "p4parser.tab.c" /* yacc.c:1646  */
+  case 80: /* annotationToken: SWITCH  */
+#line 363 "p4parser.y"
+                       {}
+#line 3294 "p4parser.tab.c"
     break;
 
-  case 81:
-#line 364 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3149 "p4parser.tab.c" /* yacc.c:1646  */
+  case 81: /* annotationToken: TABLE  */
+#line 364 "p4parser.y"
+                       {}
+#line 3300 "p4parser.tab.c"
     break;
 
-  case 82:
-#line 365 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3155 "p4parser.tab.c" /* yacc.c:1646  */
+  case 82: /* annotationToken: THIS  */
+#line 365 "p4parser.y"
+                       {}
+#line 3306 "p4parser.tab.c"
     break;
 
-  case 83:
-#line 366 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3161 "p4parser.tab.c" /* yacc.c:1646  */
+  case 83: /* annotationToken: TRANSITION  */
+#line 366 "p4parser.y"
+                       {}
+#line 3312 "p4parser.tab.c"
     break;
 
-  case 84:
-#line 367 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3167 "p4parser.tab.c" /* yacc.c:1646  */
+  case 84: /* annotationToken: TRUE  */
+#line 367 "p4parser.y"
+                       {}
+#line 3318 "p4parser.tab.c"
     break;
 
-  case 85:
-#line 368 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3173 "p4parser.tab.c" /* yacc.c:1646  */
+  case 85: /* annotationToken: TUPLE  */
+#line 368 "p4parser.y"
+                       {}
+#line 3324 "p4parser.tab.c"
     break;
 
-  case 86:
-#line 369 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3179 "p4parser.tab.c" /* yacc.c:1646  */
+  case 86: /* annotationToken: TYPEDEF  */
+#line 369 "p4parser.y"
+                       {}
+#line 3330 "p4parser.tab.c"
     break;
 
-  case 87:
-#line 370 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3185 "p4parser.tab.c" /* yacc.c:1646  */
+  case 87: /* annotationToken: VARBIT  */
+#line 370 "p4parser.y"
+                       {}
+#line 3336 "p4parser.tab.c"
     break;
 
-  case 88:
-#line 371 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3191 "p4parser.tab.c" /* yacc.c:1646  */
+  case 88: /* annotationToken: VALUESET  */
+#line 371 "p4parser.y"
+                       {}
+#line 3342 "p4parser.tab.c"
     break;
 
-  case 89:
-#line 372 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3197 "p4parser.tab.c" /* yacc.c:1646  */
+  case 89: /* annotationToken: VOID  */
+#line 372 "p4parser.y"
+                       {}
+#line 3348 "p4parser.tab.c"
     break;
 
-  case 90:
-#line 373 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3203 "p4parser.tab.c" /* yacc.c:1646  */
+  case 90: /* annotationToken: DONTCARE  */
+#line 373 "p4parser.y"
+                            {}
+#line 3354 "p4parser.tab.c"
     break;
 
-  case 91:
-#line 375 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3209 "p4parser.tab.c" /* yacc.c:1646  */
+  case 91: /* annotationToken: IDENTIFIER  */
+#line 375 "p4parser.y"
+                       {}
+#line 3360 "p4parser.tab.c"
     break;
 
-  case 92:
-#line 376 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3215 "p4parser.tab.c" /* yacc.c:1646  */
+  case 92: /* annotationToken: TYPE_IDENTIFIER  */
+#line 376 "p4parser.y"
+                       {}
+#line 3366 "p4parser.tab.c"
     break;
 
-  case 93:
-#line 377 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3221 "p4parser.tab.c" /* yacc.c:1646  */
+  case 93: /* annotationToken: STRING_LITERAL  */
+#line 377 "p4parser.y"
+                       {}
+#line 3372 "p4parser.tab.c"
     break;
 
-  case 94:
-#line 378 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3227 "p4parser.tab.c" /* yacc.c:1646  */
+  case 94: /* annotationToken: INTEGER  */
+#line 378 "p4parser.y"
+                       {}
+#line 3378 "p4parser.tab.c"
     break;
 
-  case 95:
-#line 379 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3233 "p4parser.tab.c" /* yacc.c:1646  */
+  case 95: /* annotationToken: L_ANGLE_ARGS  */
+#line 379 "p4parser.y"
+                       {}
+#line 3384 "p4parser.tab.c"
     break;
 
-  case 96:
-#line 380 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3239 "p4parser.tab.c" /* yacc.c:1646  */
+  case 96: /* annotationToken: R_ANGLE_SHIFT  */
+#line 380 "p4parser.y"
+                       {}
+#line 3390 "p4parser.tab.c"
     break;
 
-  case 97:
-#line 381 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3245 "p4parser.tab.c" /* yacc.c:1646  */
+  case 97: /* annotationToken: RANGE  */
+#line 381 "p4parser.y"
+                       {}
+#line 3396 "p4parser.tab.c"
     break;
 
-  case 98:
-#line 382 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3251 "p4parser.tab.c" /* yacc.c:1646  */
+  case 98: /* annotationToken: MASK  */
+#line 382 "p4parser.y"
+                       {}
+#line 3402 "p4parser.tab.c"
     break;
 
-  case 99:
-#line 383 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3257 "p4parser.tab.c" /* yacc.c:1646  */
+  case 99: /* annotationToken: AND  */
+#line 383 "p4parser.y"
+                       {}
+#line 3408 "p4parser.tab.c"
     break;
 
-  case 100:
-#line 384 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3263 "p4parser.tab.c" /* yacc.c:1646  */
+  case 100: /* annotationToken: OR  */
+#line 384 "p4parser.y"
+                       {}
+#line 3414 "p4parser.tab.c"
     break;
 
-  case 101:
-#line 385 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3269 "p4parser.tab.c" /* yacc.c:1646  */
+  case 101: /* annotationToken: EQ  */
+#line 385 "p4parser.y"
+                       {}
+#line 3420 "p4parser.tab.c"
     break;
 
-  case 102:
-#line 386 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3275 "p4parser.tab.c" /* yacc.c:1646  */
+  case 102: /* annotationToken: NE  */
+#line 386 "p4parser.y"
+                       {}
+#line 3426 "p4parser.tab.c"
     break;
 
-  case 103:
-#line 387 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3281 "p4parser.tab.c" /* yacc.c:1646  */
+  case 103: /* annotationToken: GE  */
+#line 387 "p4parser.y"
+                       {}
+#line 3432 "p4parser.tab.c"
     break;
 
-  case 104:
-#line 388 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3287 "p4parser.tab.c" /* yacc.c:1646  */
+  case 104: /* annotationToken: LE  */
+#line 388 "p4parser.y"
+                       {}
+#line 3438 "p4parser.tab.c"
     break;
 
-  case 105:
-#line 389 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3293 "p4parser.tab.c" /* yacc.c:1646  */
+  case 105: /* annotationToken: PP  */
+#line 389 "p4parser.y"
+                       {}
+#line 3444 "p4parser.tab.c"
     break;
 
-  case 106:
-#line 390 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3299 "p4parser.tab.c" /* yacc.c:1646  */
+  case 106: /* annotationToken: PLUS  */
+#line 390 "p4parser.y"
+                       {}
+#line 3450 "p4parser.tab.c"
     break;
 
-  case 108:
-#line 392 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3305 "p4parser.tab.c" /* yacc.c:1646  */
+  case 108: /* annotationToken: MINUS  */
+#line 392 "p4parser.y"
+                       {}
+#line 3456 "p4parser.tab.c"
     break;
 
-  case 109:
-#line 393 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3311 "p4parser.tab.c" /* yacc.c:1646  */
+  case 109: /* annotationToken: MINUS_SAT  */
+#line 393 "p4parser.y"
+                       {}
+#line 3462 "p4parser.tab.c"
     break;
 
-  case 110:
-#line 394 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3317 "p4parser.tab.c" /* yacc.c:1646  */
+  case 110: /* annotationToken: MUL  */
+#line 394 "p4parser.y"
+                       {}
+#line 3468 "p4parser.tab.c"
     break;
 
-  case 111:
-#line 395 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3323 "p4parser.tab.c" /* yacc.c:1646  */
+  case 111: /* annotationToken: DIV  */
+#line 395 "p4parser.y"
+                       {}
+#line 3474 "p4parser.tab.c"
     break;
 
-  case 112:
-#line 396 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3329 "p4parser.tab.c" /* yacc.c:1646  */
+  case 112: /* annotationToken: MOD  */
+#line 396 "p4parser.y"
+                       {}
+#line 3480 "p4parser.tab.c"
     break;
 
-  case 113:
-#line 397 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3335 "p4parser.tab.c" /* yacc.c:1646  */
+  case 113: /* annotationToken: BIT_OR  */
+#line 397 "p4parser.y"
+                       {}
+#line 3486 "p4parser.tab.c"
     break;
 
-  case 114:
-#line 398 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3341 "p4parser.tab.c" /* yacc.c:1646  */
+  case 114: /* annotationToken: BIT_AND  */
+#line 398 "p4parser.y"
+                       {}
+#line 3492 "p4parser.tab.c"
     break;
 
-  case 115:
-#line 399 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3347 "p4parser.tab.c" /* yacc.c:1646  */
+  case 115: /* annotationToken: BIT_XOR  */
+#line 399 "p4parser.y"
+                       {}
+#line 3498 "p4parser.tab.c"
     break;
 
-  case 116:
-#line 400 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3353 "p4parser.tab.c" /* yacc.c:1646  */
+  case 116: /* annotationToken: COMPLEMENT  */
+#line 400 "p4parser.y"
+                       {}
+#line 3504 "p4parser.tab.c"
     break;
 
-  case 117:
-#line 401 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3359 "p4parser.tab.c" /* yacc.c:1646  */
+  case 117: /* annotationToken: L_BRACKET  */
+#line 401 "p4parser.y"
+                       {}
+#line 3510 "p4parser.tab.c"
     break;
 
-  case 118:
-#line 402 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3365 "p4parser.tab.c" /* yacc.c:1646  */
+  case 118: /* annotationToken: R_BRACKET  */
+#line 402 "p4parser.y"
+                       {}
+#line 3516 "p4parser.tab.c"
     break;
 
-  case 119:
-#line 403 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3371 "p4parser.tab.c" /* yacc.c:1646  */
+  case 119: /* annotationToken: L_BRACE  */
+#line 403 "p4parser.y"
+                       {}
+#line 3522 "p4parser.tab.c"
     break;
 
-  case 120:
-#line 404 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3377 "p4parser.tab.c" /* yacc.c:1646  */
+  case 120: /* annotationToken: R_BRACE  */
+#line 404 "p4parser.y"
+                       {}
+#line 3528 "p4parser.tab.c"
     break;
 
-  case 121:
-#line 405 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3383 "p4parser.tab.c" /* yacc.c:1646  */
+  case 121: /* annotationToken: L_ANGLE  */
+#line 405 "p4parser.y"
+                       {}
+#line 3534 "p4parser.tab.c"
     break;
 
-  case 122:
-#line 406 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3389 "p4parser.tab.c" /* yacc.c:1646  */
+  case 122: /* annotationToken: R_ANGLE  */
+#line 406 "p4parser.y"
+                       {}
+#line 3540 "p4parser.tab.c"
     break;
 
-  case 123:
-#line 407 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3395 "p4parser.tab.c" /* yacc.c:1646  */
+  case 123: /* annotationToken: NOT  */
+#line 407 "p4parser.y"
+                       {}
+#line 3546 "p4parser.tab.c"
     break;
 
-  case 124:
-#line 408 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3401 "p4parser.tab.c" /* yacc.c:1646  */
+  case 124: /* annotationToken: COLON  */
+#line 408 "p4parser.y"
+                       {}
+#line 3552 "p4parser.tab.c"
     break;
 
-  case 125:
-#line 409 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3407 "p4parser.tab.c" /* yacc.c:1646  */
+  case 125: /* annotationToken: QUESTION  */
+#line 409 "p4parser.y"
+                       {}
+#line 3558 "p4parser.tab.c"
     break;
 
-  case 126:
-#line 410 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3413 "p4parser.tab.c" /* yacc.c:1646  */
+  case 126: /* annotationToken: DOT  */
+#line 410 "p4parser.y"
+                       {}
+#line 3564 "p4parser.tab.c"
     break;
 
-  case 127:
-#line 411 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3419 "p4parser.tab.c" /* yacc.c:1646  */
+  case 127: /* annotationToken: ASSIGN  */
+#line 411 "p4parser.y"
+                       {}
+#line 3570 "p4parser.tab.c"
     break;
 
-  case 128:
-#line 412 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3425 "p4parser.tab.c" /* yacc.c:1646  */
+  case 128: /* annotationToken: SEMICOLON  */
+#line 412 "p4parser.y"
+                       {}
+#line 3576 "p4parser.tab.c"
     break;
 
-  case 129:
-#line 413 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3431 "p4parser.tab.c" /* yacc.c:1646  */
+  case 129: /* annotationToken: AT  */
+#line 413 "p4parser.y"
+                       {}
+#line 3582 "p4parser.tab.c"
     break;
 
-  case 130:
-#line 414 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3437 "p4parser.tab.c" /* yacc.c:1646  */
+  case 130: /* annotationToken: COMMA  */
+#line 414 "p4parser.y"
+                       {}
+#line 3588 "p4parser.tab.c"
     break;
 
-  case 131:
-#line 418 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3443 "p4parser.tab.c" /* yacc.c:1646  */
+  case 131: /* kvList: kvPair  */
+#line 418 "p4parser.y"
+                                      {}
+#line 3594 "p4parser.tab.c"
     break;
 
-  case 132:
-#line 419 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3449 "p4parser.tab.c" /* yacc.c:1646  */
+  case 132: /* kvList: kvList COMMA kvPair  */
+#line 419 "p4parser.y"
+                                        {}
+#line 3600 "p4parser.tab.c"
     break;
 
-  case 133:
-#line 423 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3455 "p4parser.tab.c" /* yacc.c:1646  */
+  case 133: /* kvPair: name ASSIGN expression  */
+#line 423 "p4parser.y"
+                                         {}
+#line 3606 "p4parser.tab.c"
     break;
 
-  case 134:
-#line 427 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3461 "p4parser.tab.c" /* yacc.c:1646  */
+  case 134: /* parameterList: %empty  */
+#line 427 "p4parser.y"
+                                      {}
+#line 3612 "p4parser.tab.c"
     break;
 
-  case 135:
-#line 428 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3467 "p4parser.tab.c" /* yacc.c:1646  */
+  case 135: /* parameterList: nonEmptyParameterList  */
+#line 428 "p4parser.y"
+                                      {}
+#line 3618 "p4parser.tab.c"
     break;
 
-  case 136:
-#line 432 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3473 "p4parser.tab.c" /* yacc.c:1646  */
+  case 136: /* nonEmptyParameterList: parameter  */
+#line 432 "p4parser.y"
+                                          {}
+#line 3624 "p4parser.tab.c"
     break;
 
-  case 137:
-#line 433 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3479 "p4parser.tab.c" /* yacc.c:1646  */
+  case 137: /* nonEmptyParameterList: nonEmptyParameterList COMMA parameter  */
+#line 433 "p4parser.y"
+                                            {}
+#line 3630 "p4parser.tab.c"
     break;
 
-  case 138:
-#line 437 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3485 "p4parser.tab.c" /* yacc.c:1646  */
+  case 138: /* parameter: optAnnotations direction typeRef name  */
+#line 437 "p4parser.y"
+                                            {}
+#line 3636 "p4parser.tab.c"
     break;
 
-  case 139:
-#line 438 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3491 "p4parser.tab.c" /* yacc.c:1646  */
+  case 139: /* parameter: optAnnotations direction typeRef name ASSIGN expression  */
+#line 438 "p4parser.y"
+                                                              {}
+#line 3642 "p4parser.tab.c"
     break;
 
-  case 140:
-#line 442 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3497 "p4parser.tab.c" /* yacc.c:1646  */
+  case 140: /* direction: IN  */
+#line 442 "p4parser.y"
+                 {}
+#line 3648 "p4parser.tab.c"
     break;
 
-  case 141:
-#line 443 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3503 "p4parser.tab.c" /* yacc.c:1646  */
+  case 141: /* direction: OUT  */
+#line 443 "p4parser.y"
+                   {}
+#line 3654 "p4parser.tab.c"
     break;
 
-  case 142:
-#line 444 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3509 "p4parser.tab.c" /* yacc.c:1646  */
+  case 142: /* direction: INOUT  */
+#line 444 "p4parser.y"
+                   {}
+#line 3660 "p4parser.tab.c"
     break;
 
-  case 143:
-#line 445 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3515 "p4parser.tab.c" /* yacc.c:1646  */
+  case 143: /* direction: %empty  */
+#line 445 "p4parser.y"
+                   {}
+#line 3666 "p4parser.tab.c"
     break;
 
-  case 144:
-#line 449 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3521 "p4parser.tab.c" /* yacc.c:1646  */
+  case 144: /* $@1: %empty  */
+#line 449 "p4parser.y"
+                                  {}
+#line 3672 "p4parser.tab.c"
     break;
 
-  case 145:
-#line 450 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3527 "p4parser.tab.c" /* yacc.c:1646  */
+  case 145: /* $@2: %empty  */
+#line 450 "p4parser.y"
+                        {}
+#line 3678 "p4parser.tab.c"
     break;
 
-  case 146:
-#line 451 "p4parser.y" /* yacc.c:1646  */
-    {
+  case 146: /* packageTypeDeclaration: optAnnotations PACKAGE name $@1 optTypeParameters $@2 L_PAREN parameterList R_PAREN  */
+#line 451 "p4parser.y"
+                                    {
         saveBaseType(subparser, getNodeAt(subparser, 8));
         bindIdent(subparser, getNodeAt(subparser, 8), getNodeAt(subparser, 7));
       }
-#line 3536 "p4parser.tab.c" /* yacc.c:1646  */
+#line 3687 "p4parser.tab.c"
     break;
 
-  case 147:
-#line 459 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3542 "p4parser.tab.c" /* yacc.c:1646  */
+  case 147: /* instantiation: annotations typeRef L_PAREN argumentList R_PAREN name SEMICOLON  */
+#line 459 "p4parser.y"
+                     {}
+#line 3693 "p4parser.tab.c"
     break;
 
-  case 148:
-#line 461 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3548 "p4parser.tab.c" /* yacc.c:1646  */
+  case 148: /* instantiation: typeRef L_PAREN argumentList R_PAREN name SEMICOLON  */
+#line 461 "p4parser.y"
+                     {}
+#line 3699 "p4parser.tab.c"
     break;
 
-  case 149:
-#line 464 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3554 "p4parser.tab.c" /* yacc.c:1646  */
+  case 149: /* instantiation: annotations typeRef L_PAREN argumentList R_PAREN name ASSIGN objInitializer SEMICOLON  */
+#line 464 "p4parser.y"
+                     {}
+#line 3705 "p4parser.tab.c"
     break;
 
-  case 150:
-#line 467 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3560 "p4parser.tab.c" /* yacc.c:1646  */
+  case 150: /* instantiation: typeRef L_PAREN argumentList R_PAREN name ASSIGN objInitializer SEMICOLON  */
+#line 467 "p4parser.y"
+                     {}
+#line 3711 "p4parser.tab.c"
     break;
 
-  case 151:
-#line 473 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3566 "p4parser.tab.c" /* yacc.c:1646  */
+  case 151: /* objInitializer: L_BRACE objDeclarations R_BRACE  */
+#line 473 "p4parser.y"
+                               {}
+#line 3717 "p4parser.tab.c"
     break;
 
-  case 152:
-#line 477 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3572 "p4parser.tab.c" /* yacc.c:1646  */
+  case 152: /* objDeclarations: %empty  */
+#line 477 "p4parser.y"
+                                     {}
+#line 3723 "p4parser.tab.c"
     break;
 
-  case 153:
-#line 478 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3578 "p4parser.tab.c" /* yacc.c:1646  */
+  case 153: /* objDeclarations: objDeclarations objDeclaration  */
+#line 478 "p4parser.y"
+                                     {}
+#line 3729 "p4parser.tab.c"
     break;
 
-  case 154:
-#line 482 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3584 "p4parser.tab.c" /* yacc.c:1646  */
+  case 154: /* objDeclaration: functionDeclaration  */
+#line 482 "p4parser.y"
+                               {}
+#line 3735 "p4parser.tab.c"
     break;
 
-  case 155:
-#line 483 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3590 "p4parser.tab.c" /* yacc.c:1646  */
+  case 155: /* objDeclaration: instantiation  */
+#line 483 "p4parser.y"
+                               {}
+#line 3741 "p4parser.tab.c"
     break;
 
-  case 156:
-#line 487 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3596 "p4parser.tab.c" /* yacc.c:1646  */
+  case 156: /* optConstructorParameters: %empty  */
+#line 487 "p4parser.y"
+                           {}
+#line 3747 "p4parser.tab.c"
     break;
 
-  case 157:
-#line 488 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3602 "p4parser.tab.c" /* yacc.c:1646  */
+  case 157: /* optConstructorParameters: L_PAREN parameterList R_PAREN  */
+#line 488 "p4parser.y"
+                                     {}
+#line 3753 "p4parser.tab.c"
     break;
 
-  case 158:
-#line 492 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3608 "p4parser.tab.c" /* yacc.c:1646  */
+  case 158: /* dotPrefix: DOT  */
+#line 492 "p4parser.y"
+                             {}
+#line 3759 "p4parser.tab.c"
     break;
 
-  case 159:
-#line 498 "p4parser.y" /* yacc.c:1646  */
-    { EnterScope(subparser); }
-#line 3614 "p4parser.tab.c" /* yacc.c:1646  */
+  case 159: /* $@3: %empty  */
+#line 498 "p4parser.y"
+                                                   { EnterScope(subparser); }
+#line 3765 "p4parser.tab.c"
     break;
 
-  case 160:
-#line 499 "p4parser.y" /* yacc.c:1646  */
-    { ExitScope(subparser); }
-#line 3620 "p4parser.tab.c" /* yacc.c:1646  */
+  case 160: /* $@4: %empty  */
+#line 499 "p4parser.y"
+                                               { ExitScope(subparser); }
+#line 3771 "p4parser.tab.c"
     break;
 
-  case 161:
-#line 500 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3626 "p4parser.tab.c" /* yacc.c:1646  */
+  case 161: /* parserDeclaration: parserTypeDeclaration optConstructorParameters $@3 L_BRACE parserLocalElements parserStates $@4 R_BRACE  */
+#line 500 "p4parser.y"
+                             {}
+#line 3777 "p4parser.tab.c"
     break;
 
-  case 162:
-#line 505 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3632 "p4parser.tab.c" /* yacc.c:1646  */
+  case 162: /* parserLocalElements: %empty  */
+#line 505 "p4parser.y"
+                                           {}
+#line 3783 "p4parser.tab.c"
     break;
 
-  case 163:
-#line 506 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3638 "p4parser.tab.c" /* yacc.c:1646  */
+  case 163: /* parserLocalElements: parserLocalElements parserLocalElement  */
+#line 506 "p4parser.y"
+                                             {}
+#line 3789 "p4parser.tab.c"
     break;
 
-  case 164:
-#line 510 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3644 "p4parser.tab.c" /* yacc.c:1646  */
+  case 164: /* parserLocalElement: constantDeclaration  */
+#line 510 "p4parser.y"
+                                    {}
+#line 3795 "p4parser.tab.c"
     break;
 
-  case 165:
-#line 511 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3650 "p4parser.tab.c" /* yacc.c:1646  */
+  case 165: /* parserLocalElement: instantiation  */
+#line 511 "p4parser.y"
+                                      {}
+#line 3801 "p4parser.tab.c"
     break;
 
-  case 166:
-#line 512 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3656 "p4parser.tab.c" /* yacc.c:1646  */
+  case 166: /* parserLocalElement: variableDeclaration  */
+#line 512 "p4parser.y"
+                                      {}
+#line 3807 "p4parser.tab.c"
     break;
 
-  case 167:
-#line 513 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3662 "p4parser.tab.c" /* yacc.c:1646  */
+  case 167: /* parserLocalElement: valueSetDeclaration  */
+#line 513 "p4parser.y"
+                                      {}
+#line 3813 "p4parser.tab.c"
     break;
 
-  case 168:
-#line 518 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3668 "p4parser.tab.c" /* yacc.c:1646  */
+  case 168: /* $@5: %empty  */
+#line 518 "p4parser.y"
+                          {}
+#line 3819 "p4parser.tab.c"
     break;
 
-  case 169:
-#line 519 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3674 "p4parser.tab.c" /* yacc.c:1646  */
+  case 169: /* $@6: %empty  */
+#line 519 "p4parser.y"
+                          {}
+#line 3825 "p4parser.tab.c"
     break;
 
-  case 170:
-#line 520 "p4parser.y" /* yacc.c:1646  */
-    {
+  case 170: /* parserTypeDeclaration: optAnnotations PARSER name $@5 optTypeParameters $@6 L_PAREN parameterList R_PAREN  */
+#line 520 "p4parser.y"
+                                      {
           saveBaseType(subparser, getNodeAt(subparser, 8));
           bindIdent(subparser, getNodeAt(subparser, 8), getNodeAt(subparser, 7));
         }
-#line 3683 "p4parser.tab.c" /* yacc.c:1646  */
+#line 3834 "p4parser.tab.c"
     break;
 
-  case 171:
-#line 527 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3689 "p4parser.tab.c" /* yacc.c:1646  */
+  case 171: /* parserStates: parserState  */
+#line 527 "p4parser.y"
+                                    {}
+#line 3840 "p4parser.tab.c"
     break;
 
-  case 172:
-#line 528 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3695 "p4parser.tab.c" /* yacc.c:1646  */
+  case 172: /* parserStates: parserStates parserState  */
+#line 528 "p4parser.y"
+                                      {}
+#line 3846 "p4parser.tab.c"
     break;
 
-  case 173:
-#line 532 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3701 "p4parser.tab.c" /* yacc.c:1646  */
+  case 173: /* $@7: %empty  */
+#line 532 "p4parser.y"
+                              {}
+#line 3852 "p4parser.tab.c"
     break;
 
-  case 174:
-#line 534 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3707 "p4parser.tab.c" /* yacc.c:1646  */
+  case 174: /* parserState: optAnnotations STATE name $@7 L_BRACE parserStatements transitionStatement R_BRACE  */
+#line 534 "p4parser.y"
+                                      {}
+#line 3858 "p4parser.tab.c"
     break;
 
-  case 175:
-#line 538 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3713 "p4parser.tab.c" /* yacc.c:1646  */
+  case 175: /* parserStatements: %empty  */
+#line 538 "p4parser.y"
+                                     {}
+#line 3864 "p4parser.tab.c"
     break;
 
-  case 176:
-#line 539 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3719 "p4parser.tab.c" /* yacc.c:1646  */
+  case 176: /* parserStatements: parserStatements parserStatement  */
+#line 539 "p4parser.y"
+                                       {}
+#line 3870 "p4parser.tab.c"
     break;
 
-  case 177:
-#line 543 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3725 "p4parser.tab.c" /* yacc.c:1646  */
+  case 177: /* parserStatement: assignmentOrMethodCallStatement  */
+#line 543 "p4parser.y"
+                                    {}
+#line 3876 "p4parser.tab.c"
     break;
 
-  case 178:
-#line 544 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3731 "p4parser.tab.c" /* yacc.c:1646  */
+  case 178: /* parserStatement: directApplication  */
+#line 544 "p4parser.y"
+                                      {}
+#line 3882 "p4parser.tab.c"
     break;
 
-  case 179:
-#line 545 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3737 "p4parser.tab.c" /* yacc.c:1646  */
+  case 179: /* parserStatement: emptyStatement  */
+#line 545 "p4parser.y"
+                                      {}
+#line 3888 "p4parser.tab.c"
     break;
 
-  case 180:
-#line 546 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3743 "p4parser.tab.c" /* yacc.c:1646  */
+  case 180: /* parserStatement: variableDeclaration  */
+#line 546 "p4parser.y"
+                                      {}
+#line 3894 "p4parser.tab.c"
     break;
 
-  case 181:
-#line 547 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3749 "p4parser.tab.c" /* yacc.c:1646  */
+  case 181: /* parserStatement: constantDeclaration  */
+#line 547 "p4parser.y"
+                                      {}
+#line 3900 "p4parser.tab.c"
     break;
 
-  case 182:
-#line 548 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3755 "p4parser.tab.c" /* yacc.c:1646  */
+  case 182: /* parserStatement: parserBlockStatement  */
+#line 548 "p4parser.y"
+                                      {}
+#line 3906 "p4parser.tab.c"
     break;
 
-  case 183:
-#line 549 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3761 "p4parser.tab.c" /* yacc.c:1646  */
+  case 183: /* parserStatement: conditionalStatement  */
+#line 549 "p4parser.y"
+                                      {}
+#line 3912 "p4parser.tab.c"
     break;
 
-  case 184:
-#line 553 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3767 "p4parser.tab.c" /* yacc.c:1646  */
+  case 184: /* $@8: %empty  */
+#line 553 "p4parser.y"
+                           {}
+#line 3918 "p4parser.tab.c"
     break;
 
-  case 185:
-#line 554 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3773 "p4parser.tab.c" /* yacc.c:1646  */
+  case 185: /* parserBlockStatement: optAnnotations L_BRACE $@8 parserStatements R_BRACE  */
+#line 554 "p4parser.y"
+                               {}
+#line 3924 "p4parser.tab.c"
     break;
 
-  case 186:
-#line 558 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3779 "p4parser.tab.c" /* yacc.c:1646  */
+  case 186: /* transitionStatement: %empty  */
+#line 558 "p4parser.y"
+                                {}
+#line 3930 "p4parser.tab.c"
     break;
 
-  case 187:
-#line 559 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3785 "p4parser.tab.c" /* yacc.c:1646  */
+  case 187: /* transitionStatement: TRANSITION stateExpression  */
+#line 559 "p4parser.y"
+                                  {}
+#line 3936 "p4parser.tab.c"
     break;
 
-  case 188:
-#line 563 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3791 "p4parser.tab.c" /* yacc.c:1646  */
+  case 188: /* stateExpression: name SEMICOLON  */
+#line 563 "p4parser.y"
+                           {}
+#line 3942 "p4parser.tab.c"
     break;
 
-  case 189:
-#line 564 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3797 "p4parser.tab.c" /* yacc.c:1646  */
+  case 189: /* stateExpression: selectExpression  */
+#line 564 "p4parser.y"
+                       {}
+#line 3948 "p4parser.tab.c"
     break;
 
-  case 190:
-#line 569 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3803 "p4parser.tab.c" /* yacc.c:1646  */
+  case 190: /* selectExpression: SELECT L_PAREN expressionList R_PAREN L_BRACE selectCaseList R_BRACE  */
+#line 569 "p4parser.y"
+                              {}
+#line 3954 "p4parser.tab.c"
     break;
 
-  case 191:
-#line 573 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3809 "p4parser.tab.c" /* yacc.c:1646  */
+  case 191: /* selectCaseList: %empty  */
+#line 573 "p4parser.y"
+                               {}
+#line 3960 "p4parser.tab.c"
     break;
 
-  case 192:
-#line 574 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3815 "p4parser.tab.c" /* yacc.c:1646  */
+  case 192: /* selectCaseList: selectCaseList selectCase  */
+#line 574 "p4parser.y"
+                                 {}
+#line 3966 "p4parser.tab.c"
     break;
 
-  case 193:
-#line 579 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3821 "p4parser.tab.c" /* yacc.c:1646  */
+  case 193: /* selectCase: keysetExpression COLON name SEMICOLON  */
+#line 579 "p4parser.y"
+      {}
+#line 3972 "p4parser.tab.c"
     break;
 
-  case 194:
-#line 583 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3827 "p4parser.tab.c" /* yacc.c:1646  */
+  case 194: /* keysetExpression: tupleKeysetExpression  */
+#line 583 "p4parser.y"
+                              {}
+#line 3978 "p4parser.tab.c"
     break;
 
-  case 195:
-#line 584 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3833 "p4parser.tab.c" /* yacc.c:1646  */
+  case 195: /* keysetExpression: simpleKeysetExpression  */
+#line 584 "p4parser.y"
+                                {}
+#line 3984 "p4parser.tab.c"
     break;
 
-  case 196:
-#line 589 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3839 "p4parser.tab.c" /* yacc.c:1646  */
+  case 196: /* tupleKeysetExpression: L_PAREN simpleKeysetExpression COMMA simpleExpressionList R_PAREN  */
+#line 589 "p4parser.y"
+                                {}
+#line 3990 "p4parser.tab.c"
     break;
 
-  case 197:
-#line 590 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3845 "p4parser.tab.c" /* yacc.c:1646  */
+  case 197: /* tupleKeysetExpression: L_PAREN reducedSimpleKeysetExpression R_PAREN  */
+#line 590 "p4parser.y"
+                                                    {}
+#line 3996 "p4parser.tab.c"
     break;
 
-  case 198:
-#line 594 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3851 "p4parser.tab.c" /* yacc.c:1646  */
+  case 198: /* simpleExpressionList: simpleKeysetExpression  */
+#line 594 "p4parser.y"
+                           {}
+#line 4002 "p4parser.tab.c"
     break;
 
-  case 199:
-#line 595 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3857 "p4parser.tab.c" /* yacc.c:1646  */
+  case 199: /* simpleExpressionList: simpleExpressionList COMMA simpleKeysetExpression  */
+#line 595 "p4parser.y"
+                                                        {}
+#line 4008 "p4parser.tab.c"
     break;
 
-  case 200:
-#line 600 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3863 "p4parser.tab.c" /* yacc.c:1646  */
+  case 200: /* reducedSimpleKeysetExpression: expression MASK expression  */
+#line 600 "p4parser.y"
+                                 {}
+#line 4014 "p4parser.tab.c"
     break;
 
-  case 201:
-#line 601 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3869 "p4parser.tab.c" /* yacc.c:1646  */
+  case 201: /* reducedSimpleKeysetExpression: expression RANGE expression  */
+#line 601 "p4parser.y"
+                                   {}
+#line 4020 "p4parser.tab.c"
     break;
 
-  case 202:
-#line 602 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3875 "p4parser.tab.c" /* yacc.c:1646  */
+  case 202: /* reducedSimpleKeysetExpression: DEFAULT  */
+#line 602 "p4parser.y"
+                                  {}
+#line 4026 "p4parser.tab.c"
     break;
 
-  case 203:
-#line 603 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3881 "p4parser.tab.c" /* yacc.c:1646  */
+  case 203: /* reducedSimpleKeysetExpression: DONTCARE  */
+#line 603 "p4parser.y"
+                                       {}
+#line 4032 "p4parser.tab.c"
     break;
 
-  case 204:
-#line 607 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3887 "p4parser.tab.c" /* yacc.c:1646  */
+  case 204: /* simpleKeysetExpression: expression  */
+#line 607 "p4parser.y"
+                                {}
+#line 4038 "p4parser.tab.c"
     break;
 
-  case 205:
-#line 608 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3893 "p4parser.tab.c" /* yacc.c:1646  */
+  case 205: /* simpleKeysetExpression: expression MASK expression  */
+#line 608 "p4parser.y"
+                                 {}
+#line 4044 "p4parser.tab.c"
     break;
 
-  case 206:
-#line 609 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3899 "p4parser.tab.c" /* yacc.c:1646  */
+  case 206: /* simpleKeysetExpression: expression RANGE expression  */
+#line 609 "p4parser.y"
+                                   {}
+#line 4050 "p4parser.tab.c"
     break;
 
-  case 207:
-#line 610 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3905 "p4parser.tab.c" /* yacc.c:1646  */
+  case 207: /* simpleKeysetExpression: DEFAULT  */
+#line 610 "p4parser.y"
+                                  {}
+#line 4056 "p4parser.tab.c"
     break;
 
-  case 208:
-#line 611 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3911 "p4parser.tab.c" /* yacc.c:1646  */
+  case 208: /* simpleKeysetExpression: DONTCARE  */
+#line 611 "p4parser.y"
+                                       {}
+#line 4062 "p4parser.tab.c"
     break;
 
-  case 209:
-#line 617 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3917 "p4parser.tab.c" /* yacc.c:1646  */
+  case 209: /* valueSetDeclaration: optAnnotations VALUESET l_angle baseType r_angle L_PAREN expression R_PAREN name SEMICOLON  */
+#line 617 "p4parser.y"
+        {}
+#line 4068 "p4parser.tab.c"
     break;
 
-  case 210:
-#line 620 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3923 "p4parser.tab.c" /* yacc.c:1646  */
+  case 210: /* valueSetDeclaration: optAnnotations VALUESET l_angle tupleType r_angle L_PAREN expression R_PAREN name SEMICOLON  */
+#line 620 "p4parser.y"
+        {}
+#line 4074 "p4parser.tab.c"
     break;
 
-  case 211:
-#line 623 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3929 "p4parser.tab.c" /* yacc.c:1646  */
+  case 211: /* valueSetDeclaration: optAnnotations VALUESET l_angle typeName r_angle L_PAREN expression R_PAREN name SEMICOLON  */
+#line 623 "p4parser.y"
+        {}
+#line 4080 "p4parser.tab.c"
     break;
 
-  case 212:
-#line 631 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3935 "p4parser.tab.c" /* yacc.c:1646  */
+  case 212: /* controlDeclaration: controlTypeDeclaration optConstructorParameters L_BRACE controlLocalDeclarations APPLY controlBody R_BRACE  */
+#line 631 "p4parser.y"
+        {}
+#line 4086 "p4parser.tab.c"
     break;
 
-  case 213:
-#line 636 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3941 "p4parser.tab.c" /* yacc.c:1646  */
+  case 213: /* $@9: %empty  */
+#line 636 "p4parser.y"
+                     {}
+#line 4092 "p4parser.tab.c"
     break;
 
-  case 214:
-#line 637 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3947 "p4parser.tab.c" /* yacc.c:1646  */
+  case 214: /* $@10: %empty  */
+#line 637 "p4parser.y"
+                          {}
+#line 4098 "p4parser.tab.c"
     break;
 
-  case 215:
-#line 638 "p4parser.y" /* yacc.c:1646  */
-    {
+  case 215: /* controlTypeDeclaration: optAnnotations CONTROL name $@9 optTypeParameters $@10 L_PAREN parameterList R_PAREN  */
+#line 638 "p4parser.y"
+                                      {
           saveBaseType(subparser, getNodeAt(subparser, 8));
           bindIdent(subparser, getNodeAt(subparser, 8), getNodeAt(subparser, 7));
         }
-#line 3956 "p4parser.tab.c" /* yacc.c:1646  */
+#line 4107 "p4parser.tab.c"
     break;
 
-  case 216:
-#line 645 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3962 "p4parser.tab.c" /* yacc.c:1646  */
+  case 216: /* controlLocalDeclarations: %empty  */
+#line 645 "p4parser.y"
+           {}
+#line 4113 "p4parser.tab.c"
     break;
 
-  case 217:
-#line 646 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3968 "p4parser.tab.c" /* yacc.c:1646  */
+  case 217: /* controlLocalDeclarations: controlLocalDeclarations controlLocalDeclaration  */
+#line 646 "p4parser.y"
+                                                       {}
+#line 4119 "p4parser.tab.c"
     break;
 
-  case 218:
-#line 650 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3974 "p4parser.tab.c" /* yacc.c:1646  */
+  case 218: /* controlLocalDeclaration: constantDeclaration  */
+#line 650 "p4parser.y"
+                             {}
+#line 4125 "p4parser.tab.c"
     break;
 
-  case 219:
-#line 651 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3980 "p4parser.tab.c" /* yacc.c:1646  */
+  case 219: /* controlLocalDeclaration: actionDeclaration  */
+#line 651 "p4parser.y"
+                               {}
+#line 4131 "p4parser.tab.c"
     break;
 
-  case 220:
-#line 652 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3986 "p4parser.tab.c" /* yacc.c:1646  */
+  case 220: /* controlLocalDeclaration: tableDeclaration  */
+#line 652 "p4parser.y"
+                               {}
+#line 4137 "p4parser.tab.c"
     break;
 
-  case 221:
-#line 653 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3992 "p4parser.tab.c" /* yacc.c:1646  */
+  case 221: /* controlLocalDeclaration: instantiation  */
+#line 653 "p4parser.y"
+                               {}
+#line 4143 "p4parser.tab.c"
     break;
 
-  case 222:
-#line 654 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 3998 "p4parser.tab.c" /* yacc.c:1646  */
+  case 222: /* controlLocalDeclaration: variableDeclaration  */
+#line 654 "p4parser.y"
+                               {}
+#line 4149 "p4parser.tab.c"
     break;
 
-  case 223:
-#line 658 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4004 "p4parser.tab.c" /* yacc.c:1646  */
+  case 223: /* controlBody: blockStatement  */
+#line 658 "p4parser.y"
+                   {}
+#line 4155 "p4parser.tab.c"
     break;
 
-  case 224:
-#line 665 "p4parser.y" /* yacc.c:1646  */
-    {
+  case 224: /* $@11: %empty  */
+#line 665 "p4parser.y"
+                           {
             saveBaseType(subparser, getNodeAt(subparser, 2));
             bindIdent(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
           }
-#line 4013 "p4parser.tab.c" /* yacc.c:1646  */
+#line 4164 "p4parser.tab.c"
     break;
 
-  case 225:
-#line 669 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4019 "p4parser.tab.c" /* yacc.c:1646  */
+  case 225: /* $@12: %empty  */
+#line 669 "p4parser.y"
+                          {}
+#line 4170 "p4parser.tab.c"
     break;
 
-  case 229:
-#line 676 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4025 "p4parser.tab.c" /* yacc.c:1646  */
+  case 229: /* methodPrototypes: %empty  */
+#line 676 "p4parser.y"
+                                     {}
+#line 4176 "p4parser.tab.c"
     break;
 
-  case 230:
-#line 677 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4031 "p4parser.tab.c" /* yacc.c:1646  */
+  case 230: /* methodPrototypes: methodPrototypes methodPrototype  */
+#line 677 "p4parser.y"
+                                       {}
+#line 4182 "p4parser.tab.c"
     break;
 
-  case 231:
-#line 682 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4037 "p4parser.tab.c" /* yacc.c:1646  */
+  case 231: /* $@13: %empty  */
+#line 682 "p4parser.y"
+                               {}
+#line 4188 "p4parser.tab.c"
     break;
 
-  case 232:
-#line 683 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4043 "p4parser.tab.c" /* yacc.c:1646  */
+  case 232: /* functionPrototype: typeOrVoid name optTypeParameters $@13 L_PAREN parameterList R_PAREN  */
+#line 683 "p4parser.y"
+                                      {}
+#line 4194 "p4parser.tab.c"
     break;
 
-  case 233:
-#line 687 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4049 "p4parser.tab.c" /* yacc.c:1646  */
+  case 233: /* methodPrototype: optAnnotations functionPrototype SEMICOLON  */
+#line 687 "p4parser.y"
+                                               {}
+#line 4200 "p4parser.tab.c"
     break;
 
-  case 234:
-#line 688 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4055 "p4parser.tab.c" /* yacc.c:1646  */
+  case 234: /* methodPrototype: optAnnotations ABSTRACT functionPrototype SEMICOLON  */
+#line 688 "p4parser.y"
+                                                          {}
+#line 4206 "p4parser.tab.c"
     break;
 
-  case 235:
-#line 690 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4061 "p4parser.tab.c" /* yacc.c:1646  */
+  case 235: /* methodPrototype: optAnnotations TYPE_IDENTIFIER L_PAREN parameterList R_PAREN SEMICOLON  */
+#line 690 "p4parser.y"
+                                        {}
+#line 4212 "p4parser.tab.c"
     break;
 
-  case 236:
-#line 696 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4067 "p4parser.tab.c" /* yacc.c:1646  */
+  case 236: /* typeRef: baseType  */
+#line 696 "p4parser.y"
+                                     {}
+#line 4218 "p4parser.tab.c"
     break;
 
-  case 237:
-#line 697 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4073 "p4parser.tab.c" /* yacc.c:1646  */
+  case 237: /* typeRef: typeName  */
+#line 697 "p4parser.y"
+                                       {}
+#line 4224 "p4parser.tab.c"
     break;
 
-  case 238:
-#line 698 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4079 "p4parser.tab.c" /* yacc.c:1646  */
+  case 238: /* typeRef: specializedType  */
+#line 698 "p4parser.y"
+                                       {}
+#line 4230 "p4parser.tab.c"
     break;
 
-  case 239:
-#line 699 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4085 "p4parser.tab.c" /* yacc.c:1646  */
+  case 239: /* typeRef: headerStackType  */
+#line 699 "p4parser.y"
+                                       {}
+#line 4236 "p4parser.tab.c"
     break;
 
-  case 240:
-#line 700 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4091 "p4parser.tab.c" /* yacc.c:1646  */
+  case 240: /* typeRef: tupleType  */
+#line 700 "p4parser.y"
+                                       {}
+#line 4242 "p4parser.tab.c"
     break;
 
-  case 241:
-#line 704 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4097 "p4parser.tab.c" /* yacc.c:1646  */
+  case 241: /* namedType: typeName  */
+#line 704 "p4parser.y"
+                                     {}
+#line 4248 "p4parser.tab.c"
     break;
 
-  case 242:
-#line 705 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4103 "p4parser.tab.c" /* yacc.c:1646  */
+  case 242: /* namedType: specializedType  */
+#line 705 "p4parser.y"
+                                       {}
+#line 4254 "p4parser.tab.c"
     break;
 
-  case 243:
-#line 709 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4109 "p4parser.tab.c" /* yacc.c:1646  */
+  case 243: /* prefixedType: TYPE_IDENTIFIER  */
+#line 709 "p4parser.y"
+                                     {}
+#line 4260 "p4parser.tab.c"
     break;
 
-  case 244:
-#line 710 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4115 "p4parser.tab.c" /* yacc.c:1646  */
+  case 244: /* prefixedType: dotPrefix TYPE_IDENTIFIER  */
+#line 710 "p4parser.y"
+                                       {}
+#line 4266 "p4parser.tab.c"
     break;
 
-  case 245:
-#line 714 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4121 "p4parser.tab.c" /* yacc.c:1646  */
+  case 245: /* typeName: prefixedType  */
+#line 714 "p4parser.y"
+                                     {}
+#line 4272 "p4parser.tab.c"
     break;
 
-  case 246:
-#line 718 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4127 "p4parser.tab.c" /* yacc.c:1646  */
+  case 246: /* tupleType: TUPLE l_angle typeArgumentList r_angle  */
+#line 718 "p4parser.y"
+                                              {}
+#line 4278 "p4parser.tab.c"
     break;
 
-  case 247:
-#line 722 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4133 "p4parser.tab.c" /* yacc.c:1646  */
+  case 247: /* headerStackType: typeName L_BRACKET expression R_BRACKET  */
+#line 722 "p4parser.y"
+                                                    {}
+#line 4284 "p4parser.tab.c"
     break;
 
-  case 248:
-#line 723 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4139 "p4parser.tab.c" /* yacc.c:1646  */
+  case 248: /* headerStackType: specializedType L_BRACKET expression R_BRACKET  */
+#line 723 "p4parser.y"
+                                                      {}
+#line 4290 "p4parser.tab.c"
     break;
 
-  case 249:
-#line 727 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4145 "p4parser.tab.c" /* yacc.c:1646  */
+  case 249: /* specializedType: typeName l_angle typeArgumentList r_angle  */
+#line 727 "p4parser.y"
+                                              {}
+#line 4296 "p4parser.tab.c"
     break;
 
-  case 250:
-#line 731 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4151 "p4parser.tab.c" /* yacc.c:1646  */
+  case 250: /* baseType: BOOL  */
+#line 731 "p4parser.y"
+           {}
+#line 4302 "p4parser.tab.c"
     break;
 
-  case 251:
-#line 732 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4157 "p4parser.tab.c" /* yacc.c:1646  */
+  case 251: /* baseType: ERROR  */
+#line 732 "p4parser.y"
+             {}
+#line 4308 "p4parser.tab.c"
     break;
 
-  case 252:
-#line 733 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4163 "p4parser.tab.c" /* yacc.c:1646  */
+  case 252: /* baseType: BIT  */
+#line 733 "p4parser.y"
+             {}
+#line 4314 "p4parser.tab.c"
     break;
 
-  case 253:
-#line 734 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4169 "p4parser.tab.c" /* yacc.c:1646  */
+  case 253: /* baseType: STRING  */
+#line 734 "p4parser.y"
+             {}
+#line 4320 "p4parser.tab.c"
     break;
 
-  case 254:
-#line 735 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4175 "p4parser.tab.c" /* yacc.c:1646  */
+  case 254: /* baseType: INT  */
+#line 735 "p4parser.y"
+             {}
+#line 4326 "p4parser.tab.c"
     break;
 
-  case 255:
-#line 737 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4181 "p4parser.tab.c" /* yacc.c:1646  */
+  case 255: /* baseType: BIT l_angle INTEGER r_angle  */
+#line 737 "p4parser.y"
+      {}
+#line 4332 "p4parser.tab.c"
     break;
 
-  case 256:
-#line 739 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4187 "p4parser.tab.c" /* yacc.c:1646  */
+  case 256: /* baseType: INT l_angle INTEGER r_angle  */
+#line 739 "p4parser.y"
+      {}
+#line 4338 "p4parser.tab.c"
     break;
 
-  case 257:
-#line 741 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4193 "p4parser.tab.c" /* yacc.c:1646  */
+  case 257: /* baseType: VARBIT l_angle INTEGER r_angle  */
+#line 741 "p4parser.y"
+      {}
+#line 4344 "p4parser.tab.c"
     break;
 
-  case 258:
-#line 744 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4199 "p4parser.tab.c" /* yacc.c:1646  */
+  case 258: /* baseType: BIT l_angle L_PAREN expression R_PAREN r_angle  */
+#line 744 "p4parser.y"
+      {}
+#line 4350 "p4parser.tab.c"
     break;
 
-  case 259:
-#line 746 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4205 "p4parser.tab.c" /* yacc.c:1646  */
+  case 259: /* baseType: INT l_angle L_PAREN expression R_PAREN r_angle  */
+#line 746 "p4parser.y"
+      {}
+#line 4356 "p4parser.tab.c"
     break;
 
-  case 260:
-#line 748 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4211 "p4parser.tab.c" /* yacc.c:1646  */
+  case 260: /* baseType: VARBIT l_angle L_PAREN expression R_PAREN r_angle  */
+#line 748 "p4parser.y"
+      {}
+#line 4362 "p4parser.tab.c"
     break;
 
-  case 261:
-#line 752 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4217 "p4parser.tab.c" /* yacc.c:1646  */
+  case 261: /* typeOrVoid: typeRef  */
+#line 752 "p4parser.y"
+                {}
+#line 4368 "p4parser.tab.c"
     break;
 
-  case 262:
-#line 753 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4223 "p4parser.tab.c" /* yacc.c:1646  */
+  case 262: /* typeOrVoid: VOID  */
+#line 753 "p4parser.y"
+                  {}
+#line 4374 "p4parser.tab.c"
     break;
 
-  case 263:
-#line 754 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4229 "p4parser.tab.c" /* yacc.c:1646  */
+  case 263: /* typeOrVoid: IDENTIFIER  */
+#line 754 "p4parser.y"
+                  {}
+#line 4380 "p4parser.tab.c"
     break;
 
-  case 264:
-#line 759 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4235 "p4parser.tab.c" /* yacc.c:1646  */
+  case 264: /* optTypeParameters: %empty  */
+#line 759 "p4parser.y"
+                              {}
+#line 4386 "p4parser.tab.c"
     break;
 
-  case 265:
-#line 760 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4241 "p4parser.tab.c" /* yacc.c:1646  */
+  case 265: /* optTypeParameters: typeParameters  */
+#line 760 "p4parser.y"
+                                {}
+#line 4392 "p4parser.tab.c"
     break;
 
-  case 266:
-#line 764 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4247 "p4parser.tab.c" /* yacc.c:1646  */
+  case 266: /* typeParameters: l_angle typeParameterList r_angle  */
+#line 764 "p4parser.y"
+                                      {}
+#line 4398 "p4parser.tab.c"
     break;
 
-  case 267:
-#line 768 "p4parser.y" /* yacc.c:1646  */
-    {
+  case 267: /* typeParameterList: name  */
+#line 768 "p4parser.y"
+         {
         //  ASK possible to get the production name? (typeParameterList)
         // // saveBaseType(subparser, getNodeAt(subparser, 12));
         // if(getNodeAt(subparser, 5).isToken()){
           bindIdent(subparser, null, getNodeAt(subparser, 1), true);
         // }
       }
-#line 4259 "p4parser.tab.c" /* yacc.c:1646  */
+#line 4410 "p4parser.tab.c"
     break;
 
-  case 268:
-#line 775 "p4parser.y" /* yacc.c:1646  */
-    {
+  case 268: /* typeParameterList: typeParameterList COMMA name  */
+#line 775 "p4parser.y"
+                                   {
         bindIdent(subparser, null, getNodeAt(subparser, 1), true);
       }
-#line 4267 "p4parser.tab.c" /* yacc.c:1646  */
+#line 4418 "p4parser.tab.c"
     break;
 
-  case 269:
-#line 781 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4273 "p4parser.tab.c" /* yacc.c:1646  */
+  case 269: /* typeArg: typeRef  */
+#line 781 "p4parser.y"
+                                {}
+#line 4424 "p4parser.tab.c"
     break;
 
-  case 270:
-#line 782 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4279 "p4parser.tab.c" /* yacc.c:1646  */
+  case 270: /* typeArg: nonTypeName  */
+#line 782 "p4parser.y"
+                                  {}
+#line 4430 "p4parser.tab.c"
     break;
 
-  case 271:
-#line 784 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4285 "p4parser.tab.c" /* yacc.c:1646  */
+  case 271: /* typeArg: VOID  */
+#line 784 "p4parser.y"
+                                  {}
+#line 4436 "p4parser.tab.c"
     break;
 
-  case 272:
-#line 785 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4291 "p4parser.tab.c" /* yacc.c:1646  */
+  case 272: /* typeArg: DONTCARE  */
+#line 785 "p4parser.y"
+                                       {}
+#line 4442 "p4parser.tab.c"
     break;
 
-  case 273:
-#line 789 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4297 "p4parser.tab.c" /* yacc.c:1646  */
+  case 273: /* typeArgumentList: %empty  */
+#line 789 "p4parser.y"
+                                   {}
+#line 4448 "p4parser.tab.c"
     break;
 
-  case 274:
-#line 790 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4303 "p4parser.tab.c" /* yacc.c:1646  */
+  case 274: /* typeArgumentList: typeArg  */
+#line 790 "p4parser.y"
+                                     {}
+#line 4454 "p4parser.tab.c"
     break;
 
-  case 275:
-#line 791 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4309 "p4parser.tab.c" /* yacc.c:1646  */
+  case 275: /* typeArgumentList: typeArgumentList COMMA typeArg  */
+#line 791 "p4parser.y"
+                                       {}
+#line 4460 "p4parser.tab.c"
     break;
 
-  case 276:
-#line 795 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4315 "p4parser.tab.c" /* yacc.c:1646  */
+  case 276: /* realTypeArg: typeRef  */
+#line 795 "p4parser.y"
+                                {}
+#line 4466 "p4parser.tab.c"
     break;
 
-  case 277:
-#line 796 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4321 "p4parser.tab.c" /* yacc.c:1646  */
+  case 277: /* realTypeArg: VOID  */
+#line 796 "p4parser.y"
+                                  {}
+#line 4472 "p4parser.tab.c"
     break;
 
-  case 278:
-#line 797 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4327 "p4parser.tab.c" /* yacc.c:1646  */
+  case 278: /* realTypeArg: DONTCARE  */
+#line 797 "p4parser.y"
+                                       {}
+#line 4478 "p4parser.tab.c"
     break;
 
-  case 279:
-#line 803 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4333 "p4parser.tab.c" /* yacc.c:1646  */
+  case 279: /* realTypeArgumentList: realTypeArg  */
+#line 803 "p4parser.y"
+                                       {}
+#line 4484 "p4parser.tab.c"
     break;
 
-  case 280:
-#line 804 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4339 "p4parser.tab.c" /* yacc.c:1646  */
+  case 280: /* realTypeArgumentList: realTypeArgumentList COMMA typeArg  */
+#line 804 "p4parser.y"
+                                           {}
+#line 4490 "p4parser.tab.c"
     break;
 
-  case 281:
-#line 808 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4345 "p4parser.tab.c" /* yacc.c:1646  */
+  case 281: /* typeDeclaration: derivedTypeDeclaration  */
+#line 808 "p4parser.y"
+                               {}
+#line 4496 "p4parser.tab.c"
     break;
 
-  case 282:
-#line 809 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4351 "p4parser.tab.c" /* yacc.c:1646  */
+  case 282: /* typeDeclaration: typedefDeclaration SEMICOLON  */
+#line 809 "p4parser.y"
+                                       {}
+#line 4502 "p4parser.tab.c"
     break;
 
-  case 283:
-#line 810 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4357 "p4parser.tab.c" /* yacc.c:1646  */
+  case 283: /* typeDeclaration: parserTypeDeclaration SEMICOLON  */
+#line 810 "p4parser.y"
+                                       {}
+#line 4508 "p4parser.tab.c"
     break;
 
-  case 284:
-#line 811 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4363 "p4parser.tab.c" /* yacc.c:1646  */
+  case 284: /* typeDeclaration: controlTypeDeclaration SEMICOLON  */
+#line 811 "p4parser.y"
+                                       {}
+#line 4514 "p4parser.tab.c"
     break;
 
-  case 285:
-#line 812 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4369 "p4parser.tab.c" /* yacc.c:1646  */
+  case 285: /* typeDeclaration: packageTypeDeclaration SEMICOLON  */
+#line 812 "p4parser.y"
+                                       {}
+#line 4520 "p4parser.tab.c"
     break;
 
-  case 286:
-#line 816 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4375 "p4parser.tab.c" /* yacc.c:1646  */
+  case 286: /* derivedTypeDeclaration: headerTypeDeclaration  */
+#line 816 "p4parser.y"
+                                     {}
+#line 4526 "p4parser.tab.c"
     break;
 
-  case 287:
-#line 817 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4381 "p4parser.tab.c" /* yacc.c:1646  */
+  case 287: /* derivedTypeDeclaration: headerUnionDeclaration  */
+#line 817 "p4parser.y"
+                                       {}
+#line 4532 "p4parser.tab.c"
     break;
 
-  case 288:
-#line 818 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4387 "p4parser.tab.c" /* yacc.c:1646  */
+  case 288: /* derivedTypeDeclaration: structTypeDeclaration  */
+#line 818 "p4parser.y"
+                                       {}
+#line 4538 "p4parser.tab.c"
     break;
 
-  case 289:
-#line 819 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4393 "p4parser.tab.c" /* yacc.c:1646  */
+  case 289: /* derivedTypeDeclaration: enumDeclaration  */
+#line 819 "p4parser.y"
+                                       {}
+#line 4544 "p4parser.tab.c"
     break;
 
-  case 290:
-#line 823 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4399 "p4parser.tab.c" /* yacc.c:1646  */
+  case 290: /* $@14: %empty  */
+#line 823 "p4parser.y"
+                               {}
+#line 4550 "p4parser.tab.c"
     break;
 
-  case 291:
-#line 823 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4405 "p4parser.tab.c" /* yacc.c:1646  */
+  case 291: /* $@15: %empty  */
+#line 823 "p4parser.y"
+                                                    {}
+#line 4556 "p4parser.tab.c"
     break;
 
-  case 292:
-#line 825 "p4parser.y" /* yacc.c:1646  */
-    {
+  case 292: /* headerTypeDeclaration: optAnnotations HEADER name $@14 optTypeParameters $@15 L_BRACE structFieldList R_BRACE  */
+#line 825 "p4parser.y"
+      {
           saveBaseType(subparser, getNodeAt(subparser, 8));
           bindIdent(subparser, getNodeAt(subparser, 8), getNodeAt(subparser, 7));
       }
-#line 4414 "p4parser.tab.c" /* yacc.c:1646  */
+#line 4565 "p4parser.tab.c"
     break;
 
-  case 293:
-#line 834 "p4parser.y" /* yacc.c:1646  */
-    {
+  case 293: /* structTypeDeclaration: optAnnotations STRUCT name optTypeParameters L_BRACE structFieldList R_BRACE  */
+#line 834 "p4parser.y"
+      {
           saveBaseType(subparser, getNodeAt(subparser, 6));
           bindIdent(subparser, getNodeAt(subparser, 6), getNodeAt(subparser, 5));
       }
-#line 4423 "p4parser.tab.c" /* yacc.c:1646  */
+#line 4574 "p4parser.tab.c"
     break;
 
-  case 294:
-#line 841 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4429 "p4parser.tab.c" /* yacc.c:1646  */
+  case 294: /* $@16: %empty  */
+#line 841 "p4parser.y"
+                                     {}
+#line 4580 "p4parser.tab.c"
     break;
 
-  case 295:
-#line 841 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4435 "p4parser.tab.c" /* yacc.c:1646  */
+  case 295: /* $@17: %empty  */
+#line 841 "p4parser.y"
+                                                          {}
+#line 4586 "p4parser.tab.c"
     break;
 
-  case 296:
-#line 842 "p4parser.y" /* yacc.c:1646  */
-    {
+  case 296: /* headerUnionDeclaration: optAnnotations HEADER_UNION name $@16 optTypeParameters $@17 L_BRACE structFieldList R_BRACE  */
+#line 842 "p4parser.y"
+                                      {
         saveBaseType(subparser, getNodeAt(subparser, 8));
         bindIdent(subparser, getNodeAt(subparser, 8), getNodeAt(subparser, 7));
       }
-#line 4444 "p4parser.tab.c" /* yacc.c:1646  */
+#line 4595 "p4parser.tab.c"
     break;
 
-  case 297:
-#line 849 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4450 "p4parser.tab.c" /* yacc.c:1646  */
+  case 297: /* structFieldList: %empty  */
+#line 849 "p4parser.y"
+                                     {}
+#line 4601 "p4parser.tab.c"
     break;
 
-  case 298:
-#line 850 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4456 "p4parser.tab.c" /* yacc.c:1646  */
+  case 298: /* structFieldList: structFieldList structField  */
+#line 850 "p4parser.y"
+                                       {}
+#line 4607 "p4parser.tab.c"
     break;
 
-  case 299:
-#line 854 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4462 "p4parser.tab.c" /* yacc.c:1646  */
+  case 299: /* structField: optAnnotations typeRef name SEMICOLON  */
+#line 854 "p4parser.y"
+                                           {}
+#line 4613 "p4parser.tab.c"
     break;
 
-  case 300:
-#line 859 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4468 "p4parser.tab.c" /* yacc.c:1646  */
+  case 300: /* $@18: %empty  */
+#line 859 "p4parser.y"
+                  {}
+#line 4619 "p4parser.tab.c"
     break;
 
-  case 301:
-#line 860 "p4parser.y" /* yacc.c:1646  */
-    {
+  case 301: /* enumDeclaration: optAnnotations ENUM name $@18 L_BRACE identifierList R_BRACE  */
+#line 860 "p4parser.y"
+                                       {
           saveBaseType(subparser, getNodeAt(subparser, 6));
           bindIdent(subparser, getNodeAt(subparser, 6), getNodeAt(subparser, 5));
         }
-#line 4477 "p4parser.tab.c" /* yacc.c:1646  */
+#line 4628 "p4parser.tab.c"
     break;
 
-  case 302:
-#line 864 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4483 "p4parser.tab.c" /* yacc.c:1646  */
+  case 302: /* $@19: %empty  */
+#line 864 "p4parser.y"
+                                       {}
+#line 4634 "p4parser.tab.c"
     break;
 
-  case 303:
-#line 865 "p4parser.y" /* yacc.c:1646  */
-    {
+  case 303: /* enumDeclaration: optAnnotations ENUM typeRef name $@19 L_BRACE specifiedIdentifierList R_BRACE  */
+#line 865 "p4parser.y"
+                                                      {
           saveBaseType(subparser, getNodeAt(subparser, 7));
           bindIdent(subparser, getNodeAt(subparser, 7), getNodeAt(subparser, 5));
         }
-#line 4492 "p4parser.tab.c" /* yacc.c:1646  */
+#line 4643 "p4parser.tab.c"
     break;
 
-  case 304:
-#line 872 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4498 "p4parser.tab.c" /* yacc.c:1646  */
+  case 304: /* specifiedIdentifierList: specifiedIdentifier  */
+#line 872 "p4parser.y"
+                            {}
+#line 4649 "p4parser.tab.c"
     break;
 
-  case 305:
-#line 873 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4504 "p4parser.tab.c" /* yacc.c:1646  */
+  case 305: /* specifiedIdentifierList: specifiedIdentifierList COMMA specifiedIdentifier  */
+#line 873 "p4parser.y"
+                                                        {}
+#line 4655 "p4parser.tab.c"
     break;
 
-  case 306:
-#line 877 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4510 "p4parser.tab.c" /* yacc.c:1646  */
+  case 306: /* specifiedIdentifier: name ASSIGN initializer  */
+#line 877 "p4parser.y"
+                               {}
+#line 4661 "p4parser.tab.c"
     break;
 
-  case 307:
-#line 882 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4516 "p4parser.tab.c" /* yacc.c:1646  */
+  case 307: /* errorDeclaration: ERROR L_BRACE identifierList R_BRACE  */
+#line 882 "p4parser.y"
+        {}
+#line 4667 "p4parser.tab.c"
     break;
 
-  case 308:
-#line 887 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4522 "p4parser.tab.c" /* yacc.c:1646  */
+  case 308: /* matchKindDeclaration: MATCH_KIND L_BRACE identifierList R_BRACE  */
+#line 887 "p4parser.y"
+        {}
+#line 4673 "p4parser.tab.c"
     break;
 
-  case 309:
-#line 892 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4528 "p4parser.tab.c" /* yacc.c:1646  */
+  case 309: /* identifierList: name  */
+#line 892 "p4parser.y"
+                            {}
+#line 4679 "p4parser.tab.c"
     break;
 
-  case 310:
-#line 893 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4534 "p4parser.tab.c" /* yacc.c:1646  */
+  case 310: /* identifierList: identifierList COMMA name  */
+#line 893 "p4parser.y"
+                                {}
+#line 4685 "p4parser.tab.c"
     break;
 
-  case 311:
-#line 897 "p4parser.y" /* yacc.c:1646  */
-    {
+  case 311: /* typedefDeclaration: optAnnotations TYPEDEF typeRef name  */
+#line 897 "p4parser.y"
+                                        {
           saveBaseType(subparser, getNodeAt(subparser, 3));
           bindIdent(subparser, getNodeAt(subparser, 3), getNodeAt(subparser, 1));
         }
-#line 4543 "p4parser.tab.c" /* yacc.c:1646  */
+#line 4694 "p4parser.tab.c"
     break;
 
-  case 312:
-#line 901 "p4parser.y" /* yacc.c:1646  */
-    {
+  case 312: /* typedefDeclaration: optAnnotations TYPEDEF derivedTypeDeclaration name  */
+#line 901 "p4parser.y"
+                                                         {
           saveBaseType(subparser, getNodeAt(subparser, 3));
           bindIdent(subparser, getNodeAt(subparser, 3), getNodeAt(subparser, 1));
         }
-#line 4552 "p4parser.tab.c" /* yacc.c:1646  */
+#line 4703 "p4parser.tab.c"
     break;
 
-  case 313:
-#line 905 "p4parser.y" /* yacc.c:1646  */
-    {
+  case 313: /* typedefDeclaration: optAnnotations TYPE typeRef name  */
+#line 905 "p4parser.y"
+                                       {
           saveBaseType(subparser, getNodeAt(subparser, 3));
           bindIdent(subparser, getNodeAt(subparser, 3), getNodeAt(subparser, 1));
         }
-#line 4561 "p4parser.tab.c" /* yacc.c:1646  */
+#line 4712 "p4parser.tab.c"
     break;
 
-  case 314:
-#line 909 "p4parser.y" /* yacc.c:1646  */
-    {
+  case 314: /* typedefDeclaration: optAnnotations TYPE derivedTypeDeclaration name  */
+#line 909 "p4parser.y"
+                                                      {
           saveBaseType(subparser, getNodeAt(subparser, 3));
           bindIdent(subparser, getNodeAt(subparser, 3), getNodeAt(subparser, 1));
         }
-#line 4570 "p4parser.tab.c" /* yacc.c:1646  */
+#line 4721 "p4parser.tab.c"
     break;
 
-  case 315:
-#line 920 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4576 "p4parser.tab.c" /* yacc.c:1646  */
+  case 315: /* assignmentOrMethodCallStatement: lvalue L_PAREN argumentList R_PAREN SEMICOLON  */
+#line 920 "p4parser.y"
+        {}
+#line 4727 "p4parser.tab.c"
     break;
 
-  case 316:
-#line 923 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4582 "p4parser.tab.c" /* yacc.c:1646  */
+  case 316: /* assignmentOrMethodCallStatement: lvalue l_angle typeArgumentList r_angle L_PAREN argumentList R_PAREN SEMICOLON  */
+#line 923 "p4parser.y"
+        {}
+#line 4733 "p4parser.tab.c"
     break;
 
-  case 317:
-#line 926 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4588 "p4parser.tab.c" /* yacc.c:1646  */
+  case 317: /* assignmentOrMethodCallStatement: lvalue ASSIGN expression SEMICOLON  */
+#line 926 "p4parser.y"
+        {}
+#line 4739 "p4parser.tab.c"
     break;
 
-  case 318:
-#line 931 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4594 "p4parser.tab.c" /* yacc.c:1646  */
+  case 318: /* emptyStatement: SEMICOLON  */
+#line 931 "p4parser.y"
+                   {}
+#line 4745 "p4parser.tab.c"
     break;
 
-  case 319:
-#line 935 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4600 "p4parser.tab.c" /* yacc.c:1646  */
+  case 319: /* exitStatement: EXIT SEMICOLON  */
+#line 935 "p4parser.y"
+                   {}
+#line 4751 "p4parser.tab.c"
     break;
 
-  case 320:
-#line 939 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4606 "p4parser.tab.c" /* yacc.c:1646  */
+  case 320: /* returnStatement: RETURN SEMICOLON  */
+#line 939 "p4parser.y"
+                                {}
+#line 4757 "p4parser.tab.c"
     break;
 
-  case 321:
-#line 940 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4612 "p4parser.tab.c" /* yacc.c:1646  */
+  case 321: /* returnStatement: RETURN expression SEMICOLON  */
+#line 940 "p4parser.y"
+                                  {}
+#line 4763 "p4parser.tab.c"
     break;
 
-  case 322:
-#line 945 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4618 "p4parser.tab.c" /* yacc.c:1646  */
+  case 322: /* conditionalStatement: IF L_PAREN expression R_PAREN statement  */
+#line 945 "p4parser.y"
+        {}
+#line 4769 "p4parser.tab.c"
     break;
 
-  case 323:
-#line 947 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4624 "p4parser.tab.c" /* yacc.c:1646  */
+  case 323: /* conditionalStatement: IF L_PAREN expression R_PAREN statement ELSE statement  */
+#line 947 "p4parser.y"
+        {}
+#line 4775 "p4parser.tab.c"
     break;
 
-  case 324:
-#line 952 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4630 "p4parser.tab.c" /* yacc.c:1646  */
+  case 324: /* directApplication: typeName DOT APPLY L_PAREN argumentList R_PAREN SEMICOLON  */
+#line 952 "p4parser.y"
+                                                              {}
+#line 4781 "p4parser.tab.c"
     break;
 
-  case 325:
-#line 956 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4636 "p4parser.tab.c" /* yacc.c:1646  */
+  case 325: /* statement: assignmentOrMethodCallStatement  */
+#line 956 "p4parser.y"
+                                     {}
+#line 4787 "p4parser.tab.c"
     break;
 
-  case 326:
-#line 957 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4642 "p4parser.tab.c" /* yacc.c:1646  */
+  case 326: /* statement: directApplication  */
+#line 957 "p4parser.y"
+                                       {}
+#line 4793 "p4parser.tab.c"
     break;
 
-  case 327:
-#line 958 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4648 "p4parser.tab.c" /* yacc.c:1646  */
+  case 327: /* statement: conditionalStatement  */
+#line 958 "p4parser.y"
+                                       {}
+#line 4799 "p4parser.tab.c"
     break;
 
-  case 328:
-#line 959 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4654 "p4parser.tab.c" /* yacc.c:1646  */
+  case 328: /* statement: emptyStatement  */
+#line 959 "p4parser.y"
+                                       {}
+#line 4805 "p4parser.tab.c"
     break;
 
-  case 329:
-#line 960 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4660 "p4parser.tab.c" /* yacc.c:1646  */
+  case 329: /* statement: blockStatement  */
+#line 960 "p4parser.y"
+                                       {}
+#line 4811 "p4parser.tab.c"
     break;
 
-  case 330:
-#line 961 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4666 "p4parser.tab.c" /* yacc.c:1646  */
+  case 330: /* statement: returnStatement  */
+#line 961 "p4parser.y"
+                                       {}
+#line 4817 "p4parser.tab.c"
     break;
 
-  case 331:
-#line 962 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4672 "p4parser.tab.c" /* yacc.c:1646  */
+  case 331: /* statement: exitStatement  */
+#line 962 "p4parser.y"
+                                       {}
+#line 4823 "p4parser.tab.c"
     break;
 
-  case 332:
-#line 963 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4678 "p4parser.tab.c" /* yacc.c:1646  */
+  case 332: /* statement: switchStatement  */
+#line 963 "p4parser.y"
+                                       {}
+#line 4829 "p4parser.tab.c"
     break;
 
-  case 333:
-#line 967 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4684 "p4parser.tab.c" /* yacc.c:1646  */
+  case 333: /* $@20: %empty  */
+#line 967 "p4parser.y"
+                           {}
+#line 4835 "p4parser.tab.c"
     break;
 
-  case 334:
-#line 968 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4690 "p4parser.tab.c" /* yacc.c:1646  */
+  case 334: /* blockStatement: optAnnotations L_BRACE $@20 statOrDeclList R_BRACE  */
+#line 968 "p4parser.y"
+                             {}
+#line 4841 "p4parser.tab.c"
     break;
 
-  case 335:
-#line 972 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4696 "p4parser.tab.c" /* yacc.c:1646  */
+  case 335: /* statOrDeclList: %empty  */
+#line 972 "p4parser.y"
+                                          {}
+#line 4847 "p4parser.tab.c"
     break;
 
-  case 336:
-#line 973 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4702 "p4parser.tab.c" /* yacc.c:1646  */
+  case 336: /* statOrDeclList: statOrDeclList statementOrDeclaration  */
+#line 973 "p4parser.y"
+                                            {}
+#line 4853 "p4parser.tab.c"
     break;
 
-  case 337:
-#line 977 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4708 "p4parser.tab.c" /* yacc.c:1646  */
+  case 337: /* switchStatement: SWITCH L_PAREN expression R_PAREN L_BRACE switchCases R_BRACE  */
+#line 977 "p4parser.y"
+                                                                  {}
+#line 4859 "p4parser.tab.c"
     break;
 
-  case 338:
-#line 981 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4714 "p4parser.tab.c" /* yacc.c:1646  */
+  case 338: /* switchCases: %empty  */
+#line 981 "p4parser.y"
+                             {}
+#line 4865 "p4parser.tab.c"
     break;
 
-  case 339:
-#line 982 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4720 "p4parser.tab.c" /* yacc.c:1646  */
+  case 339: /* switchCases: switchCases switchCase  */
+#line 982 "p4parser.y"
+                               {}
+#line 4871 "p4parser.tab.c"
     break;
 
-  case 340:
-#line 986 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4726 "p4parser.tab.c" /* yacc.c:1646  */
+  case 340: /* switchCase: switchLabel COLON blockStatement  */
+#line 986 "p4parser.y"
+                                     {}
+#line 4877 "p4parser.tab.c"
     break;
 
-  case 341:
-#line 987 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4732 "p4parser.tab.c" /* yacc.c:1646  */
+  case 341: /* switchCase: switchLabel COLON  */
+#line 987 "p4parser.y"
+                                       {}
+#line 4883 "p4parser.tab.c"
     break;
 
-  case 342:
-#line 991 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4738 "p4parser.tab.c" /* yacc.c:1646  */
+  case 342: /* switchLabel: DEFAULT  */
+#line 991 "p4parser.y"
+                             {}
+#line 4889 "p4parser.tab.c"
     break;
 
-  case 343:
-#line 992 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4744 "p4parser.tab.c" /* yacc.c:1646  */
+  case 343: /* switchLabel: nonBraceExpression  */
+#line 992 "p4parser.y"
+                               {}
+#line 4895 "p4parser.tab.c"
     break;
 
-  case 344:
-#line 996 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4750 "p4parser.tab.c" /* yacc.c:1646  */
+  case 344: /* statementOrDeclaration: variableDeclaration  */
+#line 996 "p4parser.y"
+                             {}
+#line 4901 "p4parser.tab.c"
     break;
 
-  case 345:
-#line 997 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4756 "p4parser.tab.c" /* yacc.c:1646  */
+  case 345: /* statementOrDeclaration: constantDeclaration  */
+#line 997 "p4parser.y"
+                               {}
+#line 4907 "p4parser.tab.c"
     break;
 
-  case 346:
-#line 998 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4762 "p4parser.tab.c" /* yacc.c:1646  */
+  case 346: /* statementOrDeclaration: statement  */
+#line 998 "p4parser.y"
+                               {}
+#line 4913 "p4parser.tab.c"
     break;
 
-  case 347:
-#line 999 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4768 "p4parser.tab.c" /* yacc.c:1646  */
+  case 347: /* statementOrDeclaration: instantiation  */
+#line 999 "p4parser.y"
+                               {}
+#line 4919 "p4parser.tab.c"
     break;
 
-  case 348:
-#line 1007 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4774 "p4parser.tab.c" /* yacc.c:1646  */
+  case 348: /* tableDeclaration: optAnnotations TABLE name L_BRACE tablePropertyList R_BRACE  */
+#line 1007 "p4parser.y"
+          {}
+#line 4925 "p4parser.tab.c"
     break;
 
-  case 349:
-#line 1011 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4780 "p4parser.tab.c" /* yacc.c:1646  */
+  case 349: /* tablePropertyList: tableProperty  */
+#line 1011 "p4parser.y"
+                                       {}
+#line 4931 "p4parser.tab.c"
     break;
 
-  case 350:
-#line 1012 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4786 "p4parser.tab.c" /* yacc.c:1646  */
+  case 350: /* tablePropertyList: tablePropertyList tableProperty  */
+#line 1012 "p4parser.y"
+                                         {}
+#line 4937 "p4parser.tab.c"
     break;
 
-  case 351:
-#line 1017 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4792 "p4parser.tab.c" /* yacc.c:1646  */
+  case 351: /* tableProperty: KEY ASSIGN L_BRACE keyElementList R_BRACE  */
+#line 1017 "p4parser.y"
+        {}
+#line 4943 "p4parser.tab.c"
     break;
 
-  case 352:
-#line 1019 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4798 "p4parser.tab.c" /* yacc.c:1646  */
+  case 352: /* tableProperty: ACTIONS ASSIGN L_BRACE actionList R_BRACE  */
+#line 1019 "p4parser.y"
+        {}
+#line 4949 "p4parser.tab.c"
     break;
 
-  case 353:
-#line 1021 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4804 "p4parser.tab.c" /* yacc.c:1646  */
+  case 353: /* tableProperty: optAnnotations optCONST ENTRIES ASSIGN L_BRACE entriesList R_BRACE  */
+#line 1021 "p4parser.y"
+        {}
+#line 4955 "p4parser.tab.c"
     break;
 
-  case 354:
-#line 1023 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4810 "p4parser.tab.c" /* yacc.c:1646  */
+  case 354: /* tableProperty: optAnnotations optCONST nonTableKwName ASSIGN initializer SEMICOLON  */
+#line 1023 "p4parser.y"
+        {}
+#line 4961 "p4parser.tab.c"
     break;
 
-  case 355:
-#line 1027 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4816 "p4parser.tab.c" /* yacc.c:1646  */
+  case 355: /* keyElementList: %empty  */
+#line 1027 "p4parser.y"
+                                       {}
+#line 4967 "p4parser.tab.c"
     break;
 
-  case 356:
-#line 1028 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4822 "p4parser.tab.c" /* yacc.c:1646  */
+  case 356: /* keyElementList: keyElementList keyElement  */
+#line 1028 "p4parser.y"
+                                         {}
+#line 4973 "p4parser.tab.c"
     break;
 
-  case 357:
-#line 1033 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4828 "p4parser.tab.c" /* yacc.c:1646  */
+  case 357: /* keyElement: expression COLON name optAnnotations SEMICOLON  */
+#line 1033 "p4parser.y"
+                                         {}
+#line 4979 "p4parser.tab.c"
     break;
 
-  case 358:
-#line 1037 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4834 "p4parser.tab.c" /* yacc.c:1646  */
+  case 358: /* actionList: %empty  */
+#line 1037 "p4parser.y"
+           {}
+#line 4985 "p4parser.tab.c"
     break;
 
-  case 359:
-#line 1039 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4840 "p4parser.tab.c" /* yacc.c:1646  */
+  case 359: /* actionList: actionList optAnnotations actionRef SEMICOLON  */
+#line 1039 "p4parser.y"
+        {}
+#line 4991 "p4parser.tab.c"
     break;
 
-  case 360:
-#line 1044 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4846 "p4parser.tab.c" /* yacc.c:1646  */
+  case 360: /* actionRef: prefixedNonTypeName  */
+#line 1044 "p4parser.y"
+        {}
+#line 4997 "p4parser.tab.c"
     break;
 
-  case 361:
-#line 1046 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4852 "p4parser.tab.c" /* yacc.c:1646  */
+  case 361: /* actionRef: prefixedNonTypeName L_PAREN argumentList R_PAREN  */
+#line 1046 "p4parser.y"
+        {}
+#line 5003 "p4parser.tab.c"
     break;
 
-  case 362:
-#line 1051 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4858 "p4parser.tab.c" /* yacc.c:1646  */
+  case 362: /* entry: keysetExpression COLON actionRef optAnnotations SEMICOLON  */
+#line 1051 "p4parser.y"
+        {}
+#line 5009 "p4parser.tab.c"
     break;
 
-  case 363:
-#line 1055 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4864 "p4parser.tab.c" /* yacc.c:1646  */
+  case 363: /* entriesList: entry  */
+#line 1055 "p4parser.y"
+                                   {}
+#line 5015 "p4parser.tab.c"
     break;
 
-  case 364:
-#line 1056 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4870 "p4parser.tab.c" /* yacc.c:1646  */
+  case 364: /* entriesList: entriesList entry  */
+#line 1056 "p4parser.y"
+                                     {}
+#line 5021 "p4parser.tab.c"
     break;
 
-  case 365:
-#line 1062 "p4parser.y" /* yacc.c:1646  */
-    {
+  case 365: /* actionDeclaration: optAnnotations ACTION name L_PAREN parameterList R_PAREN blockStatement  */
+#line 1062 "p4parser.y"
+                                                                            {
         saveBaseType(subparser, getNodeAt(subparser, 6));
         bindIdent(subparser, getNodeAt(subparser, 6), getNodeAt(subparser, 5));
       }
-#line 4879 "p4parser.tab.c" /* yacc.c:1646  */
+#line 5030 "p4parser.tab.c"
     break;
 
-  case 366:
-#line 1071 "p4parser.y" /* yacc.c:1646  */
-    {
+  case 366: /* variableDeclaration: annotations typeRef name optInitializer SEMICOLON  */
+#line 1071 "p4parser.y"
+                                                      {
         saveBaseType(subparser, getNodeAt(subparser, 4));
         bindIdent(subparser, getNodeAt(subparser, 4), getNodeAt(subparser, 3));
       }
-#line 4888 "p4parser.tab.c" /* yacc.c:1646  */
+#line 5039 "p4parser.tab.c"
     break;
 
-  case 367:
-#line 1075 "p4parser.y" /* yacc.c:1646  */
-    {
+  case 367: /* variableDeclaration: typeRef name optInitializer SEMICOLON  */
+#line 1075 "p4parser.y"
+                                            {
         saveBaseType(subparser, getNodeAt(subparser, 4));
         bindIdent(subparser, getNodeAt(subparser, 4), getNodeAt(subparser, 3));
       }
-#line 4897 "p4parser.tab.c" /* yacc.c:1646  */
+#line 5048 "p4parser.tab.c"
     break;
 
-  case 368:
-#line 1083 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4903 "p4parser.tab.c" /* yacc.c:1646  */
+  case 368: /* constantDeclaration: optAnnotations CONST typeRef name ASSIGN initializer SEMICOLON  */
+#line 1083 "p4parser.y"
+                                     {}
+#line 5054 "p4parser.tab.c"
     break;
 
-  case 369:
-#line 1087 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4909 "p4parser.tab.c" /* yacc.c:1646  */
+  case 369: /* optInitializer: %empty  */
+#line 1087 "p4parser.y"
+                                     {}
+#line 5060 "p4parser.tab.c"
     break;
 
-  case 370:
-#line 1088 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4915 "p4parser.tab.c" /* yacc.c:1646  */
+  case 370: /* optInitializer: ASSIGN initializer  */
+#line 1088 "p4parser.y"
+                                          {}
+#line 5066 "p4parser.tab.c"
     break;
 
-  case 371:
-#line 1092 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4921 "p4parser.tab.c" /* yacc.c:1646  */
+  case 371: /* initializer: expression  */
+#line 1092 "p4parser.y"
+                                        {}
+#line 5072 "p4parser.tab.c"
     break;
 
-  case 372:
-#line 1098 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4927 "p4parser.tab.c" /* yacc.c:1646  */
+  case 372: /* functionDeclaration: functionPrototype blockStatement  */
+#line 1098 "p4parser.y"
+                                       {}
+#line 5078 "p4parser.tab.c"
     break;
 
-  case 373:
-#line 1102 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4933 "p4parser.tab.c" /* yacc.c:1646  */
+  case 373: /* argumentList: %empty  */
+#line 1102 "p4parser.y"
+                                       {}
+#line 5084 "p4parser.tab.c"
     break;
 
-  case 374:
-#line 1103 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4939 "p4parser.tab.c" /* yacc.c:1646  */
+  case 374: /* argumentList: nonEmptyArgList  */
+#line 1103 "p4parser.y"
+                                         {}
+#line 5090 "p4parser.tab.c"
     break;
 
-  case 375:
-#line 1107 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4945 "p4parser.tab.c" /* yacc.c:1646  */
+  case 375: /* nonEmptyArgList: argument  */
+#line 1107 "p4parser.y"
+                                       {}
+#line 5096 "p4parser.tab.c"
     break;
 
-  case 376:
-#line 1108 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4951 "p4parser.tab.c" /* yacc.c:1646  */
+  case 376: /* nonEmptyArgList: nonEmptyArgList COMMA argument  */
+#line 1108 "p4parser.y"
+                                           {}
+#line 5102 "p4parser.tab.c"
     break;
 
-  case 377:
-#line 1112 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4957 "p4parser.tab.c" /* yacc.c:1646  */
+  case 377: /* argument: expression  */
+#line 1112 "p4parser.y"
+                                       {}
+#line 5108 "p4parser.tab.c"
     break;
 
-  case 378:
-#line 1113 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4963 "p4parser.tab.c" /* yacc.c:1646  */
+  case 378: /* argument: name ASSIGN expression  */
+#line 1113 "p4parser.y"
+                                            {}
+#line 5114 "p4parser.tab.c"
     break;
 
-  case 379:
-#line 1114 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4969 "p4parser.tab.c" /* yacc.c:1646  */
+  case 379: /* argument: DONTCARE  */
+#line 1114 "p4parser.y"
+                                              {}
+#line 5120 "p4parser.tab.c"
     break;
 
-  case 380:
-#line 1118 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4975 "p4parser.tab.c" /* yacc.c:1646  */
+  case 380: /* expressionList: %empty  */
+#line 1118 "p4parser.y"
+                                       {}
+#line 5126 "p4parser.tab.c"
     break;
 
-  case 381:
-#line 1119 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4981 "p4parser.tab.c" /* yacc.c:1646  */
+  case 381: /* expressionList: expression  */
+#line 1119 "p4parser.y"
+                                         {}
+#line 5132 "p4parser.tab.c"
     break;
 
-  case 382:
-#line 1120 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4987 "p4parser.tab.c" /* yacc.c:1646  */
+  case 382: /* expressionList: expressionList COMMA expression  */
+#line 1120 "p4parser.y"
+                                           {}
+#line 5138 "p4parser.tab.c"
     break;
 
-  case 383:
-#line 1124 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4993 "p4parser.tab.c" /* yacc.c:1646  */
+  case 383: /* prefixedNonTypeName: nonTypeName  */
+#line 1124 "p4parser.y"
+                                       {}
+#line 5144 "p4parser.tab.c"
     break;
 
-  case 384:
-#line 1125 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 4999 "p4parser.tab.c" /* yacc.c:1646  */
+  case 384: /* prefixedNonTypeName: dotPrefix nonTypeName  */
+#line 1125 "p4parser.y"
+                                         {}
+#line 5150 "p4parser.tab.c"
     break;
 
-  case 385:
-#line 1129 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5005 "p4parser.tab.c" /* yacc.c:1646  */
+  case 385: /* $@21: %empty  */
+#line 1129 "p4parser.y"
+        {}
+#line 5156 "p4parser.tab.c"
     break;
 
-  case 386:
-#line 1129 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5011 "p4parser.tab.c" /* yacc.c:1646  */
+  case 386: /* dot_name: DOT $@21 name  */
+#line 1129 "p4parser.y"
+                {}
+#line 5162 "p4parser.tab.c"
     break;
 
-  case 387:
-#line 1133 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5017 "p4parser.tab.c" /* yacc.c:1646  */
+  case 387: /* lvalue: prefixedNonTypeName  */
+#line 1133 "p4parser.y"
+                                       {}
+#line 5168 "p4parser.tab.c"
     break;
 
-  case 388:
-#line 1134 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5023 "p4parser.tab.c" /* yacc.c:1646  */
+  case 388: /* lvalue: THIS  */
+#line 1134 "p4parser.y"
+                                         {}
+#line 5174 "p4parser.tab.c"
     break;
 
-  case 389:
-#line 1135 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5029 "p4parser.tab.c" /* yacc.c:1646  */
+  case 389: /* lvalue: lvalue dot_name  */
+#line 1135 "p4parser.y"
+                                         {}
+#line 5180 "p4parser.tab.c"
     break;
 
-  case 390:
-#line 1136 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5035 "p4parser.tab.c" /* yacc.c:1646  */
+  case 390: /* lvalue: lvalue L_BRACKET expression R_BRACKET  */
+#line 1136 "p4parser.y"
+                                                     {}
+#line 5186 "p4parser.tab.c"
     break;
 
-  case 391:
-#line 1137 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5041 "p4parser.tab.c" /* yacc.c:1646  */
+  case 391: /* lvalue: lvalue L_BRACKET expression COLON expression R_BRACKET  */
+#line 1137 "p4parser.y"
+                                                             {}
+#line 5192 "p4parser.tab.c"
     break;
 
-  case 392:
-#line 1141 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5047 "p4parser.tab.c" /* yacc.c:1646  */
+  case 392: /* expression: INTEGER  */
+#line 1141 "p4parser.y"
+                                       {}
+#line 5198 "p4parser.tab.c"
     break;
 
-  case 393:
-#line 1142 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5053 "p4parser.tab.c" /* yacc.c:1646  */
+  case 393: /* expression: STRING_LITERAL  */
+#line 1142 "p4parser.y"
+                                         {}
+#line 5204 "p4parser.tab.c"
     break;
 
-  case 394:
-#line 1143 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5059 "p4parser.tab.c" /* yacc.c:1646  */
+  case 394: /* expression: TRUE  */
+#line 1143 "p4parser.y"
+                                         {}
+#line 5210 "p4parser.tab.c"
     break;
 
-  case 395:
-#line 1144 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5065 "p4parser.tab.c" /* yacc.c:1646  */
+  case 395: /* expression: FALSE  */
+#line 1144 "p4parser.y"
+                                         {}
+#line 5216 "p4parser.tab.c"
     break;
 
-  case 396:
-#line 1145 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5071 "p4parser.tab.c" /* yacc.c:1646  */
+  case 396: /* expression: THIS  */
+#line 1145 "p4parser.y"
+                                         {}
+#line 5222 "p4parser.tab.c"
     break;
 
-  case 397:
-#line 1146 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5077 "p4parser.tab.c" /* yacc.c:1646  */
+  case 397: /* expression: nonTypeName  */
+#line 1146 "p4parser.y"
+                                         {}
+#line 5228 "p4parser.tab.c"
     break;
 
-  case 398:
-#line 1147 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5083 "p4parser.tab.c" /* yacc.c:1646  */
+  case 398: /* expression: dotPrefix nonTypeName  */
+#line 1147 "p4parser.y"
+                                         {}
+#line 5234 "p4parser.tab.c"
     break;
 
-  case 399:
-#line 1148 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5089 "p4parser.tab.c" /* yacc.c:1646  */
+  case 399: /* expression: expression L_BRACKET expression R_BRACKET  */
+#line 1148 "p4parser.y"
+                                                     {}
+#line 5240 "p4parser.tab.c"
     break;
 
-  case 400:
-#line 1149 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5095 "p4parser.tab.c" /* yacc.c:1646  */
+  case 400: /* expression: expression L_BRACKET expression COLON expression R_BRACKET  */
+#line 1149 "p4parser.y"
+                                                                 {}
+#line 5246 "p4parser.tab.c"
     break;
 
-  case 401:
-#line 1150 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5101 "p4parser.tab.c" /* yacc.c:1646  */
+  case 401: /* expression: L_BRACE expressionList R_BRACE  */
+#line 1150 "p4parser.y"
+                                                 {}
+#line 5252 "p4parser.tab.c"
     break;
 
-  case 402:
-#line 1151 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5107 "p4parser.tab.c" /* yacc.c:1646  */
+  case 402: /* expression: L_BRACE kvList R_BRACE  */
+#line 1151 "p4parser.y"
+                                                 {}
+#line 5258 "p4parser.tab.c"
     break;
 
-  case 403:
-#line 1152 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5113 "p4parser.tab.c" /* yacc.c:1646  */
+  case 403: /* expression: L_PAREN expression R_PAREN  */
+#line 1152 "p4parser.y"
+                                                 {}
+#line 5264 "p4parser.tab.c"
     break;
 
-  case 404:
-#line 1153 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5119 "p4parser.tab.c" /* yacc.c:1646  */
+  case 404: /* expression: NOT expression  */
+#line 1153 "p4parser.y"
+                                         {}
+#line 5270 "p4parser.tab.c"
     break;
 
-  case 405:
-#line 1154 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5125 "p4parser.tab.c" /* yacc.c:1646  */
+  case 405: /* expression: COMPLEMENT expression  */
+#line 1154 "p4parser.y"
+                                                {}
+#line 5276 "p4parser.tab.c"
     break;
 
-  case 406:
-#line 1155 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5131 "p4parser.tab.c" /* yacc.c:1646  */
+  case 406: /* expression: MINUS expression  */
+#line 1155 "p4parser.y"
+                                           {}
+#line 5282 "p4parser.tab.c"
     break;
 
-  case 407:
-#line 1156 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5137 "p4parser.tab.c" /* yacc.c:1646  */
+  case 407: /* expression: PLUS expression  */
+#line 1156 "p4parser.y"
+                                          {}
+#line 5288 "p4parser.tab.c"
     break;
 
-  case 408:
-#line 1158 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5143 "p4parser.tab.c" /* yacc.c:1646  */
+  case 408: /* expression: typeName dot_name  */
+#line 1158 "p4parser.y"
+        {}
+#line 5294 "p4parser.tab.c"
     break;
 
-  case 409:
-#line 1160 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5149 "p4parser.tab.c" /* yacc.c:1646  */
+  case 409: /* expression: ERROR DOT name  */
+#line 1160 "p4parser.y"
+        {}
+#line 5300 "p4parser.tab.c"
     break;
 
-  case 410:
-#line 1161 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5155 "p4parser.tab.c" /* yacc.c:1646  */
+  case 410: /* expression: expression dot_name  */
+#line 1161 "p4parser.y"
+                                         {}
+#line 5306 "p4parser.tab.c"
     break;
 
-  case 411:
-#line 1162 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5161 "p4parser.tab.c" /* yacc.c:1646  */
+  case 411: /* expression: expression MUL expression  */
+#line 1162 "p4parser.y"
+                                         {}
+#line 5312 "p4parser.tab.c"
     break;
 
-  case 412:
-#line 1163 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5167 "p4parser.tab.c" /* yacc.c:1646  */
+  case 412: /* expression: expression DIV expression  */
+#line 1163 "p4parser.y"
+                                         {}
+#line 5318 "p4parser.tab.c"
     break;
 
-  case 413:
-#line 1164 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5173 "p4parser.tab.c" /* yacc.c:1646  */
+  case 413: /* expression: expression MOD expression  */
+#line 1164 "p4parser.y"
+                                         {}
+#line 5324 "p4parser.tab.c"
     break;
 
-  case 414:
-#line 1165 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5179 "p4parser.tab.c" /* yacc.c:1646  */
+  case 414: /* expression: expression PLUS expression  */
+#line 1165 "p4parser.y"
+                                          {}
+#line 5330 "p4parser.tab.c"
     break;
 
-  case 415:
-#line 1166 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5185 "p4parser.tab.c" /* yacc.c:1646  */
+  case 415: /* expression: expression MINUS expression  */
+#line 1166 "p4parser.y"
+                                           {}
+#line 5336 "p4parser.tab.c"
     break;
 
-  case 416:
-#line 1167 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5191 "p4parser.tab.c" /* yacc.c:1646  */
+  case 416: /* expression: expression PLUS_SAT expression  */
+#line 1167 "p4parser.y"
+                                            {}
+#line 5342 "p4parser.tab.c"
     break;
 
-  case 417:
-#line 1168 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5197 "p4parser.tab.c" /* yacc.c:1646  */
+  case 417: /* expression: expression MINUS_SAT expression  */
+#line 1168 "p4parser.y"
+                                             {}
+#line 5348 "p4parser.tab.c"
     break;
 
-  case 418:
-#line 1169 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5203 "p4parser.tab.c" /* yacc.c:1646  */
+  case 418: /* expression: expression SHL expression  */
+#line 1169 "p4parser.y"
+                                        {}
+#line 5354 "p4parser.tab.c"
     break;
 
-  case 419:
-#line 1171 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5209 "p4parser.tab.c" /* yacc.c:1646  */
+  case 419: /* expression: expression R_ANGLE_SHIFT R_ANGLE expression  */
+#line 1171 "p4parser.y"
+        {}
+#line 5360 "p4parser.tab.c"
     break;
 
-  case 420:
-#line 1172 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5215 "p4parser.tab.c" /* yacc.c:1646  */
+  case 420: /* expression: expression LE expression  */
+#line 1172 "p4parser.y"
+                                       {}
+#line 5366 "p4parser.tab.c"
     break;
 
-  case 421:
-#line 1173 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5221 "p4parser.tab.c" /* yacc.c:1646  */
+  case 421: /* expression: expression GE expression  */
+#line 1173 "p4parser.y"
+                                       {}
+#line 5372 "p4parser.tab.c"
     break;
 
-  case 422:
-#line 1175 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5227 "p4parser.tab.c" /* yacc.c:1646  */
+  case 422: /* expression: expression l_angle expression  */
+#line 1175 "p4parser.y"
+                                         {}
+#line 5378 "p4parser.tab.c"
     break;
 
-  case 423:
-#line 1176 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5233 "p4parser.tab.c" /* yacc.c:1646  */
+  case 423: /* expression: expression R_ANGLE expression  */
+#line 1176 "p4parser.y"
+                                             {}
+#line 5384 "p4parser.tab.c"
     break;
 
-  case 424:
-#line 1178 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5239 "p4parser.tab.c" /* yacc.c:1646  */
+  case 424: /* expression: expression NE expression  */
+#line 1178 "p4parser.y"
+                                       {}
+#line 5390 "p4parser.tab.c"
     break;
 
-  case 425:
-#line 1179 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5245 "p4parser.tab.c" /* yacc.c:1646  */
+  case 425: /* expression: expression EQ expression  */
+#line 1179 "p4parser.y"
+                                       {}
+#line 5396 "p4parser.tab.c"
     break;
 
-  case 426:
-#line 1180 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5251 "p4parser.tab.c" /* yacc.c:1646  */
+  case 426: /* expression: expression BIT_AND expression  */
+#line 1180 "p4parser.y"
+                                             {}
+#line 5402 "p4parser.tab.c"
     break;
 
-  case 427:
-#line 1181 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5257 "p4parser.tab.c" /* yacc.c:1646  */
+  case 427: /* expression: expression BIT_XOR expression  */
+#line 1181 "p4parser.y"
+                                             {}
+#line 5408 "p4parser.tab.c"
     break;
 
-  case 428:
-#line 1182 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5263 "p4parser.tab.c" /* yacc.c:1646  */
+  case 428: /* expression: expression BIT_OR expression  */
+#line 1182 "p4parser.y"
+                                            {}
+#line 5414 "p4parser.tab.c"
     break;
 
-  case 429:
-#line 1183 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5269 "p4parser.tab.c" /* yacc.c:1646  */
+  case 429: /* expression: expression PP expression  */
+#line 1183 "p4parser.y"
+                                       {}
+#line 5420 "p4parser.tab.c"
     break;
 
-  case 430:
-#line 1184 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5275 "p4parser.tab.c" /* yacc.c:1646  */
+  case 430: /* expression: expression AND expression  */
+#line 1184 "p4parser.y"
+                                        {}
+#line 5426 "p4parser.tab.c"
     break;
 
-  case 431:
-#line 1185 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5281 "p4parser.tab.c" /* yacc.c:1646  */
+  case 431: /* expression: expression OR expression  */
+#line 1185 "p4parser.y"
+                                       {}
+#line 5432 "p4parser.tab.c"
     break;
 
-  case 432:
-#line 1186 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5287 "p4parser.tab.c" /* yacc.c:1646  */
+  case 432: /* expression: expression QUESTION expression COLON expression  */
+#line 1186 "p4parser.y"
+                                                      {}
+#line 5438 "p4parser.tab.c"
     break;
 
-  case 433:
-#line 1188 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5293 "p4parser.tab.c" /* yacc.c:1646  */
+  case 433: /* expression: expression l_angle realTypeArgumentList r_angle L_PAREN argumentList R_PAREN  */
+#line 1188 "p4parser.y"
+        {}
+#line 5444 "p4parser.tab.c"
     break;
 
-  case 434:
-#line 1190 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5299 "p4parser.tab.c" /* yacc.c:1646  */
+  case 434: /* expression: expression L_PAREN argumentList R_PAREN  */
+#line 1190 "p4parser.y"
+        {}
+#line 5450 "p4parser.tab.c"
     break;
 
-  case 435:
-#line 1192 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5305 "p4parser.tab.c" /* yacc.c:1646  */
+  case 435: /* expression: namedType L_PAREN argumentList R_PAREN  */
+#line 1192 "p4parser.y"
+        {}
+#line 5456 "p4parser.tab.c"
     break;
 
-  case 436:
-#line 1193 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5311 "p4parser.tab.c" /* yacc.c:1646  */
+  case 436: /* expression: L_PAREN typeRef R_PAREN expression  */
+#line 1193 "p4parser.y"
+                                                      {}
+#line 5462 "p4parser.tab.c"
     break;
 
-  case 437:
-#line 1197 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5317 "p4parser.tab.c" /* yacc.c:1646  */
+  case 437: /* nonBraceExpression: INTEGER  */
+#line 1197 "p4parser.y"
+                                       {}
+#line 5468 "p4parser.tab.c"
     break;
 
-  case 438:
-#line 1198 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5323 "p4parser.tab.c" /* yacc.c:1646  */
+  case 438: /* nonBraceExpression: STRING_LITERAL  */
+#line 1198 "p4parser.y"
+                                         {}
+#line 5474 "p4parser.tab.c"
     break;
 
-  case 439:
-#line 1199 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5329 "p4parser.tab.c" /* yacc.c:1646  */
+  case 439: /* nonBraceExpression: TRUE  */
+#line 1199 "p4parser.y"
+                                         {}
+#line 5480 "p4parser.tab.c"
     break;
 
-  case 440:
-#line 1200 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5335 "p4parser.tab.c" /* yacc.c:1646  */
+  case 440: /* nonBraceExpression: FALSE  */
+#line 1200 "p4parser.y"
+                                         {}
+#line 5486 "p4parser.tab.c"
     break;
 
-  case 441:
-#line 1201 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5341 "p4parser.tab.c" /* yacc.c:1646  */
+  case 441: /* nonBraceExpression: THIS  */
+#line 1201 "p4parser.y"
+                                         {}
+#line 5492 "p4parser.tab.c"
     break;
 
-  case 442:
-#line 1202 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5347 "p4parser.tab.c" /* yacc.c:1646  */
+  case 442: /* nonBraceExpression: nonTypeName  */
+#line 1202 "p4parser.y"
+                                         {}
+#line 5498 "p4parser.tab.c"
     break;
 
-  case 443:
-#line 1203 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5353 "p4parser.tab.c" /* yacc.c:1646  */
+  case 443: /* nonBraceExpression: dotPrefix nonTypeName  */
+#line 1203 "p4parser.y"
+                                         {}
+#line 5504 "p4parser.tab.c"
     break;
 
-  case 444:
-#line 1204 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5359 "p4parser.tab.c" /* yacc.c:1646  */
+  case 444: /* nonBraceExpression: nonBraceExpression L_BRACKET expression R_BRACKET  */
+#line 1204 "p4parser.y"
+                                                             {}
+#line 5510 "p4parser.tab.c"
     break;
 
-  case 445:
-#line 1205 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5365 "p4parser.tab.c" /* yacc.c:1646  */
+  case 445: /* nonBraceExpression: nonBraceExpression L_BRACKET expression COLON expression R_BRACKET  */
+#line 1205 "p4parser.y"
+                                                                         {}
+#line 5516 "p4parser.tab.c"
     break;
 
-  case 446:
-#line 1206 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5371 "p4parser.tab.c" /* yacc.c:1646  */
+  case 446: /* nonBraceExpression: L_PAREN expression R_PAREN  */
+#line 1206 "p4parser.y"
+                                                 {}
+#line 5522 "p4parser.tab.c"
     break;
 
-  case 447:
-#line 1207 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5377 "p4parser.tab.c" /* yacc.c:1646  */
+  case 447: /* nonBraceExpression: NOT expression  */
+#line 1207 "p4parser.y"
+                                         {}
+#line 5528 "p4parser.tab.c"
     break;
 
-  case 448:
-#line 1208 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5383 "p4parser.tab.c" /* yacc.c:1646  */
+  case 448: /* nonBraceExpression: COMPLEMENT expression  */
+#line 1208 "p4parser.y"
+                                                {}
+#line 5534 "p4parser.tab.c"
     break;
 
-  case 449:
-#line 1209 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5389 "p4parser.tab.c" /* yacc.c:1646  */
+  case 449: /* nonBraceExpression: MINUS expression  */
+#line 1209 "p4parser.y"
+                                           {}
+#line 5540 "p4parser.tab.c"
     break;
 
-  case 450:
-#line 1210 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5395 "p4parser.tab.c" /* yacc.c:1646  */
+  case 450: /* nonBraceExpression: PLUS expression  */
+#line 1210 "p4parser.y"
+                                          {}
+#line 5546 "p4parser.tab.c"
     break;
 
-  case 451:
-#line 1212 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5401 "p4parser.tab.c" /* yacc.c:1646  */
+  case 451: /* nonBraceExpression: typeName dot_name  */
+#line 1212 "p4parser.y"
+        {}
+#line 5552 "p4parser.tab.c"
     break;
 
-  case 452:
-#line 1214 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5407 "p4parser.tab.c" /* yacc.c:1646  */
+  case 452: /* nonBraceExpression: ERROR DOT name  */
+#line 1214 "p4parser.y"
+        {}
+#line 5558 "p4parser.tab.c"
     break;
 
-  case 453:
-#line 1215 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5413 "p4parser.tab.c" /* yacc.c:1646  */
+  case 453: /* nonBraceExpression: nonBraceExpression dot_name  */
+#line 1215 "p4parser.y"
+                                                 {}
+#line 5564 "p4parser.tab.c"
     break;
 
-  case 454:
-#line 1216 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5419 "p4parser.tab.c" /* yacc.c:1646  */
+  case 454: /* nonBraceExpression: nonBraceExpression MUL expression  */
+#line 1216 "p4parser.y"
+                                                 {}
+#line 5570 "p4parser.tab.c"
     break;
 
-  case 455:
-#line 1217 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5425 "p4parser.tab.c" /* yacc.c:1646  */
+  case 455: /* nonBraceExpression: nonBraceExpression DIV expression  */
+#line 1217 "p4parser.y"
+                                                 {}
+#line 5576 "p4parser.tab.c"
     break;
 
-  case 456:
-#line 1218 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5431 "p4parser.tab.c" /* yacc.c:1646  */
+  case 456: /* nonBraceExpression: nonBraceExpression MOD expression  */
+#line 1218 "p4parser.y"
+                                                 {}
+#line 5582 "p4parser.tab.c"
     break;
 
-  case 457:
-#line 1219 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5437 "p4parser.tab.c" /* yacc.c:1646  */
+  case 457: /* nonBraceExpression: nonBraceExpression PLUS expression  */
+#line 1219 "p4parser.y"
+                                                  {}
+#line 5588 "p4parser.tab.c"
     break;
 
-  case 458:
-#line 1220 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5443 "p4parser.tab.c" /* yacc.c:1646  */
+  case 458: /* nonBraceExpression: nonBraceExpression MINUS expression  */
+#line 1220 "p4parser.y"
+                                                   {}
+#line 5594 "p4parser.tab.c"
     break;
 
-  case 459:
-#line 1221 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5449 "p4parser.tab.c" /* yacc.c:1646  */
+  case 459: /* nonBraceExpression: nonBraceExpression PLUS_SAT expression  */
+#line 1221 "p4parser.y"
+                                                    {}
+#line 5600 "p4parser.tab.c"
     break;
 
-  case 460:
-#line 1222 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5455 "p4parser.tab.c" /* yacc.c:1646  */
+  case 460: /* nonBraceExpression: nonBraceExpression MINUS_SAT expression  */
+#line 1222 "p4parser.y"
+                                                     {}
+#line 5606 "p4parser.tab.c"
     break;
 
-  case 461:
-#line 1223 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5461 "p4parser.tab.c" /* yacc.c:1646  */
+  case 461: /* nonBraceExpression: nonBraceExpression SHL expression  */
+#line 1223 "p4parser.y"
+                                                {}
+#line 5612 "p4parser.tab.c"
     break;
 
-  case 462:
-#line 1225 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5467 "p4parser.tab.c" /* yacc.c:1646  */
+  case 462: /* nonBraceExpression: nonBraceExpression R_ANGLE_SHIFT R_ANGLE expression  */
+#line 1225 "p4parser.y"
+        {}
+#line 5618 "p4parser.tab.c"
     break;
 
-  case 463:
-#line 1226 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5473 "p4parser.tab.c" /* yacc.c:1646  */
+  case 463: /* nonBraceExpression: nonBraceExpression LE expression  */
+#line 1226 "p4parser.y"
+                                               {}
+#line 5624 "p4parser.tab.c"
     break;
 
-  case 464:
-#line 1227 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5479 "p4parser.tab.c" /* yacc.c:1646  */
+  case 464: /* nonBraceExpression: nonBraceExpression GE expression  */
+#line 1227 "p4parser.y"
+                                               {}
+#line 5630 "p4parser.tab.c"
     break;
 
-  case 465:
-#line 1229 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5485 "p4parser.tab.c" /* yacc.c:1646  */
+  case 465: /* nonBraceExpression: nonBraceExpression l_angle expression  */
+#line 1229 "p4parser.y"
+                                         {}
+#line 5636 "p4parser.tab.c"
     break;
 
-  case 466:
-#line 1230 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5491 "p4parser.tab.c" /* yacc.c:1646  */
+  case 466: /* nonBraceExpression: nonBraceExpression R_ANGLE expression  */
+#line 1230 "p4parser.y"
+                                                     {}
+#line 5642 "p4parser.tab.c"
     break;
 
-  case 467:
-#line 1231 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5497 "p4parser.tab.c" /* yacc.c:1646  */
+  case 467: /* nonBraceExpression: nonBraceExpression NE expression  */
+#line 1231 "p4parser.y"
+                                               {}
+#line 5648 "p4parser.tab.c"
     break;
 
-  case 468:
-#line 1232 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5503 "p4parser.tab.c" /* yacc.c:1646  */
+  case 468: /* nonBraceExpression: nonBraceExpression EQ expression  */
+#line 1232 "p4parser.y"
+                                               {}
+#line 5654 "p4parser.tab.c"
     break;
 
-  case 469:
-#line 1233 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5509 "p4parser.tab.c" /* yacc.c:1646  */
+  case 469: /* nonBraceExpression: nonBraceExpression BIT_AND expression  */
+#line 1233 "p4parser.y"
+                                                     {}
+#line 5660 "p4parser.tab.c"
     break;
 
-  case 470:
-#line 1234 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5515 "p4parser.tab.c" /* yacc.c:1646  */
+  case 470: /* nonBraceExpression: nonBraceExpression BIT_XOR expression  */
+#line 1234 "p4parser.y"
+                                                     {}
+#line 5666 "p4parser.tab.c"
     break;
 
-  case 471:
-#line 1235 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5521 "p4parser.tab.c" /* yacc.c:1646  */
+  case 471: /* nonBraceExpression: nonBraceExpression BIT_OR expression  */
+#line 1235 "p4parser.y"
+                                                    {}
+#line 5672 "p4parser.tab.c"
     break;
 
-  case 472:
-#line 1236 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5527 "p4parser.tab.c" /* yacc.c:1646  */
+  case 472: /* nonBraceExpression: nonBraceExpression PP expression  */
+#line 1236 "p4parser.y"
+                                               {}
+#line 5678 "p4parser.tab.c"
     break;
 
-  case 473:
-#line 1237 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5533 "p4parser.tab.c" /* yacc.c:1646  */
+  case 473: /* nonBraceExpression: nonBraceExpression AND expression  */
+#line 1237 "p4parser.y"
+                                                {}
+#line 5684 "p4parser.tab.c"
     break;
 
-  case 474:
-#line 1238 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5539 "p4parser.tab.c" /* yacc.c:1646  */
+  case 474: /* nonBraceExpression: nonBraceExpression OR expression  */
+#line 1238 "p4parser.y"
+                                               {}
+#line 5690 "p4parser.tab.c"
     break;
 
-  case 475:
-#line 1239 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5545 "p4parser.tab.c" /* yacc.c:1646  */
+  case 475: /* nonBraceExpression: nonBraceExpression QUESTION expression COLON expression  */
+#line 1239 "p4parser.y"
+                                                              {}
+#line 5696 "p4parser.tab.c"
     break;
 
-  case 476:
-#line 1241 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5551 "p4parser.tab.c" /* yacc.c:1646  */
+  case 476: /* nonBraceExpression: nonBraceExpression l_angle realTypeArgumentList r_angle L_PAREN argumentList R_PAREN  */
+#line 1241 "p4parser.y"
+        {}
+#line 5702 "p4parser.tab.c"
     break;
 
-  case 477:
-#line 1243 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5557 "p4parser.tab.c" /* yacc.c:1646  */
+  case 477: /* nonBraceExpression: nonBraceExpression L_PAREN argumentList R_PAREN  */
+#line 1243 "p4parser.y"
+        {}
+#line 5708 "p4parser.tab.c"
     break;
 
-  case 478:
-#line 1245 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5563 "p4parser.tab.c" /* yacc.c:1646  */
+  case 478: /* nonBraceExpression: namedType L_PAREN argumentList R_PAREN  */
+#line 1245 "p4parser.y"
+        {}
+#line 5714 "p4parser.tab.c"
     break;
 
-  case 479:
-#line 1246 "p4parser.y" /* yacc.c:1646  */
-    {}
-#line 5569 "p4parser.tab.c" /* yacc.c:1646  */
+  case 479: /* nonBraceExpression: L_PAREN typeRef R_PAREN expression  */
+#line 1246 "p4parser.y"
+                                                      {}
+#line 5720 "p4parser.tab.c"
     break;
 
 
-#line 5573 "p4parser.tab.c" /* yacc.c:1646  */
+#line 5724 "p4parser.tab.c"
+
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -5583,25 +5735,23 @@ yyreduce:
      case of YYERROR or YYBACKUP, subsequent parser actions might lead
      to an incorrect destructor call or verbose syntax error message
      before the lookahead is translated.  */
-  YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
+  YY_SYMBOL_PRINT ("-> $$ =", YY_CAST (yysymbol_kind_t, yyr1[yyn]), &yyval, &yyloc);
 
   YYPOPSTACK (yylen);
   yylen = 0;
-  YY_STACK_PRINT (yyss, yyssp);
 
   *++yyvsp = yyval;
 
   /* Now 'shift' the result of the reduction.  Determine what state
      that goes to, based on the state we popped back to and the rule
      number reduced by.  */
-
-  yyn = yyr1[yyn];
-
-  yystate = yypgoto[yyn - YYNTOKENS] + *yyssp;
-  if (0 <= yystate && yystate <= YYLAST && yycheck[yystate] == *yyssp)
-    yystate = yytable[yystate];
-  else
-    yystate = yydefgoto[yyn - YYNTOKENS];
+  {
+    const int yylhs = yyr1[yyn] - YYNTOKENS;
+    const int yyi = yypgoto[yylhs] + *yyssp;
+    yystate = (0 <= yyi && yyi <= YYLAST && yycheck[yyi] == *yyssp
+               ? yytable[yyi]
+               : yydefgoto[yylhs]);
+  }
 
   goto yynewstate;
 
@@ -5612,49 +5762,13 @@ yyreduce:
 yyerrlab:
   /* Make sure we have latest lookahead translation.  See comments at
      user semantic actions for why this is necessary.  */
-  yytoken = yychar == YYEMPTY ? YYEMPTY : YYTRANSLATE (yychar);
-
+  yytoken = yychar == YYEMPTY ? YYSYMBOL_YYEMPTY : YYTRANSLATE (yychar);
   /* If not already recovering from an error, report this error.  */
   if (!yyerrstatus)
     {
       ++yynerrs;
-#if ! YYERROR_VERBOSE
       yyerror (YY_("syntax error"));
-#else
-# define YYSYNTAX_ERROR yysyntax_error (&yymsg_alloc, &yymsg, \
-                                        yyssp, yytoken)
-      {
-        char const *yymsgp = YY_("syntax error");
-        int yysyntax_error_status;
-        yysyntax_error_status = YYSYNTAX_ERROR;
-        if (yysyntax_error_status == 0)
-          yymsgp = yymsg;
-        else if (yysyntax_error_status == 1)
-          {
-            if (yymsg != yymsgbuf)
-              YYSTACK_FREE (yymsg);
-            yymsg = (char *) YYSTACK_ALLOC (yymsg_alloc);
-            if (!yymsg)
-              {
-                yymsg = yymsgbuf;
-                yymsg_alloc = sizeof yymsgbuf;
-                yysyntax_error_status = 2;
-              }
-            else
-              {
-                yysyntax_error_status = YYSYNTAX_ERROR;
-                yymsgp = yymsg;
-              }
-          }
-        yyerror (yymsgp);
-        if (yysyntax_error_status == 2)
-          goto yyexhaustedlab;
-      }
-# undef YYSYNTAX_ERROR
-#endif
     }
-
-
 
   if (yyerrstatus == 3)
     {
@@ -5684,12 +5798,11 @@ yyerrlab:
 | yyerrorlab -- error raised explicitly by YYERROR.  |
 `---------------------------------------------------*/
 yyerrorlab:
-
-  /* Pacify compilers like GCC when the user code never invokes
-     YYERROR and the label yyerrorlab therefore never appears in user
-     code.  */
-  if (/*CONSTCOND*/ 0)
-     goto yyerrorlab;
+  /* Pacify compilers when the user code never invokes YYERROR and the
+     label yyerrorlab therefore never appears in user code.  */
+  if (0)
+    YYERROR;
+  ++yynerrs;
 
   /* Do not reclaim the symbols of the rule whose action triggered
      this YYERROR.  */
@@ -5706,13 +5819,14 @@ yyerrorlab:
 yyerrlab1:
   yyerrstatus = 3;      /* Each real token shifted decrements this.  */
 
+  /* Pop stack until we find a state that shifts the error token.  */
   for (;;)
     {
       yyn = yypact[yystate];
       if (!yypact_value_is_default (yyn))
         {
-          yyn += YYTERROR;
-          if (0 <= yyn && yyn <= YYLAST && yycheck[yyn] == YYTERROR)
+          yyn += YYSYMBOL_YYerror;
+          if (0 <= yyn && yyn <= YYLAST && yycheck[yyn] == YYSYMBOL_YYerror)
             {
               yyn = yytable[yyn];
               if (0 < yyn)
@@ -5726,7 +5840,7 @@ yyerrlab1:
 
 
       yydestruct ("Error: popping",
-                  yystos[yystate], yyvsp);
+                  YY_ACCESSING_SYMBOL (yystate), yyvsp);
       YYPOPSTACK (1);
       yystate = *yyssp;
       YY_STACK_PRINT (yyss, yyssp);
@@ -5738,7 +5852,7 @@ yyerrlab1:
 
 
   /* Shift the error token.  */
-  YY_SYMBOL_PRINT ("Shifting", yystos[yyn], yyvsp, yylsp);
+  YY_SYMBOL_PRINT ("Shifting", YY_ACCESSING_SYMBOL (yyn), yyvsp, yylsp);
 
   yystate = yyn;
   goto yynewstate;
@@ -5749,26 +5863,30 @@ yyerrlab1:
 `-------------------------------------*/
 yyacceptlab:
   yyresult = 0;
-  goto yyreturn;
+  goto yyreturnlab;
+
 
 /*-----------------------------------.
 | yyabortlab -- YYABORT comes here.  |
 `-----------------------------------*/
 yyabortlab:
   yyresult = 1;
-  goto yyreturn;
+  goto yyreturnlab;
 
-#if !defined yyoverflow || YYERROR_VERBOSE
-/*-------------------------------------------------.
-| yyexhaustedlab -- memory exhaustion comes here.  |
-`-------------------------------------------------*/
+
+/*-----------------------------------------------------------.
+| yyexhaustedlab -- YYNOMEM (memory exhaustion) comes here.  |
+`-----------------------------------------------------------*/
 yyexhaustedlab:
   yyerror (YY_("memory exhausted"));
   yyresult = 2;
-  /* Fall through.  */
-#endif
+  goto yyreturnlab;
 
-yyreturn:
+
+/*----------------------------------------------------------.
+| yyreturnlab -- parsing is finished, clean up and return.  |
+`----------------------------------------------------------*/
+yyreturnlab:
   if (yychar != YYEMPTY)
     {
       /* Make sure we have latest lookahead translation.  See comments at
@@ -5784,20 +5902,18 @@ yyreturn:
   while (yyssp != yyss)
     {
       yydestruct ("Cleanup: popping",
-                  yystos[*yyssp], yyvsp);
+                  YY_ACCESSING_SYMBOL (+*yyssp), yyvsp);
       YYPOPSTACK (1);
     }
 #ifndef yyoverflow
   if (yyss != yyssa)
     YYSTACK_FREE (yyss);
 #endif
-#if YYERROR_VERBOSE
-  if (yymsg != yymsgbuf)
-    YYSTACK_FREE (yymsg);
-#endif
+
   return yyresult;
 }
-#line 1274 "p4parser.y" /* yacc.c:1906  */
+
+#line 1274 "p4parser.y"
 
 
 /** True when statistics should be output. */

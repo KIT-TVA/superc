@@ -124,1056 +124,1056 @@ public class P4Actions implements SemanticActions {
 
   public Object action(int production, Subparser subparser, Object value) {
     switch (production) {
-        case 3:
-    {}
+  case 3: /* program: input  */
+            {}
     break;
 
-  case 5:
-    {}
+  case 5: /* input: input declaration  */
+                         {}
     break;
 
-  case 6:
-    {}
+  case 6: /* input: input SEMICOLON  */
+                               {}
     break;
 
-  case 7:
-    {}
+  case 7: /* declaration: constantDeclaration  */
+                              {}
     break;
 
-  case 8:
-    {}
+  case 8: /* declaration: externDeclaration  */
+                              {}
     break;
 
-  case 9:
-    {}
+  case 9: /* declaration: actionDeclaration  */
+                              {}
     break;
 
-  case 10:
-    {}
+  case 10: /* declaration: parserDeclaration  */
+                              {}
     break;
 
-  case 11:
-    {}
+  case 11: /* declaration: typeDeclaration  */
+                              {}
     break;
 
-  case 12:
-    {}
+  case 12: /* declaration: controlDeclaration  */
+                              {}
     break;
 
-  case 13:
-    {}
+  case 13: /* declaration: instantiation  */
+                              {}
     break;
 
-  case 14:
-    {}
+  case 14: /* declaration: errorDeclaration  */
+                              {}
     break;
 
-  case 15:
-    {}
+  case 15: /* declaration: matchKindDeclaration  */
+                              {}
     break;
 
-  case 16:
-    {}
+  case 16: /* declaration: functionDeclaration  */
+                              {}
     break;
 
-  case 17:
-    {}
+  case 17: /* nonTypeName: IDENTIFIER  */
+                {}
     break;
 
-  case 18:
-    {}
+  case 18: /* nonTypeName: APPLY  */
+                  {}
     break;
 
-  case 19:
-    {}
+  case 19: /* nonTypeName: KEY  */
+                  {}
     break;
 
-  case 20:
-    {}
+  case 20: /* nonTypeName: ACTIONS  */
+                  {}
     break;
 
-  case 21:
-    {}
+  case 21: /* nonTypeName: STATE  */
+                  {}
     break;
 
-  case 22:
-    {}
+  case 22: /* nonTypeName: ENTRIES  */
+                  {}
     break;
 
-  case 23:
-    {}
+  case 23: /* nonTypeName: TYPE  */
+                  {}
     break;
 
-  case 24:
-    {}
+  case 24: /* name: nonTypeName  */
+                {}
     break;
 
-  case 25:
-    {}
+  case 25: /* name: TYPE_IDENTIFIER  */
+                       {}
     break;
 
-  case 26:
-    {}
+  case 26: /* nonTableKwName: IDENTIFIER  */
+                     {}
     break;
 
-  case 27:
-    {}
+  case 27: /* nonTableKwName: TYPE_IDENTIFIER  */
+                       {}
     break;
 
-  case 28:
-    {}
+  case 28: /* nonTableKwName: APPLY  */
+                       {}
     break;
 
-  case 29:
-    {}
+  case 29: /* nonTableKwName: STATE  */
+                       {}
     break;
 
-  case 30:
-    {}
+  case 30: /* nonTableKwName: TYPE  */
+                       {}
     break;
 
-  case 31:
-    {}
+  case 31: /* optCONST: %empty  */
+                {}
     break;
 
-  case 32:
-    {}
+  case 32: /* optCONST: CONST  */
+                  {}
     break;
 
-  case 33:
-    {}
+  case 33: /* optAnnotations: %empty  */
+                  {}
     break;
 
-  case 34:
-    {}
+  case 34: /* optAnnotations: annotations  */
+                  {}
     break;
 
-  case 35:
-    {}
+  case 35: /* annotations: annotation  */
+                  {}
     break;
 
-  case 36:
-    {}
+  case 36: /* annotations: annotations annotation  */
+                             {}
     break;
 
-  case 37:
-    {}
+  case 37: /* annotation: AT name  */
+        {}
     break;
 
-  case 38:
-    {}
+  case 38: /* annotation: AT name L_PAREN annotationBody R_PAREN  */
+        {}
     break;
 
-  case 39:
-    {}
+  case 39: /* annotation: AT name L_BRACKET expressionList R_BRACKET  */
+        {}
     break;
 
-  case 40:
-    {}
+  case 40: /* annotation: AT name L_BRACKET kvList R_BRACKET  */
+        {}
     break;
 
-  case 41:
-    {}
+  case 41: /* annotation: PRAGMA name annotationBody END_PRAGMA  */
+        {}
     break;
 
-  case 42:
-    {}
+  case 42: /* annotationBody: %empty  */
+              {}
     break;
 
-  case 43:
-    {}
+  case 43: /* annotationBody: annotationBody L_PAREN annotationBody R_PAREN  */
+        {}
     break;
 
-  case 44:
-    {}
+  case 44: /* annotationBody: annotationBody annotationToken  */
+        {}
     break;
 
-  case 45:
-    {}
+  case 45: /* annotationToken: UNEXPECTED_TOKEN  */
+                       {}
     break;
 
-  case 46:
-    {}
+  case 46: /* annotationToken: ABSTRACT  */
+                       {}
     break;
 
-  case 47:
-    {}
+  case 47: /* annotationToken: ACTION  */
+                       {}
     break;
 
-  case 48:
-    {}
+  case 48: /* annotationToken: ACTIONS  */
+                       {}
     break;
 
-  case 49:
-    {}
+  case 49: /* annotationToken: APPLY  */
+                       {}
     break;
 
-  case 50:
-    {}
+  case 50: /* annotationToken: BOOL  */
+                       {}
     break;
 
-  case 51:
-    {}
+  case 51: /* annotationToken: BIT  */
+                       {}
     break;
 
-  case 52:
-    {}
+  case 52: /* annotationToken: CONST  */
+                       {}
     break;
 
-  case 53:
-    {}
+  case 53: /* annotationToken: CONTROL  */
+                       {}
     break;
 
-  case 54:
-    {}
+  case 54: /* annotationToken: DEFAULT  */
+                       {}
     break;
 
-  case 55:
-    {}
+  case 55: /* annotationToken: ELSE  */
+                       {}
     break;
 
-  case 56:
-    {}
+  case 56: /* annotationToken: ENTRIES  */
+                       {}
     break;
 
-  case 57:
-    {}
+  case 57: /* annotationToken: ENUM  */
+                       {}
     break;
 
-  case 58:
-    {}
+  case 58: /* annotationToken: ERROR  */
+                       {}
     break;
 
-  case 59:
-    {}
+  case 59: /* annotationToken: EXIT  */
+                       {}
     break;
 
-  case 60:
-    {}
+  case 60: /* annotationToken: EXTERN  */
+                       {}
     break;
 
-  case 61:
-    {}
+  case 61: /* annotationToken: FALSE  */
+                       {}
     break;
 
-  case 62:
-    {}
+  case 62: /* annotationToken: HEADER  */
+                       {}
     break;
 
-  case 63:
-    {}
+  case 63: /* annotationToken: HEADER_UNION  */
+                       {}
     break;
 
-  case 64:
-    {}
+  case 64: /* annotationToken: IF  */
+                       {}
     break;
 
-  case 65:
-    {}
+  case 65: /* annotationToken: IN  */
+                       {}
     break;
 
-  case 66:
-    {}
+  case 66: /* annotationToken: INOUT  */
+                       {}
     break;
 
-  case 67:
-    {}
+  case 67: /* annotationToken: INT  */
+                       {}
     break;
 
-  case 68:
-    {}
+  case 68: /* annotationToken: KEY  */
+                       {}
     break;
 
-  case 69:
-    {}
+  case 69: /* annotationToken: MATCH_KIND  */
+                       {}
     break;
 
-  case 70:
-    {}
+  case 70: /* annotationToken: TYPE  */
+                       {}
     break;
 
-  case 71:
-    {}
+  case 71: /* annotationToken: OUT  */
+                       {}
     break;
 
-  case 72:
-    {}
+  case 72: /* annotationToken: PARSER  */
+                       {}
     break;
 
-  case 73:
-    {}
+  case 73: /* annotationToken: PACKAGE  */
+                       {}
     break;
 
-  case 74:
-    {}
+  case 74: /* annotationToken: PRAGMA  */
+                       {}
     break;
 
-  case 75:
-    {}
+  case 75: /* annotationToken: RETURN  */
+                       {}
     break;
 
-  case 76:
-    {}
+  case 76: /* annotationToken: SELECT  */
+                       {}
     break;
 
-  case 77:
-    {}
+  case 77: /* annotationToken: STATE  */
+                       {}
     break;
 
-  case 78:
-    {}
+  case 78: /* annotationToken: STRING  */
+                       {}
     break;
 
-  case 79:
-    {}
+  case 79: /* annotationToken: STRUCT  */
+                       {}
     break;
 
-  case 80:
-    {}
+  case 80: /* annotationToken: SWITCH  */
+                       {}
     break;
 
-  case 81:
-    {}
+  case 81: /* annotationToken: TABLE  */
+                       {}
     break;
 
-  case 82:
-    {}
+  case 82: /* annotationToken: THIS  */
+                       {}
     break;
 
-  case 83:
-    {}
+  case 83: /* annotationToken: TRANSITION  */
+                       {}
     break;
 
-  case 84:
-    {}
+  case 84: /* annotationToken: TRUE  */
+                       {}
     break;
 
-  case 85:
-    {}
+  case 85: /* annotationToken: TUPLE  */
+                       {}
     break;
 
-  case 86:
-    {}
+  case 86: /* annotationToken: TYPEDEF  */
+                       {}
     break;
 
-  case 87:
-    {}
+  case 87: /* annotationToken: VARBIT  */
+                       {}
     break;
 
-  case 88:
-    {}
+  case 88: /* annotationToken: VALUESET  */
+                       {}
     break;
 
-  case 89:
-    {}
+  case 89: /* annotationToken: VOID  */
+                       {}
     break;
 
-  case 90:
-    {}
+  case 90: /* annotationToken: DONTCARE  */
+                            {}
     break;
 
-  case 91:
-    {}
+  case 91: /* annotationToken: IDENTIFIER  */
+                       {}
     break;
 
-  case 92:
-    {}
+  case 92: /* annotationToken: TYPE_IDENTIFIER  */
+                       {}
     break;
 
-  case 93:
-    {}
+  case 93: /* annotationToken: STRING_LITERAL  */
+                       {}
     break;
 
-  case 94:
-    {}
+  case 94: /* annotationToken: INTEGER  */
+                       {}
     break;
 
-  case 95:
-    {}
+  case 95: /* annotationToken: L_ANGLE_ARGS  */
+                       {}
     break;
 
-  case 96:
-    {}
+  case 96: /* annotationToken: R_ANGLE_SHIFT  */
+                       {}
     break;
 
-  case 97:
-    {}
+  case 97: /* annotationToken: RANGE  */
+                       {}
     break;
 
-  case 98:
-    {}
+  case 98: /* annotationToken: MASK  */
+                       {}
     break;
 
-  case 99:
-    {}
+  case 99: /* annotationToken: AND  */
+                       {}
     break;
 
-  case 100:
-    {}
+  case 100: /* annotationToken: OR  */
+                       {}
     break;
 
-  case 101:
-    {}
+  case 101: /* annotationToken: EQ  */
+                       {}
     break;
 
-  case 102:
-    {}
+  case 102: /* annotationToken: NE  */
+                       {}
     break;
 
-  case 103:
-    {}
+  case 103: /* annotationToken: GE  */
+                       {}
     break;
 
-  case 104:
-    {}
+  case 104: /* annotationToken: LE  */
+                       {}
     break;
 
-  case 105:
-    {}
+  case 105: /* annotationToken: PP  */
+                       {}
     break;
 
-  case 106:
-    {}
+  case 106: /* annotationToken: PLUS  */
+                       {}
     break;
 
-  case 108:
-    {}
+  case 108: /* annotationToken: MINUS  */
+                       {}
     break;
 
-  case 109:
-    {}
+  case 109: /* annotationToken: MINUS_SAT  */
+                       {}
     break;
 
-  case 110:
-    {}
+  case 110: /* annotationToken: MUL  */
+                       {}
     break;
 
-  case 111:
-    {}
+  case 111: /* annotationToken: DIV  */
+                       {}
     break;
 
-  case 112:
-    {}
+  case 112: /* annotationToken: MOD  */
+                       {}
     break;
 
-  case 113:
-    {}
+  case 113: /* annotationToken: BIT_OR  */
+                       {}
     break;
 
-  case 114:
-    {}
+  case 114: /* annotationToken: BIT_AND  */
+                       {}
     break;
 
-  case 115:
-    {}
+  case 115: /* annotationToken: BIT_XOR  */
+                       {}
     break;
 
-  case 116:
-    {}
+  case 116: /* annotationToken: COMPLEMENT  */
+                       {}
     break;
 
-  case 117:
-    {}
+  case 117: /* annotationToken: L_BRACKET  */
+                       {}
     break;
 
-  case 118:
-    {}
+  case 118: /* annotationToken: R_BRACKET  */
+                       {}
     break;
 
-  case 119:
-    {}
+  case 119: /* annotationToken: L_BRACE  */
+                       {}
     break;
 
-  case 120:
-    {}
+  case 120: /* annotationToken: R_BRACE  */
+                       {}
     break;
 
-  case 121:
-    {}
+  case 121: /* annotationToken: L_ANGLE  */
+                       {}
     break;
 
-  case 122:
-    {}
+  case 122: /* annotationToken: R_ANGLE  */
+                       {}
     break;
 
-  case 123:
-    {}
+  case 123: /* annotationToken: NOT  */
+                       {}
     break;
 
-  case 124:
-    {}
+  case 124: /* annotationToken: COLON  */
+                       {}
     break;
 
-  case 125:
-    {}
+  case 125: /* annotationToken: QUESTION  */
+                       {}
     break;
 
-  case 126:
-    {}
+  case 126: /* annotationToken: DOT  */
+                       {}
     break;
 
-  case 127:
-    {}
+  case 127: /* annotationToken: ASSIGN  */
+                       {}
     break;
 
-  case 128:
-    {}
+  case 128: /* annotationToken: SEMICOLON  */
+                       {}
     break;
 
-  case 129:
-    {}
+  case 129: /* annotationToken: AT  */
+                       {}
     break;
 
-  case 130:
-    {}
+  case 130: /* annotationToken: COMMA  */
+                       {}
     break;
 
-  case 131:
-    {}
+  case 131: /* kvList: kvPair  */
+                                      {}
     break;
 
-  case 132:
-    {}
+  case 132: /* kvList: kvList COMMA kvPair  */
+                                        {}
     break;
 
-  case 133:
-    {}
+  case 133: /* kvPair: name ASSIGN expression  */
+                                         {}
     break;
 
-  case 134:
-    {}
+  case 134: /* parameterList: %empty  */
+                                      {}
     break;
 
-  case 135:
-    {}
+  case 135: /* parameterList: nonEmptyParameterList  */
+                                      {}
     break;
 
-  case 136:
-    {}
+  case 136: /* nonEmptyParameterList: parameter  */
+                                          {}
     break;
 
-  case 137:
-    {}
+  case 137: /* nonEmptyParameterList: nonEmptyParameterList COMMA parameter  */
+                                            {}
     break;
 
-  case 138:
-    {}
+  case 138: /* parameter: optAnnotations direction typeRef name  */
+                                            {}
     break;
 
-  case 139:
-    {}
+  case 139: /* parameter: optAnnotations direction typeRef name ASSIGN expression  */
+                                                              {}
     break;
 
-  case 140:
-    {}
+  case 140: /* direction: IN  */
+                 {}
     break;
 
-  case 141:
-    {}
+  case 141: /* direction: OUT  */
+                   {}
     break;
 
-  case 142:
-    {}
+  case 142: /* direction: INOUT  */
+                   {}
     break;
 
-  case 143:
-    {}
+  case 143: /* direction: %empty  */
+                   {}
     break;
 
-  case 144:
-    {}
+  case 144: /* $@1: %empty  */
+                                  {}
     break;
 
-  case 145:
-    {}
+  case 145: /* $@2: %empty  */
+                        {}
     break;
 
-  case 146:
-    {
+  case 146: /* packageTypeDeclaration: optAnnotations PACKAGE name $@1 optTypeParameters $@2 L_PAREN parameterList R_PAREN  */
+                                    {
         saveBaseType(subparser, getNodeAt(subparser, 8));
         bindIdent(subparser, getNodeAt(subparser, 8), getNodeAt(subparser, 7));
       }
     break;
 
-  case 147:
-    {}
+  case 147: /* instantiation: annotations typeRef L_PAREN argumentList R_PAREN name SEMICOLON  */
+                     {}
     break;
 
-  case 148:
-    {}
+  case 148: /* instantiation: typeRef L_PAREN argumentList R_PAREN name SEMICOLON  */
+                     {}
     break;
 
-  case 149:
-    {}
+  case 149: /* instantiation: annotations typeRef L_PAREN argumentList R_PAREN name ASSIGN objInitializer SEMICOLON  */
+                     {}
     break;
 
-  case 150:
-    {}
+  case 150: /* instantiation: typeRef L_PAREN argumentList R_PAREN name ASSIGN objInitializer SEMICOLON  */
+                     {}
     break;
 
-  case 151:
-    {}
+  case 151: /* objInitializer: L_BRACE objDeclarations R_BRACE  */
+                               {}
     break;
 
-  case 152:
-    {}
+  case 152: /* objDeclarations: %empty  */
+                                     {}
     break;
 
-  case 153:
-    {}
+  case 153: /* objDeclarations: objDeclarations objDeclaration  */
+                                     {}
     break;
 
-  case 154:
-    {}
+  case 154: /* objDeclaration: functionDeclaration  */
+                               {}
     break;
 
-  case 155:
-    {}
+  case 155: /* objDeclaration: instantiation  */
+                               {}
     break;
 
-  case 156:
-    {}
+  case 156: /* optConstructorParameters: %empty  */
+                           {}
     break;
 
-  case 157:
-    {}
+  case 157: /* optConstructorParameters: L_PAREN parameterList R_PAREN  */
+                                     {}
     break;
 
-  case 158:
-    {}
+  case 158: /* dotPrefix: DOT  */
+                             {}
     break;
 
-  case 159:
-    { EnterScope(subparser); }
+  case 159: /* $@3: %empty  */
+                                                   { EnterScope(subparser); }
     break;
 
-  case 160:
-    { ExitScope(subparser); }
+  case 160: /* $@4: %empty  */
+                                               { ExitScope(subparser); }
     break;
 
-  case 161:
-    {}
+  case 161: /* parserDeclaration: parserTypeDeclaration optConstructorParameters $@3 L_BRACE parserLocalElements parserStates $@4 R_BRACE  */
+                             {}
     break;
 
-  case 162:
-    {}
+  case 162: /* parserLocalElements: %empty  */
+                                           {}
     break;
 
-  case 163:
-    {}
+  case 163: /* parserLocalElements: parserLocalElements parserLocalElement  */
+                                             {}
     break;
 
-  case 164:
-    {}
+  case 164: /* parserLocalElement: constantDeclaration  */
+                                    {}
     break;
 
-  case 165:
-    {}
+  case 165: /* parserLocalElement: instantiation  */
+                                      {}
     break;
 
-  case 166:
-    {}
+  case 166: /* parserLocalElement: variableDeclaration  */
+                                      {}
     break;
 
-  case 167:
-    {}
+  case 167: /* parserLocalElement: valueSetDeclaration  */
+                                      {}
     break;
 
-  case 168:
-    {}
+  case 168: /* $@5: %empty  */
+                          {}
     break;
 
-  case 169:
-    {}
+  case 169: /* $@6: %empty  */
+                          {}
     break;
 
-  case 170:
-    {
+  case 170: /* parserTypeDeclaration: optAnnotations PARSER name $@5 optTypeParameters $@6 L_PAREN parameterList R_PAREN  */
+                                      {
           saveBaseType(subparser, getNodeAt(subparser, 8));
           bindIdent(subparser, getNodeAt(subparser, 8), getNodeAt(subparser, 7));
         }
     break;
 
-  case 171:
-    {}
+  case 171: /* parserStates: parserState  */
+                                    {}
     break;
 
-  case 172:
-    {}
+  case 172: /* parserStates: parserStates parserState  */
+                                      {}
     break;
 
-  case 173:
-    {}
+  case 173: /* $@7: %empty  */
+                              {}
     break;
 
-  case 174:
-    {}
+  case 174: /* parserState: optAnnotations STATE name $@7 L_BRACE parserStatements transitionStatement R_BRACE  */
+                                      {}
     break;
 
-  case 175:
-    {}
+  case 175: /* parserStatements: %empty  */
+                                     {}
     break;
 
-  case 176:
-    {}
+  case 176: /* parserStatements: parserStatements parserStatement  */
+                                       {}
     break;
 
-  case 177:
-    {}
+  case 177: /* parserStatement: assignmentOrMethodCallStatement  */
+                                    {}
     break;
 
-  case 178:
-    {}
+  case 178: /* parserStatement: directApplication  */
+                                      {}
     break;
 
-  case 179:
-    {}
+  case 179: /* parserStatement: emptyStatement  */
+                                      {}
     break;
 
-  case 180:
-    {}
+  case 180: /* parserStatement: variableDeclaration  */
+                                      {}
     break;
 
-  case 181:
-    {}
+  case 181: /* parserStatement: constantDeclaration  */
+                                      {}
     break;
 
-  case 182:
-    {}
+  case 182: /* parserStatement: parserBlockStatement  */
+                                      {}
     break;
 
-  case 183:
-    {}
+  case 183: /* parserStatement: conditionalStatement  */
+                                      {}
     break;
 
-  case 184:
-    {}
+  case 184: /* $@8: %empty  */
+                           {}
     break;
 
-  case 185:
-    {}
+  case 185: /* parserBlockStatement: optAnnotations L_BRACE $@8 parserStatements R_BRACE  */
+                               {}
     break;
 
-  case 186:
-    {}
+  case 186: /* transitionStatement: %empty  */
+                                {}
     break;
 
-  case 187:
-    {}
+  case 187: /* transitionStatement: TRANSITION stateExpression  */
+                                  {}
     break;
 
-  case 188:
-    {}
+  case 188: /* stateExpression: name SEMICOLON  */
+                           {}
     break;
 
-  case 189:
-    {}
+  case 189: /* stateExpression: selectExpression  */
+                       {}
     break;
 
-  case 190:
-    {}
+  case 190: /* selectExpression: SELECT L_PAREN expressionList R_PAREN L_BRACE selectCaseList R_BRACE  */
+                              {}
     break;
 
-  case 191:
-    {}
+  case 191: /* selectCaseList: %empty  */
+                               {}
     break;
 
-  case 192:
-    {}
+  case 192: /* selectCaseList: selectCaseList selectCase  */
+                                 {}
     break;
 
-  case 193:
-    {}
+  case 193: /* selectCase: keysetExpression COLON name SEMICOLON  */
+      {}
     break;
 
-  case 194:
-    {}
+  case 194: /* keysetExpression: tupleKeysetExpression  */
+                              {}
     break;
 
-  case 195:
-    {}
+  case 195: /* keysetExpression: simpleKeysetExpression  */
+                                {}
     break;
 
-  case 196:
-    {}
+  case 196: /* tupleKeysetExpression: L_PAREN simpleKeysetExpression COMMA simpleExpressionList R_PAREN  */
+                                {}
     break;
 
-  case 197:
-    {}
+  case 197: /* tupleKeysetExpression: L_PAREN reducedSimpleKeysetExpression R_PAREN  */
+                                                    {}
     break;
 
-  case 198:
-    {}
+  case 198: /* simpleExpressionList: simpleKeysetExpression  */
+                           {}
     break;
 
-  case 199:
-    {}
+  case 199: /* simpleExpressionList: simpleExpressionList COMMA simpleKeysetExpression  */
+                                                        {}
     break;
 
-  case 200:
-    {}
+  case 200: /* reducedSimpleKeysetExpression: expression MASK expression  */
+                                 {}
     break;
 
-  case 201:
-    {}
+  case 201: /* reducedSimpleKeysetExpression: expression RANGE expression  */
+                                   {}
     break;
 
-  case 202:
-    {}
+  case 202: /* reducedSimpleKeysetExpression: DEFAULT  */
+                                  {}
     break;
 
-  case 203:
-    {}
+  case 203: /* reducedSimpleKeysetExpression: DONTCARE  */
+                                       {}
     break;
 
-  case 204:
-    {}
+  case 204: /* simpleKeysetExpression: expression  */
+                                {}
     break;
 
-  case 205:
-    {}
+  case 205: /* simpleKeysetExpression: expression MASK expression  */
+                                 {}
     break;
 
-  case 206:
-    {}
+  case 206: /* simpleKeysetExpression: expression RANGE expression  */
+                                   {}
     break;
 
-  case 207:
-    {}
+  case 207: /* simpleKeysetExpression: DEFAULT  */
+                                  {}
     break;
 
-  case 208:
-    {}
+  case 208: /* simpleKeysetExpression: DONTCARE  */
+                                       {}
     break;
 
-  case 209:
-    {}
+  case 209: /* valueSetDeclaration: optAnnotations VALUESET l_angle baseType r_angle L_PAREN expression R_PAREN name SEMICOLON  */
+        {}
     break;
 
-  case 210:
-    {}
+  case 210: /* valueSetDeclaration: optAnnotations VALUESET l_angle tupleType r_angle L_PAREN expression R_PAREN name SEMICOLON  */
+        {}
     break;
 
-  case 211:
-    {}
+  case 211: /* valueSetDeclaration: optAnnotations VALUESET l_angle typeName r_angle L_PAREN expression R_PAREN name SEMICOLON  */
+        {}
     break;
 
-  case 212:
-    {}
+  case 212: /* controlDeclaration: controlTypeDeclaration optConstructorParameters L_BRACE controlLocalDeclarations APPLY controlBody R_BRACE  */
+        {}
     break;
 
-  case 213:
-    {}
+  case 213: /* $@9: %empty  */
+                     {}
     break;
 
-  case 214:
-    {}
+  case 214: /* $@10: %empty  */
+                          {}
     break;
 
-  case 215:
-    {
+  case 215: /* controlTypeDeclaration: optAnnotations CONTROL name $@9 optTypeParameters $@10 L_PAREN parameterList R_PAREN  */
+                                      {
           saveBaseType(subparser, getNodeAt(subparser, 8));
           bindIdent(subparser, getNodeAt(subparser, 8), getNodeAt(subparser, 7));
         }
     break;
 
-  case 216:
-    {}
+  case 216: /* controlLocalDeclarations: %empty  */
+           {}
     break;
 
-  case 217:
-    {}
+  case 217: /* controlLocalDeclarations: controlLocalDeclarations controlLocalDeclaration  */
+                                                       {}
     break;
 
-  case 218:
-    {}
+  case 218: /* controlLocalDeclaration: constantDeclaration  */
+                             {}
     break;
 
-  case 219:
-    {}
+  case 219: /* controlLocalDeclaration: actionDeclaration  */
+                               {}
     break;
 
-  case 220:
-    {}
+  case 220: /* controlLocalDeclaration: tableDeclaration  */
+                               {}
     break;
 
-  case 221:
-    {}
+  case 221: /* controlLocalDeclaration: instantiation  */
+                               {}
     break;
 
-  case 222:
-    {}
+  case 222: /* controlLocalDeclaration: variableDeclaration  */
+                               {}
     break;
 
-  case 223:
-    {}
+  case 223: /* controlBody: blockStatement  */
+                   {}
     break;
 
-  case 224:
-    {
+  case 224: /* $@11: %empty  */
+                           {
             saveBaseType(subparser, getNodeAt(subparser, 2));
             bindIdent(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
           }
     break;
 
-  case 225:
-    {}
+  case 225: /* $@12: %empty  */
+                          {}
     break;
 
-  case 229:
-    {}
+  case 229: /* methodPrototypes: %empty  */
+                                     {}
     break;
 
-  case 230:
-    {}
+  case 230: /* methodPrototypes: methodPrototypes methodPrototype  */
+                                       {}
     break;
 
-  case 231:
-    {}
+  case 231: /* $@13: %empty  */
+                               {}
     break;
 
-  case 232:
-    {}
+  case 232: /* functionPrototype: typeOrVoid name optTypeParameters $@13 L_PAREN parameterList R_PAREN  */
+                                      {}
     break;
 
-  case 233:
-    {}
+  case 233: /* methodPrototype: optAnnotations functionPrototype SEMICOLON  */
+                                               {}
     break;
 
-  case 234:
-    {}
+  case 234: /* methodPrototype: optAnnotations ABSTRACT functionPrototype SEMICOLON  */
+                                                          {}
     break;
 
-  case 235:
-    {}
+  case 235: /* methodPrototype: optAnnotations TYPE_IDENTIFIER L_PAREN parameterList R_PAREN SEMICOLON  */
+                                        {}
     break;
 
-  case 236:
-    {}
+  case 236: /* typeRef: baseType  */
+                                     {}
     break;
 
-  case 237:
-    {}
+  case 237: /* typeRef: typeName  */
+                                       {}
     break;
 
-  case 238:
-    {}
+  case 238: /* typeRef: specializedType  */
+                                       {}
     break;
 
-  case 239:
-    {}
+  case 239: /* typeRef: headerStackType  */
+                                       {}
     break;
 
-  case 240:
-    {}
+  case 240: /* typeRef: tupleType  */
+                                       {}
     break;
 
-  case 241:
-    {}
+  case 241: /* namedType: typeName  */
+                                     {}
     break;
 
-  case 242:
-    {}
+  case 242: /* namedType: specializedType  */
+                                       {}
     break;
 
-  case 243:
-    {}
+  case 243: /* prefixedType: TYPE_IDENTIFIER  */
+                                     {}
     break;
 
-  case 244:
-    {}
+  case 244: /* prefixedType: dotPrefix TYPE_IDENTIFIER  */
+                                       {}
     break;
 
-  case 245:
-    {}
+  case 245: /* typeName: prefixedType  */
+                                     {}
     break;
 
-  case 246:
-    {}
+  case 246: /* tupleType: TUPLE l_angle typeArgumentList r_angle  */
+                                              {}
     break;
 
-  case 247:
-    {}
+  case 247: /* headerStackType: typeName L_BRACKET expression R_BRACKET  */
+                                                    {}
     break;
 
-  case 248:
-    {}
+  case 248: /* headerStackType: specializedType L_BRACKET expression R_BRACKET  */
+                                                      {}
     break;
 
-  case 249:
-    {}
+  case 249: /* specializedType: typeName l_angle typeArgumentList r_angle  */
+                                              {}
     break;
 
-  case 250:
-    {}
+  case 250: /* baseType: BOOL  */
+           {}
     break;
 
-  case 251:
-    {}
+  case 251: /* baseType: ERROR  */
+             {}
     break;
 
-  case 252:
-    {}
+  case 252: /* baseType: BIT  */
+             {}
     break;
 
-  case 253:
-    {}
+  case 253: /* baseType: STRING  */
+             {}
     break;
 
-  case 254:
-    {}
+  case 254: /* baseType: INT  */
+             {}
     break;
 
-  case 255:
-    {}
+  case 255: /* baseType: BIT l_angle INTEGER r_angle  */
+      {}
     break;
 
-  case 256:
-    {}
+  case 256: /* baseType: INT l_angle INTEGER r_angle  */
+      {}
     break;
 
-  case 257:
-    {}
+  case 257: /* baseType: VARBIT l_angle INTEGER r_angle  */
+      {}
     break;
 
-  case 258:
-    {}
+  case 258: /* baseType: BIT l_angle L_PAREN expression R_PAREN r_angle  */
+      {}
     break;
 
-  case 259:
-    {}
+  case 259: /* baseType: INT l_angle L_PAREN expression R_PAREN r_angle  */
+      {}
     break;
 
-  case 260:
-    {}
+  case 260: /* baseType: VARBIT l_angle L_PAREN expression R_PAREN r_angle  */
+      {}
     break;
 
-  case 261:
-    {}
+  case 261: /* typeOrVoid: typeRef  */
+                {}
     break;
 
-  case 262:
-    {}
+  case 262: /* typeOrVoid: VOID  */
+                  {}
     break;
 
-  case 263:
-    {}
+  case 263: /* typeOrVoid: IDENTIFIER  */
+                  {}
     break;
 
-  case 264:
-    {}
+  case 264: /* optTypeParameters: %empty  */
+                              {}
     break;
 
-  case 265:
-    {}
+  case 265: /* optTypeParameters: typeParameters  */
+                                {}
     break;
 
-  case 266:
-    {}
+  case 266: /* typeParameters: l_angle typeParameterList r_angle  */
+                                      {}
     break;
 
-  case 267:
-    {
+  case 267: /* typeParameterList: name  */
+         {
         //  ASK possible to get the production name? (typeParameterList)
         // // saveBaseType(subparser, getNodeAt(subparser, 12));
         // if(getNodeAt(subparser, 5).isToken()){
@@ -1182,891 +1182,892 @@ public class P4Actions implements SemanticActions {
       }
     break;
 
-  case 268:
-    {
+  case 268: /* typeParameterList: typeParameterList COMMA name  */
+                                   {
         bindIdent(subparser, null, getNodeAt(subparser, 1), true);
       }
     break;
 
-  case 269:
-    {}
+  case 269: /* typeArg: typeRef  */
+                                {}
     break;
 
-  case 270:
-    {}
+  case 270: /* typeArg: nonTypeName  */
+                                  {}
     break;
 
-  case 271:
-    {}
+  case 271: /* typeArg: VOID  */
+                                  {}
     break;
 
-  case 272:
-    {}
+  case 272: /* typeArg: DONTCARE  */
+                                       {}
     break;
 
-  case 273:
-    {}
+  case 273: /* typeArgumentList: %empty  */
+                                   {}
     break;
 
-  case 274:
-    {}
+  case 274: /* typeArgumentList: typeArg  */
+                                     {}
     break;
 
-  case 275:
-    {}
+  case 275: /* typeArgumentList: typeArgumentList COMMA typeArg  */
+                                       {}
     break;
 
-  case 276:
-    {}
+  case 276: /* realTypeArg: typeRef  */
+                                {}
     break;
 
-  case 277:
-    {}
+  case 277: /* realTypeArg: VOID  */
+                                  {}
     break;
 
-  case 278:
-    {}
+  case 278: /* realTypeArg: DONTCARE  */
+                                       {}
     break;
 
-  case 279:
-    {}
+  case 279: /* realTypeArgumentList: realTypeArg  */
+                                       {}
     break;
 
-  case 280:
-    {}
+  case 280: /* realTypeArgumentList: realTypeArgumentList COMMA typeArg  */
+                                           {}
     break;
 
-  case 281:
-    {}
+  case 281: /* typeDeclaration: derivedTypeDeclaration  */
+                               {}
     break;
 
-  case 282:
-    {}
+  case 282: /* typeDeclaration: typedefDeclaration SEMICOLON  */
+                                       {}
     break;
 
-  case 283:
-    {}
+  case 283: /* typeDeclaration: parserTypeDeclaration SEMICOLON  */
+                                       {}
     break;
 
-  case 284:
-    {}
+  case 284: /* typeDeclaration: controlTypeDeclaration SEMICOLON  */
+                                       {}
     break;
 
-  case 285:
-    {}
+  case 285: /* typeDeclaration: packageTypeDeclaration SEMICOLON  */
+                                       {}
     break;
 
-  case 286:
-    {}
+  case 286: /* derivedTypeDeclaration: headerTypeDeclaration  */
+                                     {}
     break;
 
-  case 287:
-    {}
+  case 287: /* derivedTypeDeclaration: headerUnionDeclaration  */
+                                       {}
     break;
 
-  case 288:
-    {}
+  case 288: /* derivedTypeDeclaration: structTypeDeclaration  */
+                                       {}
     break;
 
-  case 289:
-    {}
+  case 289: /* derivedTypeDeclaration: enumDeclaration  */
+                                       {}
     break;
 
-  case 290:
-    {}
+  case 290: /* $@14: %empty  */
+                               {}
     break;
 
-  case 291:
-    {}
+  case 291: /* $@15: %empty  */
+                                                    {}
     break;
 
-  case 292:
-    {
+  case 292: /* headerTypeDeclaration: optAnnotations HEADER name $@14 optTypeParameters $@15 L_BRACE structFieldList R_BRACE  */
+      {
           saveBaseType(subparser, getNodeAt(subparser, 8));
           bindIdent(subparser, getNodeAt(subparser, 8), getNodeAt(subparser, 7));
       }
     break;
 
-  case 293:
-    {
+  case 293: /* structTypeDeclaration: optAnnotations STRUCT name optTypeParameters L_BRACE structFieldList R_BRACE  */
+      {
           saveBaseType(subparser, getNodeAt(subparser, 6));
           bindIdent(subparser, getNodeAt(subparser, 6), getNodeAt(subparser, 5));
       }
     break;
 
-  case 294:
-    {}
+  case 294: /* $@16: %empty  */
+                                     {}
     break;
 
-  case 295:
-    {}
+  case 295: /* $@17: %empty  */
+                                                          {}
     break;
 
-  case 296:
-    {
+  case 296: /* headerUnionDeclaration: optAnnotations HEADER_UNION name $@16 optTypeParameters $@17 L_BRACE structFieldList R_BRACE  */
+                                      {
         saveBaseType(subparser, getNodeAt(subparser, 8));
         bindIdent(subparser, getNodeAt(subparser, 8), getNodeAt(subparser, 7));
       }
     break;
 
-  case 297:
-    {}
+  case 297: /* structFieldList: %empty  */
+                                     {}
     break;
 
-  case 298:
-    {}
+  case 298: /* structFieldList: structFieldList structField  */
+                                       {}
     break;
 
-  case 299:
-    {}
+  case 299: /* structField: optAnnotations typeRef name SEMICOLON  */
+                                           {}
     break;
 
-  case 300:
-    {}
+  case 300: /* $@18: %empty  */
+                  {}
     break;
 
-  case 301:
-    {
+  case 301: /* enumDeclaration: optAnnotations ENUM name $@18 L_BRACE identifierList R_BRACE  */
+                                       {
           saveBaseType(subparser, getNodeAt(subparser, 6));
           bindIdent(subparser, getNodeAt(subparser, 6), getNodeAt(subparser, 5));
         }
     break;
 
-  case 302:
-    {}
+  case 302: /* $@19: %empty  */
+                                       {}
     break;
 
-  case 303:
-    {
+  case 303: /* enumDeclaration: optAnnotations ENUM typeRef name $@19 L_BRACE specifiedIdentifierList R_BRACE  */
+                                                      {
           saveBaseType(subparser, getNodeAt(subparser, 7));
           bindIdent(subparser, getNodeAt(subparser, 7), getNodeAt(subparser, 5));
         }
     break;
 
-  case 304:
-    {}
+  case 304: /* specifiedIdentifierList: specifiedIdentifier  */
+                            {}
     break;
 
-  case 305:
-    {}
+  case 305: /* specifiedIdentifierList: specifiedIdentifierList COMMA specifiedIdentifier  */
+                                                        {}
     break;
 
-  case 306:
-    {}
+  case 306: /* specifiedIdentifier: name ASSIGN initializer  */
+                               {}
     break;
 
-  case 307:
-    {}
+  case 307: /* errorDeclaration: ERROR L_BRACE identifierList R_BRACE  */
+        {}
     break;
 
-  case 308:
-    {}
+  case 308: /* matchKindDeclaration: MATCH_KIND L_BRACE identifierList R_BRACE  */
+        {}
     break;
 
-  case 309:
-    {}
+  case 309: /* identifierList: name  */
+                            {}
     break;
 
-  case 310:
-    {}
+  case 310: /* identifierList: identifierList COMMA name  */
+                                {}
     break;
 
-  case 311:
-    {
+  case 311: /* typedefDeclaration: optAnnotations TYPEDEF typeRef name  */
+                                        {
           saveBaseType(subparser, getNodeAt(subparser, 3));
           bindIdent(subparser, getNodeAt(subparser, 3), getNodeAt(subparser, 1));
         }
     break;
 
-  case 312:
-    {
+  case 312: /* typedefDeclaration: optAnnotations TYPEDEF derivedTypeDeclaration name  */
+                                                         {
           saveBaseType(subparser, getNodeAt(subparser, 3));
           bindIdent(subparser, getNodeAt(subparser, 3), getNodeAt(subparser, 1));
         }
     break;
 
-  case 313:
-    {
+  case 313: /* typedefDeclaration: optAnnotations TYPE typeRef name  */
+                                       {
           saveBaseType(subparser, getNodeAt(subparser, 3));
           bindIdent(subparser, getNodeAt(subparser, 3), getNodeAt(subparser, 1));
         }
     break;
 
-  case 314:
-    {
+  case 314: /* typedefDeclaration: optAnnotations TYPE derivedTypeDeclaration name  */
+                                                      {
           saveBaseType(subparser, getNodeAt(subparser, 3));
           bindIdent(subparser, getNodeAt(subparser, 3), getNodeAt(subparser, 1));
         }
     break;
 
-  case 315:
-    {}
+  case 315: /* assignmentOrMethodCallStatement: lvalue L_PAREN argumentList R_PAREN SEMICOLON  */
+        {}
     break;
 
-  case 316:
-    {}
+  case 316: /* assignmentOrMethodCallStatement: lvalue l_angle typeArgumentList r_angle L_PAREN argumentList R_PAREN SEMICOLON  */
+        {}
     break;
 
-  case 317:
-    {}
+  case 317: /* assignmentOrMethodCallStatement: lvalue ASSIGN expression SEMICOLON  */
+        {}
     break;
 
-  case 318:
-    {}
+  case 318: /* emptyStatement: SEMICOLON  */
+                   {}
     break;
 
-  case 319:
-    {}
+  case 319: /* exitStatement: EXIT SEMICOLON  */
+                   {}
     break;
 
-  case 320:
-    {}
+  case 320: /* returnStatement: RETURN SEMICOLON  */
+                                {}
     break;
 
-  case 321:
-    {}
+  case 321: /* returnStatement: RETURN expression SEMICOLON  */
+                                  {}
     break;
 
-  case 322:
-    {}
+  case 322: /* conditionalStatement: IF L_PAREN expression R_PAREN statement  */
+        {}
     break;
 
-  case 323:
-    {}
+  case 323: /* conditionalStatement: IF L_PAREN expression R_PAREN statement ELSE statement  */
+        {}
     break;
 
-  case 324:
-    {}
+  case 324: /* directApplication: typeName DOT APPLY L_PAREN argumentList R_PAREN SEMICOLON  */
+                                                              {}
     break;
 
-  case 325:
-    {}
+  case 325: /* statement: assignmentOrMethodCallStatement  */
+                                     {}
     break;
 
-  case 326:
-    {}
+  case 326: /* statement: directApplication  */
+                                       {}
     break;
 
-  case 327:
-    {}
+  case 327: /* statement: conditionalStatement  */
+                                       {}
     break;
 
-  case 328:
-    {}
+  case 328: /* statement: emptyStatement  */
+                                       {}
     break;
 
-  case 329:
-    {}
+  case 329: /* statement: blockStatement  */
+                                       {}
     break;
 
-  case 330:
-    {}
+  case 330: /* statement: returnStatement  */
+                                       {}
     break;
 
-  case 331:
-    {}
+  case 331: /* statement: exitStatement  */
+                                       {}
     break;
 
-  case 332:
-    {}
+  case 332: /* statement: switchStatement  */
+                                       {}
     break;
 
-  case 333:
-    {}
+  case 333: /* $@20: %empty  */
+                           {}
     break;
 
-  case 334:
-    {}
+  case 334: /* blockStatement: optAnnotations L_BRACE $@20 statOrDeclList R_BRACE  */
+                             {}
     break;
 
-  case 335:
-    {}
+  case 335: /* statOrDeclList: %empty  */
+                                          {}
     break;
 
-  case 336:
-    {}
+  case 336: /* statOrDeclList: statOrDeclList statementOrDeclaration  */
+                                            {}
     break;
 
-  case 337:
-    {}
+  case 337: /* switchStatement: SWITCH L_PAREN expression R_PAREN L_BRACE switchCases R_BRACE  */
+                                                                  {}
     break;
 
-  case 338:
-    {}
+  case 338: /* switchCases: %empty  */
+                             {}
     break;
 
-  case 339:
-    {}
+  case 339: /* switchCases: switchCases switchCase  */
+                               {}
     break;
 
-  case 340:
-    {}
+  case 340: /* switchCase: switchLabel COLON blockStatement  */
+                                     {}
     break;
 
-  case 341:
-    {}
+  case 341: /* switchCase: switchLabel COLON  */
+                                       {}
     break;
 
-  case 342:
-    {}
+  case 342: /* switchLabel: DEFAULT  */
+                             {}
     break;
 
-  case 343:
-    {}
+  case 343: /* switchLabel: nonBraceExpression  */
+                               {}
     break;
 
-  case 344:
-    {}
+  case 344: /* statementOrDeclaration: variableDeclaration  */
+                             {}
     break;
 
-  case 345:
-    {}
+  case 345: /* statementOrDeclaration: constantDeclaration  */
+                               {}
     break;
 
-  case 346:
-    {}
+  case 346: /* statementOrDeclaration: statement  */
+                               {}
     break;
 
-  case 347:
-    {}
+  case 347: /* statementOrDeclaration: instantiation  */
+                               {}
     break;
 
-  case 348:
-    {}
+  case 348: /* tableDeclaration: optAnnotations TABLE name L_BRACE tablePropertyList R_BRACE  */
+          {}
     break;
 
-  case 349:
-    {}
+  case 349: /* tablePropertyList: tableProperty  */
+                                       {}
     break;
 
-  case 350:
-    {}
+  case 350: /* tablePropertyList: tablePropertyList tableProperty  */
+                                         {}
     break;
 
-  case 351:
-    {}
+  case 351: /* tableProperty: KEY ASSIGN L_BRACE keyElementList R_BRACE  */
+        {}
     break;
 
-  case 352:
-    {}
+  case 352: /* tableProperty: ACTIONS ASSIGN L_BRACE actionList R_BRACE  */
+        {}
     break;
 
-  case 353:
-    {}
+  case 353: /* tableProperty: optAnnotations optCONST ENTRIES ASSIGN L_BRACE entriesList R_BRACE  */
+        {}
     break;
 
-  case 354:
-    {}
+  case 354: /* tableProperty: optAnnotations optCONST nonTableKwName ASSIGN initializer SEMICOLON  */
+        {}
     break;
 
-  case 355:
-    {}
+  case 355: /* keyElementList: %empty  */
+                                       {}
     break;
 
-  case 356:
-    {}
+  case 356: /* keyElementList: keyElementList keyElement  */
+                                         {}
     break;
 
-  case 357:
-    {}
+  case 357: /* keyElement: expression COLON name optAnnotations SEMICOLON  */
+                                         {}
     break;
 
-  case 358:
-    {}
+  case 358: /* actionList: %empty  */
+           {}
     break;
 
-  case 359:
-    {}
+  case 359: /* actionList: actionList optAnnotations actionRef SEMICOLON  */
+        {}
     break;
 
-  case 360:
-    {}
+  case 360: /* actionRef: prefixedNonTypeName  */
+        {}
     break;
 
-  case 361:
-    {}
+  case 361: /* actionRef: prefixedNonTypeName L_PAREN argumentList R_PAREN  */
+        {}
     break;
 
-  case 362:
-    {}
+  case 362: /* entry: keysetExpression COLON actionRef optAnnotations SEMICOLON  */
+        {}
     break;
 
-  case 363:
-    {}
+  case 363: /* entriesList: entry  */
+                                   {}
     break;
 
-  case 364:
-    {}
+  case 364: /* entriesList: entriesList entry  */
+                                     {}
     break;
 
-  case 365:
-    {
+  case 365: /* actionDeclaration: optAnnotations ACTION name L_PAREN parameterList R_PAREN blockStatement  */
+                                                                            {
         saveBaseType(subparser, getNodeAt(subparser, 6));
         bindIdent(subparser, getNodeAt(subparser, 6), getNodeAt(subparser, 5));
       }
     break;
 
-  case 366:
-    {
+  case 366: /* variableDeclaration: annotations typeRef name optInitializer SEMICOLON  */
+                                                      {
         saveBaseType(subparser, getNodeAt(subparser, 4));
         bindIdent(subparser, getNodeAt(subparser, 4), getNodeAt(subparser, 3));
       }
     break;
 
-  case 367:
-    {
+  case 367: /* variableDeclaration: typeRef name optInitializer SEMICOLON  */
+                                            {
         saveBaseType(subparser, getNodeAt(subparser, 4));
         bindIdent(subparser, getNodeAt(subparser, 4), getNodeAt(subparser, 3));
       }
     break;
 
-  case 368:
-    {}
+  case 368: /* constantDeclaration: optAnnotations CONST typeRef name ASSIGN initializer SEMICOLON  */
+                                     {}
     break;
 
-  case 369:
-    {}
+  case 369: /* optInitializer: %empty  */
+                                     {}
     break;
 
-  case 370:
-    {}
+  case 370: /* optInitializer: ASSIGN initializer  */
+                                          {}
     break;
 
-  case 371:
-    {}
+  case 371: /* initializer: expression  */
+                                        {}
     break;
 
-  case 372:
-    {}
+  case 372: /* functionDeclaration: functionPrototype blockStatement  */
+                                       {}
     break;
 
-  case 373:
-    {}
+  case 373: /* argumentList: %empty  */
+                                       {}
     break;
 
-  case 374:
-    {}
+  case 374: /* argumentList: nonEmptyArgList  */
+                                         {}
     break;
 
-  case 375:
-    {}
+  case 375: /* nonEmptyArgList: argument  */
+                                       {}
     break;
 
-  case 376:
-    {}
+  case 376: /* nonEmptyArgList: nonEmptyArgList COMMA argument  */
+                                           {}
     break;
 
-  case 377:
-    {}
+  case 377: /* argument: expression  */
+                                       {}
     break;
 
-  case 378:
-    {}
+  case 378: /* argument: name ASSIGN expression  */
+                                            {}
     break;
 
-  case 379:
-    {}
+  case 379: /* argument: DONTCARE  */
+                                              {}
     break;
 
-  case 380:
-    {}
+  case 380: /* expressionList: %empty  */
+                                       {}
     break;
 
-  case 381:
-    {}
+  case 381: /* expressionList: expression  */
+                                         {}
     break;
 
-  case 382:
-    {}
+  case 382: /* expressionList: expressionList COMMA expression  */
+                                           {}
     break;
 
-  case 383:
-    {}
+  case 383: /* prefixedNonTypeName: nonTypeName  */
+                                       {}
     break;
 
-  case 384:
-    {}
+  case 384: /* prefixedNonTypeName: dotPrefix nonTypeName  */
+                                         {}
     break;
 
-  case 385:
-    {}
+  case 385: /* $@21: %empty  */
+        {}
     break;
 
-  case 386:
-    {}
+  case 386: /* dot_name: DOT $@21 name  */
+                {}
     break;
 
-  case 387:
-    {}
+  case 387: /* lvalue: prefixedNonTypeName  */
+                                       {}
     break;
 
-  case 388:
-    {}
+  case 388: /* lvalue: THIS  */
+                                         {}
     break;
 
-  case 389:
-    {}
+  case 389: /* lvalue: lvalue dot_name  */
+                                         {}
     break;
 
-  case 390:
-    {}
+  case 390: /* lvalue: lvalue L_BRACKET expression R_BRACKET  */
+                                                     {}
     break;
 
-  case 391:
-    {}
+  case 391: /* lvalue: lvalue L_BRACKET expression COLON expression R_BRACKET  */
+                                                             {}
     break;
 
-  case 392:
-    {}
+  case 392: /* expression: INTEGER  */
+                                       {}
     break;
 
-  case 393:
-    {}
+  case 393: /* expression: STRING_LITERAL  */
+                                         {}
     break;
 
-  case 394:
-    {}
+  case 394: /* expression: TRUE  */
+                                         {}
     break;
 
-  case 395:
-    {}
+  case 395: /* expression: FALSE  */
+                                         {}
     break;
 
-  case 396:
-    {}
+  case 396: /* expression: THIS  */
+                                         {}
     break;
 
-  case 397:
-    {}
+  case 397: /* expression: nonTypeName  */
+                                         {}
     break;
 
-  case 398:
-    {}
+  case 398: /* expression: dotPrefix nonTypeName  */
+                                         {}
     break;
 
-  case 399:
-    {}
+  case 399: /* expression: expression L_BRACKET expression R_BRACKET  */
+                                                     {}
     break;
 
-  case 400:
-    {}
+  case 400: /* expression: expression L_BRACKET expression COLON expression R_BRACKET  */
+                                                                 {}
     break;
 
-  case 401:
-    {}
+  case 401: /* expression: L_BRACE expressionList R_BRACE  */
+                                                 {}
     break;
 
-  case 402:
-    {}
+  case 402: /* expression: L_BRACE kvList R_BRACE  */
+                                                 {}
     break;
 
-  case 403:
-    {}
+  case 403: /* expression: L_PAREN expression R_PAREN  */
+                                                 {}
     break;
 
-  case 404:
-    {}
+  case 404: /* expression: NOT expression  */
+                                         {}
     break;
 
-  case 405:
-    {}
+  case 405: /* expression: COMPLEMENT expression  */
+                                                {}
     break;
 
-  case 406:
-    {}
+  case 406: /* expression: MINUS expression  */
+                                           {}
     break;
 
-  case 407:
-    {}
+  case 407: /* expression: PLUS expression  */
+                                          {}
     break;
 
-  case 408:
-    {}
+  case 408: /* expression: typeName dot_name  */
+        {}
     break;
 
-  case 409:
-    {}
+  case 409: /* expression: ERROR DOT name  */
+        {}
     break;
 
-  case 410:
-    {}
+  case 410: /* expression: expression dot_name  */
+                                         {}
     break;
 
-  case 411:
-    {}
+  case 411: /* expression: expression MUL expression  */
+                                         {}
     break;
 
-  case 412:
-    {}
+  case 412: /* expression: expression DIV expression  */
+                                         {}
     break;
 
-  case 413:
-    {}
+  case 413: /* expression: expression MOD expression  */
+                                         {}
     break;
 
-  case 414:
-    {}
+  case 414: /* expression: expression PLUS expression  */
+                                          {}
     break;
 
-  case 415:
-    {}
+  case 415: /* expression: expression MINUS expression  */
+                                           {}
     break;
 
-  case 416:
-    {}
+  case 416: /* expression: expression PLUS_SAT expression  */
+                                            {}
     break;
 
-  case 417:
-    {}
+  case 417: /* expression: expression MINUS_SAT expression  */
+                                             {}
     break;
 
-  case 418:
-    {}
+  case 418: /* expression: expression SHL expression  */
+                                        {}
     break;
 
-  case 419:
-    {}
+  case 419: /* expression: expression R_ANGLE_SHIFT R_ANGLE expression  */
+        {}
     break;
 
-  case 420:
-    {}
+  case 420: /* expression: expression LE expression  */
+                                       {}
     break;
 
-  case 421:
-    {}
+  case 421: /* expression: expression GE expression  */
+                                       {}
     break;
 
-  case 422:
-    {}
+  case 422: /* expression: expression l_angle expression  */
+                                         {}
     break;
 
-  case 423:
-    {}
+  case 423: /* expression: expression R_ANGLE expression  */
+                                             {}
     break;
 
-  case 424:
-    {}
+  case 424: /* expression: expression NE expression  */
+                                       {}
     break;
 
-  case 425:
-    {}
+  case 425: /* expression: expression EQ expression  */
+                                       {}
     break;
 
-  case 426:
-    {}
+  case 426: /* expression: expression BIT_AND expression  */
+                                             {}
     break;
 
-  case 427:
-    {}
+  case 427: /* expression: expression BIT_XOR expression  */
+                                             {}
     break;
 
-  case 428:
-    {}
+  case 428: /* expression: expression BIT_OR expression  */
+                                            {}
     break;
 
-  case 429:
-    {}
+  case 429: /* expression: expression PP expression  */
+                                       {}
     break;
 
-  case 430:
-    {}
+  case 430: /* expression: expression AND expression  */
+                                        {}
     break;
 
-  case 431:
-    {}
+  case 431: /* expression: expression OR expression  */
+                                       {}
     break;
 
-  case 432:
-    {}
+  case 432: /* expression: expression QUESTION expression COLON expression  */
+                                                      {}
     break;
 
-  case 433:
-    {}
+  case 433: /* expression: expression l_angle realTypeArgumentList r_angle L_PAREN argumentList R_PAREN  */
+        {}
     break;
 
-  case 434:
-    {}
+  case 434: /* expression: expression L_PAREN argumentList R_PAREN  */
+        {}
     break;
 
-  case 435:
-    {}
+  case 435: /* expression: namedType L_PAREN argumentList R_PAREN  */
+        {}
     break;
 
-  case 436:
-    {}
+  case 436: /* expression: L_PAREN typeRef R_PAREN expression  */
+                                                      {}
     break;
 
-  case 437:
-    {}
+  case 437: /* nonBraceExpression: INTEGER  */
+                                       {}
     break;
 
-  case 438:
-    {}
+  case 438: /* nonBraceExpression: STRING_LITERAL  */
+                                         {}
     break;
 
-  case 439:
-    {}
+  case 439: /* nonBraceExpression: TRUE  */
+                                         {}
     break;
 
-  case 440:
-    {}
+  case 440: /* nonBraceExpression: FALSE  */
+                                         {}
     break;
 
-  case 441:
-    {}
+  case 441: /* nonBraceExpression: THIS  */
+                                         {}
     break;
 
-  case 442:
-    {}
+  case 442: /* nonBraceExpression: nonTypeName  */
+                                         {}
     break;
 
-  case 443:
-    {}
+  case 443: /* nonBraceExpression: dotPrefix nonTypeName  */
+                                         {}
     break;
 
-  case 444:
-    {}
+  case 444: /* nonBraceExpression: nonBraceExpression L_BRACKET expression R_BRACKET  */
+                                                             {}
     break;
 
-  case 445:
-    {}
+  case 445: /* nonBraceExpression: nonBraceExpression L_BRACKET expression COLON expression R_BRACKET  */
+                                                                         {}
     break;
 
-  case 446:
-    {}
+  case 446: /* nonBraceExpression: L_PAREN expression R_PAREN  */
+                                                 {}
     break;
 
-  case 447:
-    {}
+  case 447: /* nonBraceExpression: NOT expression  */
+                                         {}
     break;
 
-  case 448:
-    {}
+  case 448: /* nonBraceExpression: COMPLEMENT expression  */
+                                                {}
     break;
 
-  case 449:
-    {}
+  case 449: /* nonBraceExpression: MINUS expression  */
+                                           {}
     break;
 
-  case 450:
-    {}
+  case 450: /* nonBraceExpression: PLUS expression  */
+                                          {}
     break;
 
-  case 451:
-    {}
+  case 451: /* nonBraceExpression: typeName dot_name  */
+        {}
     break;
 
-  case 452:
-    {}
+  case 452: /* nonBraceExpression: ERROR DOT name  */
+        {}
     break;
 
-  case 453:
-    {}
+  case 453: /* nonBraceExpression: nonBraceExpression dot_name  */
+                                                 {}
     break;
 
-  case 454:
-    {}
+  case 454: /* nonBraceExpression: nonBraceExpression MUL expression  */
+                                                 {}
     break;
 
-  case 455:
-    {}
+  case 455: /* nonBraceExpression: nonBraceExpression DIV expression  */
+                                                 {}
     break;
 
-  case 456:
-    {}
+  case 456: /* nonBraceExpression: nonBraceExpression MOD expression  */
+                                                 {}
     break;
 
-  case 457:
-    {}
+  case 457: /* nonBraceExpression: nonBraceExpression PLUS expression  */
+                                                  {}
     break;
 
-  case 458:
-    {}
+  case 458: /* nonBraceExpression: nonBraceExpression MINUS expression  */
+                                                   {}
     break;
 
-  case 459:
-    {}
+  case 459: /* nonBraceExpression: nonBraceExpression PLUS_SAT expression  */
+                                                    {}
     break;
 
-  case 460:
-    {}
+  case 460: /* nonBraceExpression: nonBraceExpression MINUS_SAT expression  */
+                                                     {}
     break;
 
-  case 461:
-    {}
+  case 461: /* nonBraceExpression: nonBraceExpression SHL expression  */
+                                                {}
     break;
 
-  case 462:
-    {}
+  case 462: /* nonBraceExpression: nonBraceExpression R_ANGLE_SHIFT R_ANGLE expression  */
+        {}
     break;
 
-  case 463:
-    {}
+  case 463: /* nonBraceExpression: nonBraceExpression LE expression  */
+                                               {}
     break;
 
-  case 464:
-    {}
+  case 464: /* nonBraceExpression: nonBraceExpression GE expression  */
+                                               {}
     break;
 
-  case 465:
-    {}
+  case 465: /* nonBraceExpression: nonBraceExpression l_angle expression  */
+                                         {}
     break;
 
-  case 466:
-    {}
+  case 466: /* nonBraceExpression: nonBraceExpression R_ANGLE expression  */
+                                                     {}
     break;
 
-  case 467:
-    {}
+  case 467: /* nonBraceExpression: nonBraceExpression NE expression  */
+                                               {}
     break;
 
-  case 468:
-    {}
+  case 468: /* nonBraceExpression: nonBraceExpression EQ expression  */
+                                               {}
     break;
 
-  case 469:
-    {}
+  case 469: /* nonBraceExpression: nonBraceExpression BIT_AND expression  */
+                                                     {}
     break;
 
-  case 470:
-    {}
+  case 470: /* nonBraceExpression: nonBraceExpression BIT_XOR expression  */
+                                                     {}
     break;
 
-  case 471:
-    {}
+  case 471: /* nonBraceExpression: nonBraceExpression BIT_OR expression  */
+                                                    {}
     break;
 
-  case 472:
-    {}
+  case 472: /* nonBraceExpression: nonBraceExpression PP expression  */
+                                               {}
     break;
 
-  case 473:
-    {}
+  case 473: /* nonBraceExpression: nonBraceExpression AND expression  */
+                                                {}
     break;
 
-  case 474:
-    {}
+  case 474: /* nonBraceExpression: nonBraceExpression OR expression  */
+                                               {}
     break;
 
-  case 475:
-    {}
+  case 475: /* nonBraceExpression: nonBraceExpression QUESTION expression COLON expression  */
+                                                              {}
     break;
 
-  case 476:
-    {}
+  case 476: /* nonBraceExpression: nonBraceExpression l_angle realTypeArgumentList r_angle L_PAREN argumentList R_PAREN  */
+        {}
     break;
 
-  case 477:
-    {}
+  case 477: /* nonBraceExpression: nonBraceExpression L_PAREN argumentList R_PAREN  */
+        {}
     break;
 
-  case 478:
-    {}
+  case 478: /* nonBraceExpression: namedType L_PAREN argumentList R_PAREN  */
+        {}
     break;
 
-  case 479:
-    {}
+  case 479: /* nonBraceExpression: L_PAREN typeRef R_PAREN expression  */
+                                                      {}
     break;
+
 
     }
   return value;

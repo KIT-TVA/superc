@@ -89,7 +89,8 @@ public class DirectiveParser implements Iterator<Syntax> {
         syntax = stream.next();
 
         if (syntax.kind() == Kind.LAYOUT
-            && ((Layout) syntax).hasNewline()) {
+            && ((Layout) syntax).hasNewline()
+	    || syntax.kind() == Kind.EOF) {
           break;
 
         } else if (syntax.kind() == Kind.LANGUAGE) {
@@ -123,7 +124,8 @@ public class DirectiveParser implements Iterator<Syntax> {
         syntax = stream.next();
 
         if (syntax.kind() == Kind.LAYOUT
-            && ((Layout) syntax).hasNewline()) {
+            && ((Layout) syntax).hasNewline()
+	    || syntax.kind() == Kind.EOF) {
           break;
 
         } else if (syntax.kind() == Kind.LANGUAGE) {

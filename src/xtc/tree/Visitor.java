@@ -60,7 +60,7 @@ public abstract class Visitor {
   static final class CacheKey {
 
     /** The visitor. */
-    public Visitor visitor;
+    public Class<? extends Visitor> visitor;
 
     /** The object identifying the node. */
     public Object  node;
@@ -71,7 +71,7 @@ public abstract class Visitor {
      * @param visitor The visitor.
      * @param node The object identifying the node.
      */
-    public CacheKey(Visitor visitor, Object node) {
+    public CacheKey(Class<? extends Visitor> visitor, Object node) {
       this.visitor = visitor;
       this.node    = node;
     }
@@ -188,7 +188,7 @@ public abstract class Visitor {
 
     // Check the method lookup cache.
     Method method;
-    key.visitor = this;
+    key.visitor = getClass();
     if (n.isGeneric()) {
       key.node = n.getName();
     } else {
@@ -199,7 +199,7 @@ public abstract class Visitor {
     if (null == method) {
       // Determine the correct cache value and cache it.
       method = findMethod(n);
-      cache.put(new CacheKey(this, key.node), method);
+      cache.put(new CacheKey(getClass(), key.node), method);
     }
 
     // Set up the argument.

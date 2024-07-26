@@ -26,6 +26,7 @@ import superc.core.ForkMergeParser.Subparser;
 import java.lang.StringBuilder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
@@ -119,6 +120,7 @@ import xtc.type.NumberT;
 import xtc.type.IntegerT;
 import xtc.type.FloatT;
 import xtc.type.PointerT;
+import xtc.type.AnnotatedT;
 import xtc.type.Reference;
 import xtc.type.StaticReference;
 import xtc.type.StringReference;
@@ -271,291 +273,235 @@ public class CActions implements SemanticActions {
     break;
 
   case 12: /* $@1: %empty  */
-                  {restartLabelFunction();}
+{
+  restartLabelFunction();
+  // similar to Declaration, but different in that this has a
+  // compoundstatement, while declaration has an initializer.
+  PresenceCondition pc = subparser.getPresenceCondition();
+          
+  // add all variations of the function declaration to the symtab
+  CContext scope = (CContext)subparser.scope;
+  Multiverse<Node> prototypeNodemv = staticCondToMultiverse(getNodeAt(subparser, 1), pc);
+  // produce a multiverse of strings for the body to use
+  Multiverse<String> prototypestrmv = new Multiverse<String>();
+  // collect the set of configurations that have valid function prototypes
+  for (Element<Node> prototypeNode : prototypeNodemv) {
+    FunctionPrototypeValue prototype = (FunctionPrototypeValue) getTransformationValue(prototypeNode.getData());
+    Multiverse<TypeSpecifier> typespecifiermv = prototype.typespecifier;
+    Multiverse<Declarator> declaratormv = prototype.declarator;
+    Multiverse<Declarator> newDeclarations = new Multiverse<Declarator>();
+    Multiverse<TypeSpecifier> newTypes = new Multiverse<TypeSpecifier>();
+    assert scope.isGlobal(); // function definitions should be global.  nested functions have a separate subgrammar.
+    for (Element<TypeSpecifier> typespecifier : typespecifiermv) {
+      PresenceCondition typespecifierCond = prototypeNode.getCondition().and(typespecifier.getCondition());
+      for (Element<Declarator> declarator : declaratormv) {
+        PresenceCondition combinedCond = typespecifierCond.and(declarator.getCondition());
+        if (combinedCond.isFalse()) {
+          combinedCond.delRef();
+          continue;
+        }
+        String originalName = declarator.getData().getName();
+        Declaration originalDeclaration = new Declaration(typespecifier.getData(), declarator.getData());
+        if (originalDeclaration.hasTypeError()) {
+          // if type is invalid, put an error entry, emit a call
+          // to the type error function
+          scope.putError(originalName, combinedCond);
+          recordInvalidGlobalDeclaration(originalName, combinedCond);
+          System.err.println(String.format("INFO: \"%s\" has an invalid type specifier", originalName));
+        } else if (! originalDeclaration.getType().isFunction()) {
+          // if type is not a function type, put an error entry, emit a call
+          // to the type error function
+          scope.putError(originalName, combinedCond);
+          recordInvalidGlobalDeclaration(originalName, combinedCond);
+          System.err.println(String.format("INFO: \"%s\" non-function type specifier in function prototype.  this can happen when, e.g., header guards make typedefs conditional.", originalName));
+        } else {
+          // otherwise loop over each existing entry check for
+          // type errors or add a new declaration
+          Multiverse<SymbolTable.Entry<Type>> entries = scope.getInCurrentScope(originalName, combinedCond);
+          for (Element<SymbolTable.Entry<Type>> entry : entries) {
+
+            // the renamed declaration is used to get the type entry in the symtab
+            String renaming;
+            String funcName = "";
+            if (!entry.getData().isDeclared()) {
+              renaming = freshCId(originalName);
+            } else { //is declared
+              funcName = entry.getData().getValue().getName();
+              renaming = freshCId(entry.getData().getValue().getName());
+            }
+            Declarator renamedDeclarator = declarator.getData().rename(renaming);
+            Declaration renamedDeclaration = new Declaration(typespecifier.getData(), renamedDeclarator);
+            boolean invalidTypeSpec = false;
+            // the renamed function is static to enable linking the original function name
+            if (Constants.ATT_STORAGE_EXTERN == typespecifier.getData().getStorageClass()
+                || Constants.ATT_STORAGE_AUTO == typespecifier.getData().getStorageClass()
+                || Constants.ATT_STORAGE_REGISTER == typespecifier.getData().getStorageClass()
+                || Constants.ATT_STORAGE_TYPEDEF == typespecifier.getData().getStorageClass()) {
+              todoReminder("check that function definitions don't have an auto, extern, register, or typedef storage class and produce a type error if so");
+              invalidTypeSpec = true;
+            }
+
+            // make all renamed declarations static until project-wide, configuration-aware linking is possible
+            String desugaredDeclaration;
+            desugaredDeclaration = renamedDeclaration.toString();
+            assert null != desugaredDeclaration;
+                    
+            // renamedDeclaration must be a FunctionT because
+            // that is created by a FunctionDeclarator
+            Type declarationType = renamedDeclaration.getType();
+
+            if (! declarationType.isFunction()) {
+              System.err.println(String.format("FATAL: unexpected type in function prototype: %s %s", declarationType, renaming));
+              System.exit(1);
+            }
+            Type type = new NamedFunctionT(declarationType.toFunction().getResult(),
+                                           renaming,
+                                           declarationType.toFunction().getParameters(),
+                                           declarationType.toFunction().isVarArgs());
+            
+            if (entry.getData().isError() || invalidTypeSpec) {
+              // ERROR entry
+              System.err.println(String.format("INFO: \"%s\" is being redeclared in an existing invalid declaration", originalName));
+            } else if (entry.getData().isUndeclared()) {
+              // UNDECLARED entry
+
+              todoReminder("multiplex functions to so that each can have its own function name.  try using function pointers as a kind of vtable.");
+              //((NamedFunctionT)type).setDefined();
+              // update the symbol table for this presence condition
+              scope.put(originalName, type, entry.getCondition());
+ 
+              // record the global/extern declaration using the original name for later use in handling linking
+              if (scope.isGlobal() && isGlobalOrExtern(typespecifier.getData())) {
+                externalLinkage.put(originalName, originalDeclaration, entry.getCondition());
+              }
+ 
+              newDeclarations.add(renamedDeclarator, entry.getCondition());
+              newTypes.add(typespecifier.getData(),entry.getCondition());
+               
+                // shouldn't need to add forward decl, since if
+                // the function had a decl before, that will do
+                // the renaming.  if the function is missing a
+                // decl before def, then the function is
+                // implicitly declared to be () -> int
+                      
+                recordRenaming(renaming, originalName);
+            } else { 
+              if (entry.getData().getValue().isNamedFunction()) {  // there is no Type.isFunctionOrMethod()
+                FunctionT newtype = ((NamedFunctionT) type).toFunctionT();
+                FunctionT previoustype = ((NamedFunctionT) entry.getData().getValue()).toFunctionT();
+
+                //newtype.setDefined(entry.getCondition());
+                //((NamedFunctionT) entry.getData().getValue()).setDefined(entry.getCondition());
+                // TODO: make sure a function is only defined
+                // once, although it can be declared multiple
+                // times.
+                System.err.println(newtype+"::"+previoustype);
+                // already declared entries
+                if (cOps.equal(newtype, previoustype)) {
+                System.err.println("eq");
+                  newDeclarations.add(renamedDeclarator, entry.getCondition());
+                  newTypes.add(typespecifier.getData(),entry.getCondition());
+                  CContext.addMultiplex(funcName,renaming,entry.getCondition());
+                } else if (functionCouldExist(newtype,previoustype,scope,entry.getCondition())) {
+                System.err.println("could");
+                  transformFunctionRefs(renamedDeclarator,previoustype,entry.getCondition(),newDeclarations,typespecifier.getData(),newTypes,scope);
+                  CContext.addMultiplex(funcName,renaming,entry.getCondition());
+                } else {
+                System.err.println("err");
+                  
+                  scope.putError(originalName, entry.getCondition());
+                  recordInvalidGlobalDeclaration(originalName, entry.getCondition());
+                  // record the global/extern declaration using the original name for later use in handling linking
+                  if (scope.isGlobal() && isGlobalOrExtern(typespecifier.getData())) {
+                    externalLinkage.putError(originalName, entry.getCondition());
+                  }
+                }
+              } else { // existing entry is not a function type
+                scope.putError(originalName, entry.getCondition());
+                recordInvalidGlobalDeclaration(originalName, entry.getCondition());
+                // record the global/extern declaration using the original name for later use in handling linking
+                if (scope.isGlobal() && isGlobalOrExtern(typespecifier.getData())) {
+                  externalLinkage.putError(originalName, entry.getCondition());
+                }
+                System.err.println(String.format("INFO: attempted to redeclare \"%s\" as function instead of non-function", originalName));
+              }  // end of check for existing function type
+            }  // end test of symtab entry type
+          } // end loop over symtab entries
+        }
+              
+        combinedCond.delRef();
+      } // end of loop over declarators
+      typespecifierCond.delRef();
+    } // end of loop over typespecifiers
+    prototype.declarator.destruct();
+    prototype.declarator = newDeclarations;
+    prototype.typespecifier.destruct();
+    prototype.typespecifier = newTypes;
+  } 
+}
     break;
 
   case 13: /* FunctionDefinition: FunctionPrototype $@1 CompoundStatement  */
-        {
-          // similar to Declaration, but different in that this has a
-          // compoundstatement, while declaration has an initializer.
-          PresenceCondition pc = subparser.getPresenceCondition();
+{
+  PresenceCondition pc = subparser.getPresenceCondition();
           
-          // add all variations of the function declaration to the symtab
-          CContext scope = (CContext)subparser.scope;
+  // add all variations of the function declaration to the symtab
+  CContext scope = (CContext)subparser.scope;
 
-          todoReminder("don't permit extern prototypes to have a definition");
+  Multiverse<Node> prototypeNodemv = staticCondToMultiverse(getNodeAt(subparser, 3), pc);
 
-          // TODO: investigate why the function prototype can still
-          // have a conditional underneath even though the complete
-          // annotation isn't on functionprototype.  this is why we
-          // are getting all nodes at this point
-          Multiverse<Node> prototypeNodemv = staticCondToMultiverse(getNodeAt(subparser, 3), pc);
-          // produce a multiverse of strings for the body to use
-          Multiverse<String> prototypestrmv = new Multiverse<String>();
-          // collect the set of configurations that have valid function prototypes
-          PresenceCondition validCond = pc.presenceConditionManager().newFalse();
-          for (Element<Node> prototypeNode : prototypeNodemv) {
-            FunctionPrototypeValue prototype = (FunctionPrototypeValue) getTransformationValue(prototypeNode.getData());
-            Multiverse<TypeSpecifier> typespecifiermv = prototype.typespecifier;
-            Multiverse<Declarator> declaratormv = prototype.declarator;
+  Multiverse<String> resultmv = new Multiverse<String>();
+  
+  for (Element<Node> prototypeNode : prototypeNodemv) {
+    FunctionPrototypeValue prototype = (FunctionPrototypeValue) getTransformationValue(prototypeNode.getData());
+    Multiverse<TypeSpecifier> typespecifiermv = prototype.typespecifier;
+    Multiverse<Declarator> declaratormv = prototype.declarator;
 
-            assert scope.isGlobal(); // function definitions should be global.  nested functions have a separate subgrammar.
-            for (Element<TypeSpecifier> typespecifier : typespecifiermv) {
-              PresenceCondition typespecifierCond = prototypeNode.getCondition().and(typespecifier.getCondition());
-              for (Element<Declarator> declarator : declaratormv) {
-                PresenceCondition combinedCond = typespecifierCond.and(declarator.getCondition());
-                if (combinedCond.isFalse()) {
-                  combinedCond.delRef();
-                  continue;
-                }
-                String originalName = declarator.getData().getName();
-                Declaration originalDeclaration = new Declaration(typespecifier.getData(), declarator.getData());
-
-                if (originalDeclaration.hasTypeError()) {
-                  // if type is invalid, put an error entry, emit a call
-                  // to the type error function
-                  scope.putError(originalName, combinedCond);
-                  recordInvalidGlobalDeclaration(originalName, combinedCond);
-                  System.err.println(String.format("INFO: \"%s\" has an invalid type specifier", originalName));
-                } else if (! originalDeclaration.getType().isFunction()) {
-                  // if type is not a function type, put an error entry, emit a call
-                  // to the type error function
-                  scope.putError(originalName, combinedCond);
-                  recordInvalidGlobalDeclaration(originalName, combinedCond);
-                  System.err.println(String.format("INFO: \"%s\" non-function type specifier in function prototype.  this can happen when, e.g., header guards make typedefs conditional.", originalName));
-                } else {
-                  // otherwise loop over each existing entry check for
-                  // type errors or add a new declaration
-                  Multiverse<SymbolTable.Entry<Type>> entries = scope.getInCurrentScope(originalName, combinedCond);
-                  for (Element<SymbolTable.Entry<Type>> entry : entries) {
-
-                    // the renamed declaration is used to get the type entry in the symtab
-                    String renaming;
-                      if (!entry.getData().isDeclared()) {
-                        renaming = freshCId(originalName);
-                      } else { //is declared
-                        renaming = entry.getData().getValue().getName();
-                      }
-                    Declarator renamedDeclarator = declarator.getData().rename(renaming);
-                    Declaration renamedDeclaration = new Declaration(typespecifier.getData(), renamedDeclarator);
-                    boolean invalidTypeSpec = false;
-                    // the renamed function is static to enable linking the original function name
-                    if (Constants.ATT_STORAGE_EXTERN == typespecifier.getData().getStorageClass()
-                        || Constants.ATT_STORAGE_AUTO == typespecifier.getData().getStorageClass()
-                        || Constants.ATT_STORAGE_REGISTER == typespecifier.getData().getStorageClass()
-                        || Constants.ATT_STORAGE_TYPEDEF == typespecifier.getData().getStorageClass()) {
-                      todoReminder("check that function definitions don't have an auto, extern, register, or typedef storage class and produce a type error if so");
-                      invalidTypeSpec = true;
-                    }
-
-                    // make all renamed declarations static until project-wide, configuration-aware linking is possible
-                    String desugaredDeclaration;
-                    if (hasGlobalLinkage(typespecifier.getData())) {
-                      // disabling the thunks for now, pending
-                      // configuration-aware linking support
-                      if (true) {
-                        desugaredDeclaration = renamedDeclaration.toString();
-                      } else {
-                        desugaredDeclaration = makeStaticDeclaration(typespecifier.getData(), renamedDeclarator);
-                      }
-                    } else {
-                      desugaredDeclaration = renamedDeclaration.toString();
-                    }
-                    assert null != desugaredDeclaration;
-
-                    // renamedDeclaration must be a FunctionT because
-                    // that is created by a FunctionDeclarator
-                    Type declarationType = renamedDeclaration.getType();
-
-                    if (! declarationType.isFunction()) {
-                      System.err.println(String.format("FATAL: unexpected type in function prototype: %s %s", declarationType, renaming));
-                      System.exit(1);
-                    }
-                    Type type = new NamedFunctionT(declarationType.toFunction().getResult(),
-                                                   renaming,
-                                                   declarationType.toFunction().getParameters(),
-                                                   declarationType.toFunction().isVarArgs());
-                    
-                    if (entry.getData().isError() || invalidTypeSpec) {
-                      // ERROR entry
-                      System.err.println(String.format("INFO: \"%s\" is being redeclared in an existing invalid declaration", originalName));
-                    } else if (entry.getData().isUndeclared()) {
-                      // UNDECLARED entry
-
-                      todoReminder("multiplex functions to so that each can have its own function name.  try using function pointers as a kind of vtable.");
-		      ((NamedFunctionT)type).setDefined();
-                      // update the symbol table for this presence condition
-                      scope.put(originalName, type, entry.getCondition());
-
-                      // record the global/extern declaration using the original name for later use in handling linking
-                      if (scope.isGlobal() && isGlobalOrExtern(typespecifier.getData())) {
-                        externalLinkage.put(originalName, originalDeclaration, entry.getCondition());
-                      }
-
-                      // emit the renamed function as static to use the original name for linking when possible
-                      /* prototypestrmv.add(renamedDeclaration.toString(), entry.getCondition()); */
-                      prototypestrmv.add(desugaredDeclaration, entry.getCondition());
-
-                      PresenceCondition newValidCond = validCond.or(entry.getCondition());
-                      validCond.delRef(); validCond = newValidCond;
-
-                      // shouldn't need to add forward decl, since if
-                      // the function had a decl before, that will do
-                      // the renaming.  if the function is missing a
-                      // decl before def, then the function is
-                      // implicitly declared to be () -> int
-                      
-                      /* // add the forward declaration to the scope to */
-                      /* // facilitate matching of signatures for linking */
-                      /* StringBuilder forward = new StringBuilder(); */
-                      /* forward.append(renamedDeclaration.toString()); */
-                      /* forward.append(";\n"); */
-                      /* scope.addDeclaration(forward.toString()); */
-                      /* forward = null; */
-                      
-                      recordRenaming(renaming, originalName);
-
-                    } else {
-                      if (entry.getData().getValue() instanceof NamedFunctionT && !((NamedFunctionT)entry.getData().getValue()).getDefined()) {  // there is no Type.isFunctionOrMethod()
-                        FunctionT newtype = ((NamedFunctionT) type).toFunctionT();
-                        FunctionT previoustype = ((NamedFunctionT) entry.getData().getValue()).toFunctionT();
-                        newtype.setDefined();
-			((NamedFunctionT) entry.getData().getValue()).setDefined();
-                        // TODO: make sure a function is only defined
-                        // once, although it can be declared multiple
-                        // times.
-
-                        // already declared entries
-                        if (cOps.equal(newtype, previoustype)) {
-                          System.err.println("TODO: distinguish between previous declaration vs definition.");
-                          System.err.println(String.format("INFO: %s is being redeclared in global scope to compatible type", originalName));
-                          String previousname = ((NamedFunctionT) entry.getData().getValue()).getName();
-                          Declarator previousDeclarator = declarator.getData().rename(previousname);
-                          Declaration previousDeclaration = new Declaration(typespecifier.getData(),
-                                                                           previousDeclarator);
-                          // emit the renamed function as static to use the original name for linking when possible
-                          /* prototypestrmv.add(previousDeclaration.toString(), entry.getCondition()); */
-                          prototypestrmv.add(desugaredDeclaration, entry.getCondition());
-
-                          PresenceCondition newValidCond = validCond.or(entry.getCondition());
-                          validCond.delRef(); validCond = newValidCond;
-                        } else {
-                          scope.putError(originalName, entry.getCondition());
-                          recordInvalidGlobalDeclaration(originalName, entry.getCondition());
-                          // record the global/extern declaration using the original name for later use in handling linking
-                          if (scope.isGlobal() && isGlobalOrExtern(typespecifier.getData())) {
-                            externalLinkage.putError(originalName, entry.getCondition());
-                          }
-                        }
-                      } else { // existing entry is not a function type
-                        scope.putError(originalName, entry.getCondition());
-                        recordInvalidGlobalDeclaration(originalName, entry.getCondition());
-                        // record the global/extern declaration using the original name for later use in handling linking
-                        if (scope.isGlobal() && isGlobalOrExtern(typespecifier.getData())) {
-                          externalLinkage.putError(originalName, entry.getCondition());
-                        }
-                        System.err.println(String.format("INFO: attempted to redeclare \"%s\" as function instead of non-function", originalName));
-                      }  // end of check for existing function type
-                    }  // end test of symtab entry type
-                  } // end loop over symtab entries
-                }
-              
-                combinedCond.delRef();
-              } // end of loop over declarators
-              typespecifierCond.delRef();
-            } // end of loop over typespecifiers
-            // TODO: improve memory usage by destructing these.
-            // challenge is that they are shared by nodes.
-            /* typespecifiermv.destruct(); */
-            /* declaratormv.destruct(); */
-          } // end of check for invalid typespecifier
-          // prototypestrmv may be empty if none are valid types
-          prototypeNodemv.destruct();
-
-          if (validCond.isFalse()) {
-            System.err.println("INFO: no valid configuration for this definitions of %s");
-          } else {
-            if (prototypestrmv.isEmpty()) {
-              throw new AssertionError("prototypestrmv should not be empty if validConds is not false");
-            }
-          }
-
-          
-
-          
-          Multiverse<String> resultmv = prototypestrmv;
-          /*Node n = getNodeAt(subparser, 3);
-          
-          if (n.getName().equals("Conditional")) {
-            resultmv = new Multiverse<String>();
-            for (int i = 0; i < n.size(); ++i){
-              if (n.get(i) instanceof Node) {
-                System.err.println(((Node)n.get(i)).getProperty(TRANSFORMATION));
-                resultmv.addAll((Multiverse<String>)((Node)n.get(i)).getProperty(TRANSFORMATION));
-              }
-            }
-          } else {
-            resultmv = (Multiverse<String>) getTransformationValue(subparser, 3);
-            }*/
-          /* // the function prototype can be empty if all prototypes in */
-          /* // that set of configurations all have type errors */
-          /* // (redeclarations, invalid types in parameters, etc).  this */
-          /* // means that we can't use the regular */
-          /* // getCompleteNodeMultiverseValue, which assumes all */
-          /* // children are non-empty. */
-
-          /* System.err.println("JKLFDSJ " + getNodeAt(subparser, 3)); */
-          /* Multiverse<Node> prototypenodemv = staticCondToMultiverse(getNodeAt(subparser, 3), pc); */
-          /* Multiverse<String> resultmv = new Multiverse<String>(); */
-
-          /* // loop through each node, get its multiverse and add to the */
-          /* // resultmv.  update each node's multiverse elements with the static */
-          /* // conditional branch's presence condition using filter. */
-          /* for (Element<Node> elem : prototypenodemv) { */
-          /*   System.err.println("ELEM: " + elem.getData()); */
-          /*   Multiverse<String> nodevaluemv = (Multiverse<String>) getTransformationValue((Node) elem.getData()); */
-          /*   if (! nodevaluemv.isEmpty()) { */
-          /*     Multiverse<String> filtered = nodevaluemv.filter(elem.getCondition()); */
-          /*     resultmv.addAll(filtered); */
-          /*     filtered.destruct(); */
-          /*   } */
-          /* } */
-          /* prototypenodemv.destruct(); */
-
-          StringBuilder sb = new StringBuilder();
-          if (! resultmv.isEmpty()) {
-            Multiverse<String> subprototypestrmv = resultmv.filter(pc);
-            resultmv.destruct();
-    
-            Multiverse<DeclarationOrStatementValue> bodymv = getCompleteNodeSingleValue(subparser, 1, subparser.getPresenceCondition());
-            // declarations, including function definitions, should
-            // appear unconditionally in the desugared output, since
-            // renaming handles different configurations.  so add all
-            // resulting definitions to a single element multiverse
-            // under the true condition.
-
-            // TODO: optimization: dedeuplicate functions that have the
-            // same type.  this type deduplication maybe also be useful
-            // for typechecking to find a single type eror.
-
-            // TODO: investigate why the function prototype can still
-            // have a conditional underneath even though the complete
-            // annotation isn't on functionprototype.  this is why we
-            // are getting all nodes at this point
-            for (Element<String> prototypestr : subprototypestrmv) {
-              sb.append(prototypestr.getData());
-              sb.append(" {\n");
-              sb.append(emitStatementDSV(bodymv, prototypestr.getCondition()));
-              sb.append("}\n");
-            }
-            bodymv.destruct();
-          } else {
-            // the prototype can be empty if there are type errors.
-            sb.append("/* no function due to type errors in the function prototype */\n");
-          }
-          setTransformationValue(value, sb.toString());
-          
+    if (declaratormv.isEmpty()) {
+      continue;
+    }
+    for (Element<TypeSpecifier> typespecifier : typespecifiermv) {
+      PresenceCondition typespecifierCond = prototypeNode.getCondition().and(typespecifier.getCondition());
+      for (Element<Declarator> declarator : declaratormv) {
+        PresenceCondition combinedCond = typespecifierCond.and(declarator.getCondition());
+        if (combinedCond.isFalse()) {
+          combinedCond.delRef();
+          continue;
         }
+        Declaration renamedDeclaration = new Declaration(typespecifier.getData(), declarator.getData());
+        String desugaredDeclaration;
+        desugaredDeclaration = renamedDeclaration.toString();
+        resultmv.add(desugaredDeclaration,combinedCond);
+      }
+    }
+  }
+  
+  StringBuilder sb = new StringBuilder();
+  if (! resultmv.isEmpty()) {
+    Multiverse<String> subprototypestrmv = resultmv.filter(pc);
+    resultmv.destruct();
+    
+    Multiverse<DeclarationOrStatementValue> bodymv = getCompleteNodeSingleValue(subparser, 1, subparser.getPresenceCondition());
+    // declarations, including function definitions, should
+    // appear unconditionally in the desugared output, since
+    // renaming handles different configurations.  so add all
+    // resulting definitions to a single element multiverse
+    // under the true condition.
+    for (Element<String> prototypestr : subprototypestrmv) {
+      sb.append(prototypestr.getData());
+      sb.append(" //M:" + getCompoundRange(bodymv, prototypestr.getCondition()) + "\n");
+      sb.append("{\n");
+      sb.append(emitStatementDSV(bodymv, prototypestr.getCondition()));
+      sb.append("}\n");
+    }
+    bodymv.destruct();
+  } else {
+    // the prototype can be empty if there are type errors.
+    System.err.println("/* no function due to type errors in the function prototype */\n");
+    sb.append("/* no function due to type errors in the function prototype */\n");
+  }
+  setTransformationValue(value, sb.toString());
+}
     break;
 
   case 14: /* $@2: %empty  */
@@ -570,7 +516,8 @@ public class CActions implements SemanticActions {
         {
           // TODO
           System.err.println("ERROR: unsupported semantic action: FunctionDefinition");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
@@ -667,7 +614,8 @@ public class CActions implements SemanticActions {
   case 23: /* FunctionPrototype: OldFunctionDeclarator  */
         {
           System.err.println("ERROR: unsupported semantic action: FunctionPrototype (6)");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
           bindFunDef(subparser, null, getNodeAt(subparser, 1));
         }
     break;
@@ -675,7 +623,8 @@ public class CActions implements SemanticActions {
   case 24: /* FunctionPrototype: DeclarationSpecifier OldFunctionDeclarator  */
         {
           System.err.println("ERROR: unsupported semantic action: FunctionPrototype (7)");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
@@ -684,7 +633,8 @@ public class CActions implements SemanticActions {
   case 25: /* FunctionPrototype: TypeSpecifier OldFunctionDeclarator  */
         {
           System.err.println("ERROR: unsupported semantic action: FunctionPrototype (8)");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
@@ -693,7 +643,8 @@ public class CActions implements SemanticActions {
   case 26: /* FunctionPrototype: DeclarationQualifierList OldFunctionDeclarator  */
         {
           System.err.println("ERROR: unsupported semantic action: FunctionPrototype (9)");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
@@ -702,7 +653,8 @@ public class CActions implements SemanticActions {
   case 27: /* FunctionPrototype: TypeQualifierList OldFunctionDeclarator  */
         {
           System.err.println("ERROR: unsupported semantic action: FunctionPrototype (10)");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
@@ -711,7 +663,8 @@ public class CActions implements SemanticActions {
   case 28: /* FunctionOldPrototype: OldFunctionDeclarator  */
         {
           System.err.println("ERROR: unsupported semantic action: FunctionOldPrototype");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
           bindFunDef(subparser, null, getNodeAt(subparser, 1));
         }
     break;
@@ -721,7 +674,8 @@ public class CActions implements SemanticActions {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
           System.err.println("ERROR: unsupported semantic action: FunctionOldPrototype");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
@@ -730,7 +684,8 @@ public class CActions implements SemanticActions {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
           System.err.println("ERROR: unsupported semantic action: FunctionOldPrototype");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
@@ -739,7 +694,8 @@ public class CActions implements SemanticActions {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
           System.err.println("ERROR: unsupported semantic action: FunctionOldPrototype");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
@@ -748,7 +704,8 @@ public class CActions implements SemanticActions {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
           System.err.println("ERROR: unsupported semantic action: FunctionOldPrototype");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
@@ -756,7 +713,8 @@ public class CActions implements SemanticActions {
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           System.err.println("ERROR: unsupported semantic action: NestedFunctionDefinition");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
@@ -777,7 +735,8 @@ public class CActions implements SemanticActions {
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           System.err.println("ERROR: unsupported semantic action: NestedFunctionDefinition");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
@@ -838,7 +797,8 @@ public class CActions implements SemanticActions {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
           System.err.println("ERROR: unsupported semantic action: NestedFunctionDefinition(5)");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
@@ -847,7 +807,8 @@ public class CActions implements SemanticActions {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
           System.err.println("ERROR: unsupported semantic action: NestedFunctionDefinition(6)");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
@@ -856,7 +817,8 @@ public class CActions implements SemanticActions {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
           System.err.println("ERROR: unsupported semantic action: NestedFunctionDefinition(7)");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
@@ -865,7 +827,8 @@ public class CActions implements SemanticActions {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
           System.err.println("ERROR: unsupported semantic action: NestedFunctionDefinition(8)");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
@@ -874,7 +837,8 @@ public class CActions implements SemanticActions {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
           System.err.println("ERROR: unsupported semantic action: NestedFunctionOldPrototype");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
@@ -883,7 +847,8 @@ public class CActions implements SemanticActions {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
           System.err.println("ERROR: unsupported semantic action: NestedFunctionOldPrototype");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
@@ -892,7 +857,8 @@ public class CActions implements SemanticActions {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
           System.err.println("ERROR: unsupported semantic action: NestedFunctionOldPrototype");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
@@ -901,7 +867,8 @@ public class CActions implements SemanticActions {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindFunDef(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
           System.err.println("ERROR: unsupported semantic action: NestedFunctionOldPrototype");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
@@ -1045,11 +1012,19 @@ public class CActions implements SemanticActions {
           PresenceCondition pc = subparser.getPresenceCondition();
           CContext scope = ((CContext) subparser.scope);
           
-        	List<DeclaringListValue> declaringlistvalues = (List<DeclaringListValue>) getTransformationValue(subparser, 3);
+        	List<DeclaringListValue> declaringlistvalues = getCompleteNodeDeclaringListValueList(subparser, 3);
           String semi = getNodeAt(subparser, 1).getTokenText();
-          semi += declaringListRange(declaringlistvalues,(Syntax)getNodeAt(subparser,1));
-          
-          List<Multiverse<String>> valuestring = declarationAction(declaringlistvalues, semi, pc, scope);
+          semi += declaringListRange(declaringlistvalues,(Syntax)getNodeAt(subparser,1));          
+          //List<Multiverse<String>> valuestring = declarationAction(declaringlistvalues, semi, pc, scope);
+          //          
+          //semi += declaringListRange(declaringlistvalues,(Syntax)getNodeAt(subparser,1));
+          semi += "\n";
+          List<Multiverse<String>> valuestring;
+          if (scope.isGlobal()) {
+            valuestring = declarationAction(declaringlistvalues, semi, pc, scope);
+          } else {
+            valuestring = declAddSemi(declaringlistvalues, semi, pc);
+          }
           setTransformationValue(value, valuestring);
         }
     break;
@@ -1062,64 +1037,71 @@ public class CActions implements SemanticActions {
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           CContext scope = ((CContext) subparser.scope);
-
-        	List<DeclaringListValue> declaringlistvalues = (List<DeclaringListValue>) getTransformationValue(subparser, 3);
-          String semi = getNodeAt(subparser, 1).getTokenText();
-          semi += declaringListRange(declaringlistvalues,(Syntax)getNodeAt(subparser,1));
           
-          List<Multiverse<String>> valuestring = declarationAction(declaringlistvalues, semi, pc, scope);
+        	List<DeclaringListValue> declaringlistvalues = getCompleteNodeDeclaringListValueList(subparser, 3);
+          String semi = getNodeAt(subparser, 1).getTokenText();
+          semi += declaringListRange(declaringlistvalues,(Syntax)getNodeAt(subparser,1));          
+          semi += "\n";
+          List<Multiverse<String>> valuestring;
+          if (scope.isGlobal()) {
+            valuestring = declarationAction(declaringlistvalues, semi, pc, scope);
+          } else {
+            valuestring = declAddSemi(declaringlistvalues, semi, pc);
+          }
           setTransformationValue(value, valuestring);
         }
     break;
 
   case 60: /* $@11: %empty  */
         {
+          PresenceCondition pc = subparser.getPresenceCondition();
+          
+          Multiverse<TypeSpecifier> types = this.<TypeSpecifier>getCompleteNodeMultiverseValue(subparser, 2, pc);
+          TypeSpecifier ts = new TypeSpecifier();
+          ts.visitInt();
+          ts.addTransformation(new Language<CTag>(CTag.INT));
+          Multiverse<TypeSpecifier> inttbmv
+            = new Multiverse<TypeSpecifier>(ts, subparser.getPresenceCondition());
+          types = types.product(inttbmv, DesugarOps.specifierProduct);  // don't destruct prior types, since it is a semantic value
+          inttbmv.destruct();
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindIdent(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));  // TODO: use new bindIdent to find typedefname
+          
+          Multiverse<Declarator> declarators = this.<Declarator>getCompleteNodeMultiverseValue(subparser, 1, pc);
+          if (!((CContext) subparser.scope).isGlobal()) {
+            Multiverse<String> combo = declarationListAction(types,declarators,subparser.getPresenceCondition(),((CContext) subparser.scope));
+            setTransformationValue(value, new DeclaringListValue(types,declarators,new Multiverse<Initializer>(new EmptyInitializer(),subparser.getPresenceCondition()),combo));
+          } else {
+            setTransformationValue(value, new DeclaringListValue(types,declarators,new Multiverse<Initializer>(new EmptyInitializer(),subparser.getPresenceCondition()),pc));
+          }
         }
     break;
 
   case 61: /* DefaultDeclaringList: DeclarationQualifierList IdentifierDeclarator $@11 AssemblyExpressionOpt AttributeSpecifierListOpt InitializerOpt  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
-          // add the int type by default
-          Multiverse<TypeSpecifier> types = this.<TypeSpecifier>getCompleteNodeMultiverseValue(subparser, 6, pc);
-          if (types.isEmpty()) {
-            TypeSpecifier t = new TypeSpecifier();
-            t.setError();
-            types.add(t,pc);
-          }
-          TypeSpecifier ts = new TypeSpecifier();
-          ts.visitInt();
-          ts.addTransformation(new Language<CTag>(CTag.INT));
-          Multiverse<TypeSpecifier> inttbmv
-            = new Multiverse<TypeSpecifier>(ts, subparser.getPresenceCondition());
-          types = types.product(inttbmv, DesugarOps.specifierProduct);  // don't destruct prior types, since it is a semantic value
-          inttbmv.destruct();
           
-          Multiverse<Declarator> declarators = this.<Declarator>getCompleteNodeMultiverseValue(subparser, 5, pc);
-          // TODO: just represent assembly and attributes as strings that get pass with the declaration object
-          Multiverse<Initializer> initializers = (Multiverse<Initializer>) getTransformationValue(subparser, 1);
+          Multiverse<Initializer> initializers = this.<Initializer>getCompleteNodeMultiverseValue(subparser, 1, pc);
+          DeclaringListValue decl = getCompleteNodeDeclaringListValue(subparser,4,pc);;
           List<DeclaringListValue> declaringlist = new LinkedList<DeclaringListValue>();
-          declaringlist.add(new DeclaringListValue(types, declarators, initializers));
+          if (((CContext) subparser.scope).isGlobal()) {
+            decl.initializer = initializers;
+            declaringlist.add(decl);
+          } else {
+            setupInitials(declaringlist,decl,initializers,pc,((CContext) subparser.scope));
+          }
           setTransformationValue(value, declaringlist);
         }
     break;
 
   case 62: /* $@12: %empty  */
         {
-          // legacy type checking
-          saveBaseType(subparser, getNodeAt(subparser, 2));
-          bindIdent(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));  // TODO: use new bindIdent to find typedefname
-        }
-    break;
 
-  case 63: /* DefaultDeclaringList: TypeQualifierList IdentifierDeclarator $@12 AssemblyExpressionOpt AttributeSpecifierListOpt InitializerOpt  */
-        {
+          //TODO : If EmptyInitializer, check how semicolon is added. 
+          
           PresenceCondition pc = subparser.getPresenceCondition();
-
-          // add the int type by default
-          Multiverse<TypeSpecifier> types = this.<TypeSpecifier>getCompleteNodeMultiverseValue(subparser, 6, pc);
+          
+          Multiverse<TypeSpecifier> types = this.<TypeSpecifier>getCompleteNodeMultiverseValue(subparser, 2, pc);
           TypeSpecifier ts = new TypeSpecifier();
           ts.visitInt();
           ts.addTransformation(new Language<CTag>(CTag.INT));
@@ -1127,20 +1109,50 @@ public class CActions implements SemanticActions {
             = new Multiverse<TypeSpecifier>(ts, subparser.getPresenceCondition());
           types = types.product(inttbmv, DesugarOps.specifierProduct);  // don't destruct prior types, since it is a semantic value
           inttbmv.destruct();
+          saveBaseType(subparser, getNodeAt(subparser, 2));
+          bindIdent(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));  // TODO: use new bindIdent to find typedefname
           
-          Multiverse<Declarator> declarators = this.<Declarator>getCompleteNodeMultiverseValue(subparser, 5, pc);
-          // TODO: just represent assembly and attributes as strings that get pass with the declaration object
-          Multiverse<Initializer> initializers = (Multiverse<Initializer>) getTransformationValue(subparser, 1);
+          Multiverse<Declarator> declarators = this.<Declarator>getCompleteNodeMultiverseValue(subparser, 1, pc);
+          if (!((CContext) subparser.scope).isGlobal()) {
+            Multiverse<String> combo = declarationListAction(types,declarators,subparser.getPresenceCondition(),((CContext) subparser.scope));
+            setTransformationValue(value, new DeclaringListValue(types,declarators,new Multiverse<Initializer>(new EmptyInitializer(),subparser.getPresenceCondition()),combo));
+          } else {
+            setTransformationValue(value, new DeclaringListValue(types,declarators,new Multiverse<Initializer>(new EmptyInitializer(),subparser.getPresenceCondition()),pc));
+          }
+        }
+    break;
+
+  case 63: /* DefaultDeclaringList: TypeQualifierList IdentifierDeclarator $@12 AssemblyExpressionOpt AttributeSpecifierListOpt InitializerOpt  */
+        {
+          PresenceCondition pc = subparser.getPresenceCondition();
+          
+          Multiverse<Initializer> initializers = this.<Initializer>getCompleteNodeMultiverseValue(subparser, 1, pc);
+          DeclaringListValue decl = getCompleteNodeDeclaringListValue(subparser,4,pc);;
           List<DeclaringListValue> declaringlist = new LinkedList<DeclaringListValue>();
-          declaringlist.add(new DeclaringListValue(types, declarators, initializers));
+          if (((CContext) subparser.scope).isGlobal()) {
+            decl.initializer = initializers;
+            declaringlist.add(decl);
+          } else {
+            setupInitials(declaringlist,decl,initializers,pc,((CContext) subparser.scope));
+          }
           setTransformationValue(value, declaringlist);
         }
     break;
 
   case 64: /* $@13: %empty  */
         {
-          // reuses saved base type
-          bindIdent(subparser, getNodeAt(subparser, 4), getNodeAt(subparser, 1));
+          bindIdent(subparser, getNodeAt(subparser, 4), getNodeAt(subparser, 1));  // TODO: use new bindIdent to find typedefname
+          PresenceCondition pc = subparser.getPresenceCondition();
+          List<DeclaringListValue> declaringlist = getCompleteNodeDeclaringListValueList(subparser, 4);
+          assert declaringlist.size() > 0;
+          Multiverse<TypeSpecifier> types = declaringlist.get(0).typespecifier;
+          Multiverse<Declarator> declarators = this.<Declarator>getCompleteNodeMultiverseValue(subparser, 1, pc);
+          if (!((CContext) subparser.scope).isGlobal()) {
+            Multiverse<String> combo = declarationListAction(types,declarators,subparser.getPresenceCondition(),((CContext) subparser.scope));
+            setTransformationValue(value, new DeclaringListValue(types,declarators,new Multiverse<Initializer>(new EmptyInitializer(),subparser.getPresenceCondition()),combo));
+          } else {
+            setTransformationValue(value, new DeclaringListValue(types,declarators,new Multiverse<Initializer>(new EmptyInitializer(),subparser.getPresenceCondition()),pc));
+          }
         }
     break;
 
@@ -1148,96 +1160,122 @@ public class CActions implements SemanticActions {
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
-          // TODO: hoist initiazliers around the entire InitializedDeclaration
-          List<DeclaringListValue> declaringlist = (List<DeclaringListValue>) getTransformationValue(subparser, 8);
-          // there must be at least one element in the DeclaringList
-          // according to the grammar
-          assert declaringlist.size() > 0;
-          // each element is given the same typespecifiermultiverse, so
-          // we can take it from the first element, which is
-          // guaranteed to be there.
-          Multiverse<TypeSpecifier> types = declaringlist.get(0).typespecifier;
-          // the rest of the action is the same as its other
-          // productions, except we add to the list instead of making
-          // a new one
-          Multiverse<Declarator> declarators = this.<Declarator>getCompleteNodeMultiverseValue(subparser, 5, pc);
-          // TODO: just represent assembly and attributes as strings that get pass with the declaration object
-          Multiverse<Initializer> initializers = (Multiverse<Initializer>) getTransformationValue(subparser, 1);
-          declaringlist.add(new DeclaringListValue(types, declarators, initializers));
-          setTransformationValue(value, declaringlist);
-        }
-    break;
-
-  case 66: /* DeclaringList: DeclarationSpecifier Declarator AssemblyExpressionOpt AttributeSpecifierListOpt InitializerOpt  */
-        {
-          saveBaseType(subparser, getNodeAt(subparser, 5));
-          bindIdent(subparser, getNodeAt(subparser, 5), getNodeAt(subparser, 4));  // TODO: use new bindIdent to find typedefname
-          PresenceCondition pc = subparser.getPresenceCondition();
-          Multiverse<TypeSpecifier> types = this.<TypeSpecifier>getCompleteNodeMultiverseValue(subparser, 5, pc);
-          if (types.isEmpty()) {
-            TypeSpecifier t = new TypeSpecifier();
-            t.setError();
-            types.add(t,pc);
+          Multiverse<Initializer> initializers = this.<Initializer>getCompleteNodeMultiverseValue(subparser, 1, pc);
+          DeclaringListValue decl = getCompleteNodeDeclaringListValue(subparser,4,pc);;
+          List<DeclaringListValue> declaringlist = getCompleteNodeDeclaringListValueList(subparser,8);
+          if (((CContext) subparser.scope).isGlobal()) {
+            decl.initializer = initializers;
+            declaringlist.add(decl);
+          } else {
+            setupInitials(declaringlist,decl,initializers,pc,((CContext) subparser.scope));
           }
-          Multiverse<Declarator> declarators = this.<Declarator>getCompleteNodeMultiverseValue(subparser, 4, pc);
-          // TODO: just represent assembly and attributes as strings that get pass with the declaration object
-          Multiverse<Initializer> initializers = (Multiverse<Initializer>) getTransformationValue(subparser, 1);
-          List<DeclaringListValue> declaringlist = new LinkedList<DeclaringListValue>();
-          declaringlist.add(new DeclaringListValue(types, declarators, initializers));
           setTransformationValue(value, declaringlist);
         }
     break;
 
-  case 67: /* DeclaringList: TypeSpecifier Declarator AssemblyExpressionOpt AttributeSpecifierListOpt InitializerOpt  */
-        {
+  case 66: /* $@14: %empty  */
+                                        {
           saveBaseType(subparser, getNodeAt(subparser, 2));
-          bindIdent(subparser, getNodeAt(subparser, 5), getNodeAt(subparser, 4));  // TODO: use new bindIdent to find typedefname
-
+          bindIdent(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));  // TODO: use new bindIdent to find typedefname
           PresenceCondition pc = subparser.getPresenceCondition();
           
-          Multiverse<TypeSpecifier> types = this.<TypeSpecifier>getCompleteNodeMultiverseValue(subparser, 5, pc);
-          Multiverse<Declarator> declarators = this.<Declarator>getCompleteNodeMultiverseValue(subparser, 4, pc);
-          // TODO: just represent assembly and attributes as strings that get pass with the declaration object
-          Multiverse<Initializer> initializers = (Multiverse<Initializer>) getTransformationValue(subparser, 1);
+          Multiverse<TypeSpecifier> types = this.<TypeSpecifier>getCompleteNodeMultiverseValue(subparser, 2, pc);
+          Multiverse<Declarator> declarators = this.<Declarator>getCompleteNodeMultiverseValue(subparser, 1, pc);
+          if (!((CContext) subparser.scope).isGlobal()) {
+            Multiverse<String> combo = declarationListAction(types,declarators,subparser.getPresenceCondition(),((CContext) subparser.scope));
+            setTransformationValue(value, new DeclaringListValue(types,declarators,new Multiverse<Initializer>(new EmptyInitializer(),subparser.getPresenceCondition()),combo));
+          } else {
+            setTransformationValue(value, new DeclaringListValue(types,declarators,new Multiverse<Initializer>(new EmptyInitializer(),subparser.getPresenceCondition()),pc));
+          }
+        }
+    break;
+
+  case 67: /* DeclaringList: DeclarationSpecifier Declarator $@14 AssemblyExpressionOpt AttributeSpecifierListOpt InitializerOpt  */
+        {
+          PresenceCondition pc = subparser.getPresenceCondition();
+          
+          Multiverse<Initializer> initializers = this.<Initializer>getCompleteNodeMultiverseValue(subparser, 1, pc);
+          DeclaringListValue decl = getCompleteNodeDeclaringListValue(subparser,4,pc);;
           List<DeclaringListValue> declaringlist = new LinkedList<DeclaringListValue>();
-          declaringlist.add(new DeclaringListValue(types, declarators, initializers));
+          if (((CContext) subparser.scope).isGlobal()) {
+            decl.initializer = initializers;
+            declaringlist.add(decl);
+          } else {
+            setupInitials(declaringlist,decl,initializers,pc,((CContext) subparser.scope));
+          }
           setTransformationValue(value, declaringlist);
         }
     break;
 
-  case 68: /* $@14: %empty  */
-        {
-          // legacy type checking
-          // reuses saved base type
-          bindIdent(subparser, getNodeAt(subparser, 4), getNodeAt(subparser, 1));
+  case 68: /* $@15: %empty  */
+                                   {
+          saveBaseType(subparser, getNodeAt(subparser, 2));
+          bindIdent(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));  // TODO: use new bindIdent to find typedefname
+          PresenceCondition pc = subparser.getPresenceCondition();
+          
+          Multiverse<TypeSpecifier> types = this.<TypeSpecifier>getCompleteNodeMultiverseValue(subparser, 2, pc);
+          Multiverse<Declarator> declarators = this.<Declarator>getCompleteNodeMultiverseValue(subparser, 1, pc);
+          if (!((CContext) subparser.scope).isGlobal()) {
+            Multiverse<String> combo = declarationListAction(types,declarators,subparser.getPresenceCondition(),((CContext) subparser.scope));
+            setTransformationValue(value, new DeclaringListValue(types,declarators,new Multiverse<Initializer>(new EmptyInitializer(),subparser.getPresenceCondition()),combo));
+          } else {
+            setTransformationValue(value, new DeclaringListValue(types,declarators,new Multiverse<Initializer>(new EmptyInitializer(),subparser.getPresenceCondition()),pc));
+          }
         }
     break;
 
-  case 69: /* DeclaringList: DeclaringList COMMA AttributeSpecifierListOpt Declarator $@14 AssemblyExpressionOpt AttributeSpecifierListOpt InitializerOpt  */
+  case 69: /* DeclaringList: TypeSpecifier Declarator $@15 AssemblyExpressionOpt AttributeSpecifierListOpt InitializerOpt  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
-          // TODO: hoist initiazliers around the entire InitializedDeclaration
-          List<DeclaringListValue> declaringlist = (List<DeclaringListValue>) getTransformationValue(subparser, 8);
-          // there must be at least one element in the DeclaringList
-          // according to the grammar
-          assert declaringlist.size() > 0;
-          // each element is given the same typespecifiermultiverse, so
-          // we can take it from the first element, which is
-          // guaranteed to be there.
-          Multiverse<TypeSpecifier> types = declaringlist.get(0).typespecifier;
-          // the rest of the action is the same as its other
-          // productions, except we add to the list instead of making
-          // a new one
-          Multiverse<Declarator> declarators = this.<Declarator>getCompleteNodeMultiverseValue(subparser, 5, pc);
-          // TODO: just represent assembly and attributes as strings that get pass with the declaration object
-          Multiverse<Initializer> initializers = (Multiverse<Initializer>) getTransformationValue(subparser, 1);
-          declaringlist.add(new DeclaringListValue(types, declarators, initializers));
+          Multiverse<Initializer> initializers = this.<Initializer>getCompleteNodeMultiverseValue(subparser, 1, pc);
+          DeclaringListValue decl = getCompleteNodeDeclaringListValue(subparser,4,pc);;
+          List<DeclaringListValue> declaringlist = new LinkedList<DeclaringListValue>();
+          if (((CContext) subparser.scope).isGlobal()) {
+            decl.initializer = initializers;
+            declaringlist.add(decl);
+          } else {
+            setupInitials(declaringlist,decl,initializers,pc,((CContext) subparser.scope));
+          }
           setTransformationValue(value, declaringlist);
         }
     break;
 
-  case 70: /* DeclarationSpecifier: BasicDeclarationSpecifier  */
+  case 70: /* $@16: %empty  */
+        {
+          bindIdent(subparser, getNodeAt(subparser, 4), getNodeAt(subparser, 1));  // TODO: use new bindIdent to find typedefname
+          PresenceCondition pc = subparser.getPresenceCondition();
+          List<DeclaringListValue> declaringlist = getCompleteNodeDeclaringListValueList(subparser, 4);
+          assert declaringlist.size() > 0;
+          Multiverse<TypeSpecifier> types = declaringlist.get(0).typespecifier;
+          Multiverse<Declarator> declarators = this.<Declarator>getCompleteNodeMultiverseValue(subparser, 1, pc);
+          if (!((CContext) subparser.scope).isGlobal()) {
+            Multiverse<String> combo = declarationListAction(types,declarators,subparser.getPresenceCondition(),((CContext) subparser.scope));
+            setTransformationValue(value, new DeclaringListValue(types,declarators,new Multiverse<Initializer>(new EmptyInitializer(),subparser.getPresenceCondition()),combo));
+          } else {
+            setTransformationValue(value, new DeclaringListValue(types,declarators,new Multiverse<Initializer>(new EmptyInitializer(),subparser.getPresenceCondition()),pc));
+          }
+        }
+    break;
+
+  case 71: /* DeclaringList: DeclaringList COMMA AttributeSpecifierListOpt Declarator $@16 AssemblyExpressionOpt AttributeSpecifierListOpt InitializerOpt  */
+        {
+          PresenceCondition pc = subparser.getPresenceCondition();
+          
+          Multiverse<Initializer> initializers = this.<Initializer>getCompleteNodeMultiverseValue(subparser, 1, pc);
+          DeclaringListValue decl = getCompleteNodeDeclaringListValue(subparser,4,pc);
+          List<DeclaringListValue> declaringlist = getCompleteNodeDeclaringListValueList(subparser,8);
+          if (((CContext) subparser.scope).isGlobal()) {
+            decl.initializer = initializers;
+            declaringlist.add(decl);
+          } else {
+            setupInitials(declaringlist,decl,initializers,pc,((CContext) subparser.scope));
+          }
+          setTransformationValue(value, declaringlist);
+        }
+    break;
+
+  case 72: /* DeclarationSpecifier: BasicDeclarationSpecifier  */
                                 {
           PresenceCondition pc = subparser.getPresenceCondition();
         	Multiverse<TypeSpecifier> decl = this.<TypeSpecifier>getCompleteNodeMultiverseValue(subparser, 1, pc);
@@ -1245,7 +1283,7 @@ public class CActions implements SemanticActions {
 				}
     break;
 
-  case 71: /* DeclarationSpecifier: SUEDeclarationSpecifier  */
+  case 73: /* DeclarationSpecifier: SUEDeclarationSpecifier  */
                                 {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1254,7 +1292,7 @@ public class CActions implements SemanticActions {
 				}
     break;
 
-  case 72: /* DeclarationSpecifier: TypedefDeclarationSpecifier  */
+  case 74: /* DeclarationSpecifier: TypedefDeclarationSpecifier  */
                                 {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1263,7 +1301,7 @@ public class CActions implements SemanticActions {
 				}
     break;
 
-  case 73: /* DeclarationSpecifier: VarArgDeclarationSpecifier  */
+  case 75: /* DeclarationSpecifier: VarArgDeclarationSpecifier  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1271,7 +1309,7 @@ public class CActions implements SemanticActions {
 				}
     break;
 
-  case 74: /* DeclarationSpecifier: TypeofDeclarationSpecifier  */
+  case 76: /* DeclarationSpecifier: TypeofDeclarationSpecifier  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1279,7 +1317,7 @@ public class CActions implements SemanticActions {
 				}
     break;
 
-  case 75: /* TypeSpecifier: BasicTypeSpecifier  */
+  case 77: /* TypeSpecifier: BasicTypeSpecifier  */
                                 {
           // TODO: are there any issues with sharing references to the same type builder object?
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -1289,7 +1327,7 @@ public class CActions implements SemanticActions {
 				}
     break;
 
-  case 76: /* TypeSpecifier: SUETypeSpecifier  */
+  case 78: /* TypeSpecifier: SUETypeSpecifier  */
                                 {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1298,7 +1336,7 @@ public class CActions implements SemanticActions {
 				}
     break;
 
-  case 77: /* TypeSpecifier: TypedefTypeSpecifier  */
+  case 79: /* TypeSpecifier: TypedefTypeSpecifier  */
                                 {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1306,7 +1344,7 @@ public class CActions implements SemanticActions {
 				}
     break;
 
-  case 78: /* TypeSpecifier: VarArgTypeSpecifier  */
+  case 80: /* TypeSpecifier: VarArgTypeSpecifier  */
                                 {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1314,7 +1352,7 @@ public class CActions implements SemanticActions {
 				}
     break;
 
-  case 79: /* TypeSpecifier: TypeofTypeSpecifier  */
+  case 81: /* TypeSpecifier: TypeofTypeSpecifier  */
                                 {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1322,7 +1360,7 @@ public class CActions implements SemanticActions {
 				}
     break;
 
-  case 80: /* DeclarationQualifierList: StorageClass  */
+  case 82: /* DeclarationQualifierList: StorageClass  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1334,7 +1372,7 @@ public class CActions implements SemanticActions {
       	}
     break;
 
-  case 81: /* DeclarationQualifierList: TypeQualifierList StorageClass  */
+  case 83: /* DeclarationQualifierList: TypeQualifierList StorageClass  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1355,14 +1393,20 @@ public class CActions implements SemanticActions {
       	}
     break;
 
-  case 82: /* DeclarationQualifierList: DeclarationQualifierList DeclarationQualifier  */
+  case 84: /* DeclarationQualifierList: DeclarationQualifierList DeclarationQualifier  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
       	  Multiverse<TypeSpecifier> qualList = this.<TypeSpecifier>getCompleteNodeMultiverseValue(subparser, 2, pc);
       	  Multiverse<TypeSpecifier> qual = this.<TypeSpecifier>getCompleteNodeMultiverseValue(subparser, 1, pc);
-      	  Multiverse<TypeSpecifier> tb = qualList.product(qual, DesugarOps.specifierProduct);
-      	  setTransformationValue(value, tb);
+          if (!qualList.isEmpty() && !qual.isEmpty()) {
+            Multiverse<TypeSpecifier> tb = qualList.product(qual, DesugarOps.specifierProduct);
+            setTransformationValue(value, tb);
+          } else {
+            TypeSpecifier E = new TypeSpecifier();
+            E.setError();
+            setTransformationValue(value,new Multiverse<TypeSpecifier>(E,pc));
+          }
       	  updateSpecs(subparser,
                       getSpecsAt(subparser, 2),
                       getSpecsAt(subparser, 1),
@@ -1370,7 +1414,7 @@ public class CActions implements SemanticActions {
       	}
     break;
 
-  case 83: /* TypeQualifierList: TypeQualifier  */
+  case 85: /* TypeQualifierList: TypeQualifier  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1382,7 +1426,7 @@ public class CActions implements SemanticActions {
       	}
     break;
 
-  case 84: /* TypeQualifierList: TypeQualifierList TypeQualifier  */
+  case 86: /* TypeQualifierList: TypeQualifierList TypeQualifier  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1397,7 +1441,7 @@ public class CActions implements SemanticActions {
       	}
     break;
 
-  case 85: /* DeclarationQualifier: TypeQualifier  */
+  case 87: /* DeclarationQualifier: TypeQualifier  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1406,7 +1450,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 86: /* DeclarationQualifier: StorageClass  */
+  case 88: /* DeclarationQualifier: StorageClass  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1415,7 +1459,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 87: /* TypeQualifier: ConstQualifier  */
+  case 89: /* TypeQualifier: ConstQualifier  */
         {
           TypeSpecifier ts = new TypeSpecifier();
           ts.visitConstantQualifier();
@@ -1428,7 +1472,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 88: /* TypeQualifier: VolatileQualifier  */
+  case 90: /* TypeQualifier: VolatileQualifier  */
         {
           TypeSpecifier ts = new TypeSpecifier();
           ts.visitVolatileQualifier();
@@ -1441,7 +1485,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 89: /* TypeQualifier: RestrictQualifier  */
+  case 91: /* TypeQualifier: RestrictQualifier  */
         {
           TypeSpecifier ts = new TypeSpecifier();
           ts.visitRestrictQualifier();
@@ -1454,7 +1498,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 90: /* TypeQualifier: AttributeSpecifier  */
+  case 92: /* TypeQualifier: AttributeSpecifier  */
         {
           TypeSpecifier ts = new TypeSpecifier();
           todoReminder("collect attributes in AttributeSpecifier");
@@ -1466,7 +1510,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 91: /* TypeQualifier: FunctionSpecifier  */
+  case 93: /* TypeQualifier: FunctionSpecifier  */
         {
           TypeSpecifier ts = new TypeSpecifier();
           ts.visitFunctionSpecifier();
@@ -1479,67 +1523,67 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 92: /* ConstQualifier: CONST  */
+  case 94: /* ConstQualifier: CONST  */
         {
         }
     break;
 
-  case 93: /* ConstQualifier: __CONST  */
+  case 95: /* ConstQualifier: __CONST  */
         {
         }
     break;
 
-  case 94: /* ConstQualifier: __CONST__  */
+  case 96: /* ConstQualifier: __CONST__  */
         {
         }
     break;
 
-  case 95: /* VolatileQualifier: VOLATILE  */
+  case 97: /* VolatileQualifier: VOLATILE  */
         {
         }
     break;
 
-  case 96: /* VolatileQualifier: __VOLATILE  */
+  case 98: /* VolatileQualifier: __VOLATILE  */
         {
         }
     break;
 
-  case 97: /* VolatileQualifier: __VOLATILE__  */
+  case 99: /* VolatileQualifier: __VOLATILE__  */
         {
         }
     break;
 
-  case 98: /* RestrictQualifier: RESTRICT  */
+  case 100: /* RestrictQualifier: RESTRICT  */
         {
         }
     break;
 
-  case 99: /* RestrictQualifier: __RESTRICT  */
+  case 101: /* RestrictQualifier: __RESTRICT  */
         {
         }
     break;
 
-  case 100: /* RestrictQualifier: __RESTRICT__  */
+  case 102: /* RestrictQualifier: __RESTRICT__  */
         {
         }
     break;
 
-  case 101: /* FunctionSpecifier: INLINE  */
+  case 103: /* FunctionSpecifier: INLINE  */
         {
         }
     break;
 
-  case 102: /* FunctionSpecifier: __INLINE  */
+  case 104: /* FunctionSpecifier: __INLINE  */
         {
         }
     break;
 
-  case 103: /* FunctionSpecifier: __INLINE__  */
+  case 105: /* FunctionSpecifier: __INLINE__  */
         {
         }
     break;
 
-  case 104: /* BasicDeclarationSpecifier: BasicTypeSpecifier StorageClass  */
+  case 106: /* BasicDeclarationSpecifier: BasicTypeSpecifier StorageClass  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1557,7 +1601,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 105: /* BasicDeclarationSpecifier: DeclarationQualifierList BasicTypeName  */
+  case 107: /* BasicDeclarationSpecifier: DeclarationQualifierList BasicTypeName  */
                                                  {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1580,7 +1624,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 106: /* BasicDeclarationSpecifier: BasicDeclarationSpecifier DeclarationQualifier  */
+  case 108: /* BasicDeclarationSpecifier: BasicDeclarationSpecifier DeclarationQualifier  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1598,7 +1642,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 107: /* BasicDeclarationSpecifier: BasicDeclarationSpecifier BasicTypeName  */
+  case 109: /* BasicDeclarationSpecifier: BasicDeclarationSpecifier BasicTypeName  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1616,7 +1660,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 108: /* BasicTypeSpecifier: BasicTypeName  */
+  case 110: /* BasicTypeSpecifier: BasicTypeName  */
         {
           // TUTORIAL: a semantic action that sets the semantic value
           // to a new typespecifier by adding a property derived from
@@ -1632,7 +1676,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 109: /* BasicTypeSpecifier: TypeQualifierList BasicTypeName  */
+  case 111: /* BasicTypeSpecifier: TypeQualifierList BasicTypeName  */
               {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1649,7 +1693,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 110: /* BasicTypeSpecifier: BasicTypeSpecifier TypeQualifier  */
+  case 112: /* BasicTypeSpecifier: BasicTypeSpecifier TypeQualifier  */
               {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1666,7 +1710,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 111: /* BasicTypeSpecifier: BasicTypeSpecifier BasicTypeName  */
+  case 113: /* BasicTypeSpecifier: BasicTypeSpecifier BasicTypeName  */
         {
           // get the semantic values of each child
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -1685,7 +1729,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 112: /* SUEDeclarationSpecifier: SUETypeSpecifier StorageClass  */
+  case 114: /* SUEDeclarationSpecifier: SUETypeSpecifier StorageClass  */
         {
           // TODO: unit test this action
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -1696,7 +1740,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 113: /* SUEDeclarationSpecifier: DeclarationQualifierList ElaboratedTypeName  */
+  case 115: /* SUEDeclarationSpecifier: DeclarationQualifierList ElaboratedTypeName  */
         {
           // TODO: unit test this action
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -1707,7 +1751,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 114: /* SUEDeclarationSpecifier: SUEDeclarationSpecifier DeclarationQualifier  */
+  case 116: /* SUEDeclarationSpecifier: SUEDeclarationSpecifier DeclarationQualifier  */
         {
           // TODO: unit test this action
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -1718,7 +1762,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 115: /* SUETypeSpecifier: ElaboratedTypeName  */
+  case 117: /* SUETypeSpecifier: ElaboratedTypeName  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1727,7 +1771,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 116: /* SUETypeSpecifier: TypeQualifierList ElaboratedTypeName  */
+  case 118: /* SUETypeSpecifier: TypeQualifierList ElaboratedTypeName  */
         {
           // TODO: unit test this action
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -1738,7 +1782,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 117: /* SUETypeSpecifier: SUETypeSpecifier TypeQualifier  */
+  case 119: /* SUETypeSpecifier: SUETypeSpecifier TypeQualifier  */
         {
           // TODO: unit test this action
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -1749,7 +1793,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 118: /* TypedefDeclarationSpecifier: TypedefTypeSpecifier StorageClass  */
+  case 120: /* TypedefDeclarationSpecifier: TypedefTypeSpecifier StorageClass  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1759,7 +1803,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 119: /* TypedefDeclarationSpecifier: DeclarationQualifierList TYPEDEFname  */
+  case 121: /* TypedefDeclarationSpecifier: DeclarationQualifierList TYPEDEFname  */
         {
           // TODO: needs a unit test
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -1778,7 +1822,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 120: /* TypedefDeclarationSpecifier: TypedefDeclarationSpecifier DeclarationQualifier  */
+  case 122: /* TypedefDeclarationSpecifier: TypedefDeclarationSpecifier DeclarationQualifier  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1789,7 +1833,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 121: /* TypedefTypeSpecifier: TYPEDEFname  */
+  case 123: /* TypedefTypeSpecifier: TYPEDEFname  */
         {
       	  String typeName = getStringAt(subparser, 1);
           // look up the typedef name
@@ -1801,7 +1845,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 122: /* TypedefTypeSpecifier: TypeQualifierList TYPEDEFname  */
+  case 124: /* TypedefTypeSpecifier: TypeQualifierList TYPEDEFname  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1819,7 +1863,7 @@ public class CActions implements SemanticActions {
       	}
     break;
 
-  case 123: /* TypedefTypeSpecifier: TypedefTypeSpecifier TypeQualifier  */
+  case 125: /* TypedefTypeSpecifier: TypedefTypeSpecifier TypeQualifier  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1829,7 +1873,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 124: /* TypeofDeclarationSpecifier: TypeofTypeSpecifier StorageClass  */
+  case 126: /* TypeofDeclarationSpecifier: TypeofTypeSpecifier StorageClass  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1847,7 +1891,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 125: /* TypeofDeclarationSpecifier: DeclarationQualifierList Typeofspecifier  */
+  case 127: /* TypeofDeclarationSpecifier: DeclarationQualifierList Typeofspecifier  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1865,7 +1909,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 126: /* TypeofDeclarationSpecifier: TypeofDeclarationSpecifier DeclarationQualifier  */
+  case 128: /* TypeofDeclarationSpecifier: TypeofDeclarationSpecifier DeclarationQualifier  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1883,7 +1927,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 127: /* TypeofDeclarationSpecifier: TypeofDeclarationSpecifier Typeofspecifier  */
+  case 129: /* TypeofDeclarationSpecifier: TypeofDeclarationSpecifier Typeofspecifier  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1901,7 +1945,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 128: /* TypeofTypeSpecifier: Typeofspecifier  */
+  case 130: /* TypeofTypeSpecifier: Typeofspecifier  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1911,7 +1955,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 129: /* TypeofTypeSpecifier: TypeQualifierList Typeofspecifier  */
+  case 131: /* TypeofTypeSpecifier: TypeQualifierList Typeofspecifier  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1929,7 +1973,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 130: /* TypeofTypeSpecifier: TypeofTypeSpecifier TypeQualifier  */
+  case 132: /* TypeofTypeSpecifier: TypeofTypeSpecifier TypeQualifier  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1947,7 +1991,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 131: /* TypeofTypeSpecifier: TypeofTypeSpecifier Typeofspecifier  */
+  case 133: /* TypeofTypeSpecifier: TypeofTypeSpecifier Typeofspecifier  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -1965,7 +2009,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 132: /* Typeofspecifier: Typeofkeyword LPAREN TypeName RPAREN  */
+  case 134: /* Typeofspecifier: Typeofkeyword LPAREN TypeName RPAREN  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           Multiverse<TypeSpecifier> tmv = getCompleteNodeMultiverseValue(subparser, 4, pc);
@@ -1997,7 +2041,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 133: /* Typeofspecifier: Typeofkeyword LPAREN Expression RPAREN  */
+  case 135: /* Typeofspecifier: Typeofkeyword LPAREN Expression RPAREN  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           Multiverse<TypeSpecifier> tmv = getCompleteNodeMultiverseValue(subparser, 4, pc);
@@ -2040,7 +2084,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 134: /* Typeofkeyword: TYPEOF  */
+  case 136: /* Typeofkeyword: TYPEOF  */
         {
           TypeSpecifier ts = new TypeSpecifier();
           ts.addTransformation(((Syntax) getNodeAt(subparser, 1)));
@@ -2049,7 +2093,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 135: /* Typeofkeyword: __TYPEOF  */
+  case 137: /* Typeofkeyword: __TYPEOF  */
         {
           TypeSpecifier ts = new TypeSpecifier();
           ts.addTransformation(((Syntax) getNodeAt(subparser, 1)));
@@ -2058,7 +2102,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 136: /* Typeofkeyword: __TYPEOF__  */
+  case 138: /* Typeofkeyword: __TYPEOF__  */
         {
           TypeSpecifier ts = new TypeSpecifier();
           ts.addTransformation(((Syntax) getNodeAt(subparser, 1)));
@@ -2067,7 +2111,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 137: /* VarArgDeclarationSpecifier: VarArgTypeSpecifier StorageClass  */
+  case 139: /* VarArgDeclarationSpecifier: VarArgTypeSpecifier StorageClass  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -2077,7 +2121,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 138: /* VarArgDeclarationSpecifier: DeclarationQualifierList VarArgTypeName  */
+  case 140: /* VarArgDeclarationSpecifier: DeclarationQualifierList VarArgTypeName  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -2087,7 +2131,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 139: /* VarArgDeclarationSpecifier: VarArgDeclarationSpecifier DeclarationQualifier  */
+  case 141: /* VarArgDeclarationSpecifier: VarArgDeclarationSpecifier DeclarationQualifier  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -2097,7 +2141,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 140: /* VarArgDeclarationSpecifier: VarArgDeclarationSpecifier VarArgTypeName  */
+  case 142: /* VarArgDeclarationSpecifier: VarArgDeclarationSpecifier VarArgTypeName  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -2107,7 +2151,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 141: /* VarArgTypeSpecifier: VarArgTypeName  */
+  case 143: /* VarArgTypeSpecifier: VarArgTypeName  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -2115,7 +2159,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 142: /* VarArgTypeSpecifier: TypeQualifierList VarArgTypeName  */
+  case 144: /* VarArgTypeSpecifier: TypeQualifierList VarArgTypeName  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -2125,7 +2169,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 143: /* VarArgTypeSpecifier: VarArgTypeSpecifier TypeQualifier  */
+  case 145: /* VarArgTypeSpecifier: VarArgTypeSpecifier TypeQualifier  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -2135,7 +2179,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 144: /* VarArgTypeSpecifier: VarArgTypeSpecifier VarArgTypeName  */
+  case 146: /* VarArgTypeSpecifier: VarArgTypeSpecifier VarArgTypeName  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -2145,7 +2189,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 145: /* VarArgTypeName: __BUILTIN_VA_LIST  */
+  case 147: /* VarArgTypeName: __BUILTIN_VA_LIST  */
         {
           TypeSpecifier ts = new TypeSpecifier();
           ts.visitVarArgListSpecifier();
@@ -2155,7 +2199,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 146: /* StorageClass: TYPEDEF  */
+  case 148: /* StorageClass: TYPEDEF  */
         {
           String storageName = getNodeAt(subparser, 1).getTokenText();
           TypeSpecifier ts = new TypeSpecifier();
@@ -2167,7 +2211,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 147: /* StorageClass: EXTERN  */
+  case 149: /* StorageClass: EXTERN  */
         {
           String storageName = getNodeAt(subparser, 1).getTokenText();
           TypeSpecifier ts = new TypeSpecifier();
@@ -2179,7 +2223,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 148: /* StorageClass: STATIC  */
+  case 150: /* StorageClass: STATIC  */
         {
           String storageName = getNodeAt(subparser, 1).getTokenText();
           TypeSpecifier ts = new TypeSpecifier();
@@ -2191,7 +2235,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 149: /* StorageClass: AUTO  */
+  case 151: /* StorageClass: AUTO  */
         {
           String storageName = getNodeAt(subparser, 1).getTokenText();
           TypeSpecifier ts = new TypeSpecifier();
@@ -2203,7 +2247,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 150: /* StorageClass: REGISTER  */
+  case 152: /* StorageClass: REGISTER  */
         {
           String storageName = getNodeAt(subparser, 1).getTokenText();
           TypeSpecifier ts = new TypeSpecifier();
@@ -2215,7 +2259,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 151: /* BasicTypeName: VOID  */
+  case 153: /* BasicTypeName: VOID  */
         {
           TypeSpecifier ts = new TypeSpecifier();
           ts.visitVoidTypeSpecifier();
@@ -2228,7 +2272,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 152: /* BasicTypeName: CHAR  */
+  case 154: /* BasicTypeName: CHAR  */
         {
           TypeSpecifier ts = new TypeSpecifier();
           ts.visitChar();
@@ -2240,7 +2284,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 153: /* BasicTypeName: SHORT  */
+  case 155: /* BasicTypeName: SHORT  */
         {
           TypeSpecifier ts = new TypeSpecifier();
           ts.visitShort();
@@ -2252,7 +2296,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 154: /* BasicTypeName: INT  */
+  case 156: /* BasicTypeName: INT  */
         {
           TypeSpecifier ts = new TypeSpecifier();
           ts.visitInt();
@@ -2264,7 +2308,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 155: /* BasicTypeName: __INT128  */
+  case 157: /* BasicTypeName: __INT128  */
         {
           // TODO: support int128 in typespecifier
           TypeSpecifier ts = new TypeSpecifier();
@@ -2277,7 +2321,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 156: /* BasicTypeName: LONG  */
+  case 158: /* BasicTypeName: LONG  */
         {
           // See xtc.type.* for the class hiearchy for types
           TypeSpecifier ts = new TypeSpecifier();
@@ -2290,7 +2334,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 157: /* BasicTypeName: FLOAT  */
+  case 159: /* BasicTypeName: FLOAT  */
         {
           TypeSpecifier ts = new TypeSpecifier();
           ts.visitFloat();
@@ -2302,7 +2346,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 158: /* BasicTypeName: DOUBLE  */
+  case 160: /* BasicTypeName: DOUBLE  */
         {
           TypeSpecifier ts = new TypeSpecifier();
           ts.visitDouble();
@@ -2314,7 +2358,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 159: /* BasicTypeName: SignedKeyword  */
+  case 161: /* BasicTypeName: SignedKeyword  */
         {
           TypeSpecifier ts = new TypeSpecifier();
           ts.visitSigned();
@@ -2326,7 +2370,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 160: /* BasicTypeName: UNSIGNED  */
+  case 162: /* BasicTypeName: UNSIGNED  */
         {
           TypeSpecifier ts = new TypeSpecifier();
           ts.visitUnsigned();
@@ -2338,7 +2382,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 161: /* BasicTypeName: _BOOL  */
+  case 163: /* BasicTypeName: _BOOL  */
         {
           TypeSpecifier ts = new TypeSpecifier();
           ts.visitBool();
@@ -2350,7 +2394,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 162: /* BasicTypeName: ComplexKeyword  */
+  case 164: /* BasicTypeName: ComplexKeyword  */
         {
           TypeSpecifier ts = new TypeSpecifier();
           ts.visitComplex();
@@ -2362,21 +2406,21 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 168: /* ElaboratedTypeName: StructOrUnionSpecifier  */
+  case 170: /* ElaboratedTypeName: StructOrUnionSpecifier  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
         	setTransformationValue(value, this.<TypeSpecifier>getCompleteNodeMultiverseValue(subparser, 1, pc));
         }
     break;
 
-  case 169: /* ElaboratedTypeName: EnumSpecifier  */
+  case 171: /* ElaboratedTypeName: EnumSpecifier  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
         	setTransformationValue(value, this.<TypeSpecifier>getCompleteNodeMultiverseValue(subparser, 1, pc));
         }
     break;
 
-  case 170: /* StructOrUnionSpecifier: STRUCT AttributeSpecifierListOpt LBRACE StructDeclarationList RBRACE  */
+  case 172: /* StructOrUnionSpecifier: STRUCT AttributeSpecifierListOpt LBRACE StructDeclarationList RBRACE  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           CContext scope = (CContext)subparser.scope;
@@ -2389,12 +2433,11 @@ public class CActions implements SemanticActions {
           
           Multiverse<TypeSpecifier> valuemv
             = DesugarOps.processStructDefinitionWithFlex(keyword, structTag, structfields, pc, scope, freshIdCreator, suTypeCreator);
-          System.err.println(valuemv);
           setTransformationValue(value, valuemv);
         }
     break;
 
-  case 171: /* StructOrUnionSpecifier: STRUCT AttributeSpecifierListOpt IDENTIFIER LBRACE StructDeclarationList RBRACE  */
+  case 173: /* StructOrUnionSpecifier: STRUCT AttributeSpecifierListOpt IDENTIFIER LBRACE StructDeclarationList RBRACE  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           CContext scope = (CContext)subparser.scope;
@@ -2411,7 +2454,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 172: /* StructOrUnionSpecifier: STRUCT AttributeSpecifierListOpt TYPEDEFname LBRACE StructDeclarationList RBRACE  */
+  case 174: /* StructOrUnionSpecifier: STRUCT AttributeSpecifierListOpt TYPEDEFname LBRACE StructDeclarationList RBRACE  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           CContext scope = (CContext)subparser.scope;
@@ -2428,7 +2471,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 173: /* StructOrUnionSpecifier: STRUCT AttributeSpecifierListOpt IDENTIFIER  */
+  case 175: /* StructOrUnionSpecifier: STRUCT AttributeSpecifierListOpt IDENTIFIER  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           CContext scope = (CContext)subparser.scope;
@@ -2437,12 +2480,11 @@ public class CActions implements SemanticActions {
           // TODO: add attributes to type spec
           String structTag = ((Syntax) getNodeAt(subparser, 1)).getTokenText();
           Multiverse<TypeSpecifier> valuemv = DesugarOps.processStructReference(keyword, structTag, pc, scope, freshIdCreator, suTypeCreator);
-	  System.err.println(valuemv);
-          setTransformationValue(value, valuemv);
+	        setTransformationValue(value, valuemv);
         }
     break;
 
-  case 174: /* StructOrUnionSpecifier: STRUCT AttributeSpecifierListOpt TYPEDEFname  */
+  case 176: /* StructOrUnionSpecifier: STRUCT AttributeSpecifierListOpt TYPEDEFname  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           CContext scope = (CContext)subparser.scope;
@@ -2457,7 +2499,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 175: /* StructOrUnionSpecifier: UNION AttributeSpecifierListOpt LBRACE StructDeclarationList RBRACE  */
+  case 177: /* StructOrUnionSpecifier: UNION AttributeSpecifierListOpt LBRACE StructDeclarationList RBRACE  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           CContext scope = (CContext)subparser.scope;
@@ -2475,7 +2517,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 176: /* StructOrUnionSpecifier: UNION AttributeSpecifierListOpt IDENTIFIER LBRACE StructDeclarationList RBRACE  */
+  case 178: /* StructOrUnionSpecifier: UNION AttributeSpecifierListOpt IDENTIFIER LBRACE StructDeclarationList RBRACE  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           CContext scope = (CContext)subparser.scope;
@@ -2492,7 +2534,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 177: /* StructOrUnionSpecifier: UNION AttributeSpecifierListOpt TYPEDEFname LBRACE StructDeclarationList RBRACE  */
+  case 179: /* StructOrUnionSpecifier: UNION AttributeSpecifierListOpt TYPEDEFname LBRACE StructDeclarationList RBRACE  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           CContext scope = (CContext)subparser.scope;
@@ -2509,7 +2551,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 178: /* StructOrUnionSpecifier: UNION AttributeSpecifierListOpt IDENTIFIER  */
+  case 180: /* StructOrUnionSpecifier: UNION AttributeSpecifierListOpt IDENTIFIER  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           CContext scope = (CContext)subparser.scope;
@@ -2524,7 +2566,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 179: /* StructOrUnionSpecifier: UNION AttributeSpecifierListOpt TYPEDEFname  */
+  case 181: /* StructOrUnionSpecifier: UNION AttributeSpecifierListOpt TYPEDEFname  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           CContext scope = (CContext)subparser.scope;
@@ -2539,7 +2581,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 180: /* StructDeclarationList: %empty  */
+  case 182: /* StructDeclarationList: %empty  */
         {
           ((Node) value).setProperty(SPECS, new Specifiers()); // legacy type checking
 
@@ -2547,7 +2589,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 181: /* StructDeclarationList: StructDeclarationList StructDeclaration  */
+  case 183: /* StructDeclarationList: StructDeclarationList StructDeclaration  */
                                                   {
           //legacy type checking
           updateSpecs(subparser,
@@ -2564,7 +2606,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 182: /* StructDeclaration: StructDeclaringList SEMICOLON  */
+  case 184: /* StructDeclaration: StructDeclaringList SEMICOLON  */
         {
           // TODO: implement like Declaration, except return a
           // multiverse of declarations instead of strings
@@ -2608,21 +2650,23 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 183: /* StructDeclaration: StructDefaultDeclaringList SEMICOLON  */
+  case 185: /* StructDeclaration: StructDefaultDeclaringList SEMICOLON  */
         {
           System.err.println("ERROR: unsupported semantic action: StructDeclaration (2)");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 184: /* StructDeclaration: TypeQualifierList SEMICOLON  */
+  case 186: /* StructDeclaration: TypeQualifierList SEMICOLON  */
         {
           System.err.println("ERROR: unsupported semantic action: StructDeclaration (3)");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 185: /* StructDeclaration: TypeSpecifier SEMICOLON  */
+  case 187: /* StructDeclaration: TypeSpecifier SEMICOLON  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -2640,28 +2684,31 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 186: /* StructDeclaration: SEMICOLON  */
+  case 188: /* StructDeclaration: SEMICOLON  */
         {
           System.err.println("ERROR: unsupported semantic action: StructDeclaration (5)");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 187: /* StructDefaultDeclaringList: TypeQualifierList StructIdentifierDeclarator AttributeSpecifierListOpt  */
+  case 189: /* StructDefaultDeclaringList: TypeQualifierList StructIdentifierDeclarator AttributeSpecifierListOpt  */
         {
           System.err.println("ERROR: unsupported semantic action: StructDefaultDeclaringList (1)");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 188: /* StructDefaultDeclaringList: StructDefaultDeclaringList COMMA StructIdentifierDeclarator AttributeSpecifierListOpt  */
+  case 190: /* StructDefaultDeclaringList: StructDefaultDeclaringList COMMA StructIdentifierDeclarator AttributeSpecifierListOpt  */
         {
           System.err.println("ERROR: unsupported semantic action: StructDefaultDeclaringList (2)");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 189: /* StructDeclaringList: TypeSpecifier StructDeclarator AttributeSpecifierListOpt  */
+  case 191: /* StructDeclaringList: TypeSpecifier StructDeclarator AttributeSpecifierListOpt  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -2674,7 +2721,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 190: /* StructDeclaringList: StructDeclaringList COMMA StructDeclarator AttributeSpecifierListOpt  */
+  case 192: /* StructDeclaringList: StructDeclaringList COMMA StructDeclarator AttributeSpecifierListOpt  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -2688,7 +2735,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 191: /* StructDeclarator: Declarator BitFieldSizeOpt  */
+  case 193: /* StructDeclarator: Declarator BitFieldSizeOpt  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -2703,7 +2750,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 192: /* StructDeclarator: BitFieldSize  */
+  case 194: /* StructDeclarator: BitFieldSize  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           // pass along the bitfieldsize declarator by itself
@@ -2712,27 +2759,29 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 193: /* StructIdentifierDeclarator: IdentifierDeclarator BitFieldSizeOpt  */
+  case 195: /* StructIdentifierDeclarator: IdentifierDeclarator BitFieldSizeOpt  */
         {
           System.err.println("ERROR: unsupported semantic action: StructIdentifierDeclarator");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 194: /* StructIdentifierDeclarator: BitFieldSize  */
+  case 196: /* StructIdentifierDeclarator: BitFieldSize  */
         {
           System.err.println("ERROR: unsupported semantic action: StructIdentifierDeclarator");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 195: /* BitFieldSizeOpt: %empty  */
+  case 197: /* BitFieldSizeOpt: %empty  */
         {
           setTransformationValue(value, new Multiverse<Declarator>(new EmptyDeclarator(), subparser.getPresenceCondition()));
         }
     break;
 
-  case 196: /* BitFieldSizeOpt: BitFieldSize  */
+  case 198: /* BitFieldSizeOpt: BitFieldSize  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           // pass along the bitfieldsize declarator by itself
@@ -2740,7 +2789,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 197: /* BitFieldSize: COLON ConstantExpression  */
+  case 199: /* BitFieldSize: COLON ConstantExpression  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           String colon = ((Syntax) getNodeAt(subparser, 2)).getTokenText();
@@ -2776,7 +2825,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 198: /* EnumSpecifier: ENUM AttributeSpecifierListOpt EnumSpecifierList  */
+  case 200: /* EnumSpecifier: ENUM AttributeSpecifierListOpt EnumSpecifierList  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           CContext scope = (CContext)subparser.scope;
@@ -2795,7 +2844,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 199: /* EnumSpecifier: ENUM AttributeSpecifierListOpt IDENTIFIER EnumSpecifierList  */
+  case 201: /* EnumSpecifier: ENUM AttributeSpecifierListOpt IDENTIFIER EnumSpecifierList  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           CContext scope = (CContext)subparser.scope;
@@ -2813,7 +2862,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 200: /* EnumSpecifier: ENUM AttributeSpecifierListOpt TYPEDEFname EnumSpecifierList  */
+  case 202: /* EnumSpecifier: ENUM AttributeSpecifierListOpt TYPEDEFname EnumSpecifierList  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           CContext scope = (CContext)subparser.scope;
@@ -2832,7 +2881,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 201: /* EnumSpecifier: ENUM AttributeSpecifierListOpt IDENTIFIER  */
+  case 203: /* EnumSpecifier: ENUM AttributeSpecifierListOpt IDENTIFIER  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -2847,7 +2896,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 202: /* EnumSpecifier: ENUM AttributeSpecifierListOpt TYPEDEFname  */
+  case 204: /* EnumSpecifier: ENUM AttributeSpecifierListOpt TYPEDEFname  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -2863,21 +2912,21 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 203: /* EnumSpecifierList: LBRACE EnumeratorList RBRACE  */
+  case 205: /* EnumSpecifierList: LBRACE EnumeratorList RBRACE  */
         {
           setTransformationValue(value, this.<EnumeratorValue>getCompleteNodeListValue(getNodeAt(subparser, 2),
                                                                                        subparser.getPresenceCondition()));
         }
     break;
 
-  case 204: /* EnumSpecifierList: LBRACE EnumeratorList COMMA RBRACE  */
+  case 206: /* EnumSpecifierList: LBRACE EnumeratorList COMMA RBRACE  */
         {
           setTransformationValue(value, this.<EnumeratorValue>getCompleteNodeListValue(getNodeAt(subparser, 3),
                                                                                        subparser.getPresenceCondition()));
         }
     break;
 
-  case 205: /* EnumeratorList: Enumerator  */
+  case 207: /* EnumeratorList: Enumerator  */
         {
           List<Multiverse<EnumeratorValue>> list = new LinkedList<Multiverse<EnumeratorValue>>();
           Multiverse<EnumeratorValue> enumerator
@@ -2889,7 +2938,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 206: /* EnumeratorList: EnumeratorList COMMA Enumerator  */
+  case 208: /* EnumeratorList: EnumeratorList COMMA Enumerator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition().presenceConditionManager().newTrue();
 
@@ -2903,11 +2952,11 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 207: /* $@15: %empty  */
+  case 209: /* $@17: %empty  */
                    { BindEnum(subparser); }
     break;
 
-  case 208: /* Enumerator: IDENTIFIER $@15 EnumeratorValueOpt  */
+  case 210: /* Enumerator: IDENTIFIER $@17 EnumeratorValueOpt  */
         {
           todoReminder("record enum type errors in the global or local scope");
           CContext scope = ((CContext) subparser.scope);
@@ -2977,11 +3026,11 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 209: /* $@16: %empty  */
+  case 211: /* $@18: %empty  */
                        { BindEnum(subparser); }
     break;
 
-  case 210: /* Enumerator: TYPEDEFname $@16 EnumeratorValueOpt  */
+  case 212: /* Enumerator: TYPEDEFname $@18 EnumeratorValueOpt  */
         {
           todoReminder("record enum type errors in the global or local scope");
           CContext scope = ((CContext) subparser.scope);
@@ -3041,14 +3090,14 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 211: /* EnumeratorValueOpt: %empty  */
+  case 213: /* EnumeratorValueOpt: %empty  */
         {
           
           setTransformationValue(value, new Multiverse<EnumeratorValValue>(new EnumeratorValValue(), subparser.getPresenceCondition()));
         }
     break;
 
-  case 212: /* EnumeratorValueOpt: ASSIGN ConstantExpression  */
+  case 214: /* EnumeratorValueOpt: ASSIGN ConstantExpression  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           ExpressionValue exprval = getCompleteNodeExpressionValue(subparser, 1, pc);
@@ -3075,7 +3124,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 213: /* ParameterTypeList: ParameterList  */
+  case 215: /* ParameterTypeList: ParameterList  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           List<Multiverse<Declaration>> paramlist = this.<Declaration>getCompleteNodeListValue(subparser, 1, pc);
@@ -3083,7 +3132,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 214: /* ParameterTypeList: ParameterList COMMA ELLIPSIS  */
+  case 216: /* ParameterTypeList: ParameterList COMMA ELLIPSIS  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           List<Multiverse<Declaration>> paramlist = this.<Declaration>getCompleteNodeListValue(subparser, 3, pc);
@@ -3091,7 +3140,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 215: /* ParameterList: ParameterDeclaration  */
+  case 217: /* ParameterList: ParameterDeclaration  */
         {
           // create a new list
           List<Multiverse<Declaration>> parameters
@@ -3103,7 +3152,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 216: /* ParameterList: ParameterList COMMA ParameterDeclaration  */
+  case 218: /* ParameterList: ParameterList COMMA ParameterDeclaration  */
         {
           PresenceCondition pc = subparser.getPresenceCondition().presenceConditionManager().newTrue();//subparser.getPresenceCondition();
           // add to the existing parameter list.  this reuse of a
@@ -3117,7 +3166,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 217: /* ParameterDeclaration: ParameterIdentifierDeclaration  */
+  case 219: /* ParameterDeclaration: ParameterIdentifierDeclaration  */
         {
           ParameterDeclarationValue declarationvalue = (ParameterDeclarationValue) getTransformationValue(subparser,1);
 
@@ -3192,7 +3241,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 218: /* ParameterDeclaration: ParameterAbstractDeclaration  */
+  case 220: /* ParameterDeclaration: ParameterAbstractDeclaration  */
         {
           // TODO: needs a unit test
           ParameterDeclarationValue declarationvalue = (ParameterDeclarationValue) getTransformationValue(subparser,1);
@@ -3225,14 +3274,14 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 219: /* ParameterAbstractDeclaration: DeclarationSpecifier  */
+  case 221: /* ParameterAbstractDeclaration: DeclarationSpecifier  */
         {
           System.err.println("TODO: reimplement parameterabstractdeclaration (1)");
           System.exit(1);
         }
     break;
 
-  case 220: /* ParameterAbstractDeclaration: DeclarationSpecifier AbstractDeclarator  */
+  case 222: /* ParameterAbstractDeclaration: DeclarationSpecifier AbstractDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -3242,14 +3291,14 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 221: /* ParameterAbstractDeclaration: DeclarationQualifierList  */
+  case 223: /* ParameterAbstractDeclaration: DeclarationQualifierList  */
         {
           System.err.println("TODO: reimplement parameterabstractdeclaration (3)");
           System.exit(1);
         }
     break;
 
-  case 222: /* ParameterAbstractDeclaration: DeclarationQualifierList AbstractDeclarator  */
+  case 224: /* ParameterAbstractDeclaration: DeclarationQualifierList AbstractDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -3259,7 +3308,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 223: /* ParameterAbstractDeclaration: TypeSpecifier  */
+  case 225: /* ParameterAbstractDeclaration: TypeSpecifier  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -3269,7 +3318,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 224: /* ParameterAbstractDeclaration: TypeSpecifier AbstractDeclarator  */
+  case 226: /* ParameterAbstractDeclaration: TypeSpecifier AbstractDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -3279,14 +3328,14 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 225: /* ParameterAbstractDeclaration: TypeQualifierList  */
+  case 227: /* ParameterAbstractDeclaration: TypeQualifierList  */
         {
           System.err.println("TODO: reimplement parameterabstractdeclaration (7)");
           System.exit(1);
         }
     break;
 
-  case 226: /* ParameterAbstractDeclaration: TypeQualifierList AbstractDeclarator  */
+  case 228: /* ParameterAbstractDeclaration: TypeQualifierList AbstractDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -3296,14 +3345,14 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 227: /* $@17: %empty  */
+  case 229: /* $@19: %empty  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindIdent(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 228: /* ParameterIdentifierDeclaration: DeclarationSpecifier IdentifierDeclarator $@17 AttributeSpecifierListOpt  */
+  case 230: /* ParameterIdentifierDeclaration: DeclarationSpecifier IdentifierDeclarator $@19 AttributeSpecifierListOpt  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -3314,14 +3363,14 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 229: /* $@18: %empty  */
+  case 231: /* $@20: %empty  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindIdent(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 230: /* ParameterIdentifierDeclaration: DeclarationSpecifier ParameterTypedefDeclarator $@18 AttributeSpecifierListOpt  */
+  case 232: /* ParameterIdentifierDeclaration: DeclarationSpecifier ParameterTypedefDeclarator $@20 AttributeSpecifierListOpt  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -3332,14 +3381,14 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 231: /* $@19: %empty  */
+  case 233: /* $@21: %empty  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindIdent(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 232: /* ParameterIdentifierDeclaration: DeclarationQualifierList IdentifierDeclarator $@19 AttributeSpecifierListOpt  */
+  case 234: /* ParameterIdentifierDeclaration: DeclarationQualifierList IdentifierDeclarator $@21 AttributeSpecifierListOpt  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -3350,14 +3399,14 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 233: /* $@20: %empty  */
+  case 235: /* $@22: %empty  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindIdent(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 234: /* ParameterIdentifierDeclaration: TypeSpecifier IdentifierDeclarator $@20 AttributeSpecifierListOpt  */
+  case 236: /* ParameterIdentifierDeclaration: TypeSpecifier IdentifierDeclarator $@22 AttributeSpecifierListOpt  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -3368,14 +3417,14 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 235: /* $@21: %empty  */
+  case 237: /* $@23: %empty  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindIdent(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 236: /* ParameterIdentifierDeclaration: TypeSpecifier ParameterTypedefDeclarator $@21 AttributeSpecifierListOpt  */
+  case 238: /* ParameterIdentifierDeclaration: TypeSpecifier ParameterTypedefDeclarator $@23 AttributeSpecifierListOpt  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -3386,14 +3435,14 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 237: /* $@22: %empty  */
+  case 239: /* $@24: %empty  */
         {
           saveBaseType(subparser, getNodeAt(subparser, 2));
           bindIdent(subparser, getNodeAt(subparser, 2), getNodeAt(subparser, 1));
         }
     break;
 
-  case 238: /* ParameterIdentifierDeclaration: TypeQualifierList IdentifierDeclarator $@22 AttributeSpecifierListOpt  */
+  case 240: /* ParameterIdentifierDeclaration: TypeQualifierList IdentifierDeclarator $@24 AttributeSpecifierListOpt  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -3404,20 +3453,21 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 239: /* IdentifierList: Identifier  */
+  case 241: /* IdentifierList: Identifier  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 240: /* IdentifierList: IdentifierList COMMA Identifier  */
+  case 242: /* IdentifierList: IdentifierList COMMA Identifier  */
         {
           System.err.println("ERROR: unsupported semantic action: IdentifierList");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 241: /* Identifier: IDENTIFIER  */
+  case 243: /* Identifier: IDENTIFIER  */
        {
          String originalName = ((Node)getNodeAt(subparser, 1)).getTokenText();
           //Multiverse<String> sbmv = new Multiverse<String>();
@@ -3483,19 +3533,19 @@ public class CActions implements SemanticActions {
        }
     break;
 
-  case 242: /* IdentifierOrTypedefName: IDENTIFIER  */
+  case 244: /* IdentifierOrTypedefName: IDENTIFIER  */
         {
           // get token text from the parent
         }
     break;
 
-  case 243: /* IdentifierOrTypedefName: TYPEDEFname  */
+  case 245: /* IdentifierOrTypedefName: TYPEDEFname  */
         {
           // get token text from the parent
         }
     break;
 
-  case 244: /* TypeName: TypeSpecifier  */
+  case 246: /* TypeName: TypeSpecifier  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -3507,7 +3557,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 245: /* TypeName: TypeSpecifier AbstractDeclarator  */
+  case 247: /* TypeName: TypeSpecifier AbstractDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -3517,7 +3567,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 246: /* TypeName: TypeQualifierList  */
+  case 248: /* TypeName: TypeQualifierList  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -3529,7 +3579,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 247: /* TypeName: TypeQualifierList AbstractDeclarator  */
+  case 249: /* TypeName: TypeQualifierList AbstractDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -3539,7 +3589,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 248: /* InitializerOpt: %empty  */
+  case 250: /* InitializerOpt: %empty  */
         {
           // EmptyInitializer
           setTransformationValue(value, new Multiverse<Initializer>(new EmptyInitializer(),
@@ -3547,7 +3597,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 249: /* InitializerOpt: ASSIGN Initializer  */
+  case 251: /* InitializerOpt: ASSIGN Initializer  */
         {
           // AssignmentInitializer
           Multiverse<Initializer> initializers = (Multiverse<Initializer>) getTransformationValue(subparser, 1);
@@ -3555,14 +3605,14 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 250: /* Initializer: LBRACE MatchedInitializerList RBRACE  */
+  case 252: /* Initializer: LBRACE MatchedInitializerList RBRACE  */
         {
           Multiverse<List<Initializer>> lists = (Multiverse<List<Initializer>>) getTransformationValue(subparser, 2);
           setTransformationValue(value, DesugarOps.toInitializerList.transform(lists));
         }
     break;
 
-  case 251: /* Initializer: LBRACE MatchedInitializerList DesignatedInitializer RBRACE  */
+  case 253: /* Initializer: LBRACE MatchedInitializerList DesignatedInitializer RBRACE  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           Multiverse<List<Initializer>> lists = getCompleteNodeMultiverseValue(subparser, 3,pc);
@@ -3574,7 +3624,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 252: /* Initializer: AssignmentExpression  */
+  case 254: /* Initializer: AssignmentExpression  */
         {
           // ExpressionInitializer
           ExpressionValue exprval = getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition());
@@ -3602,7 +3652,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 253: /* InitializerList: MatchedInitializerList  */
+  case 255: /* InitializerList: MatchedInitializerList  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           // TODO: destruct return value from getTransformationValue
@@ -3610,7 +3660,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 254: /* InitializerList: MatchedInitializerList DesignatedInitializer  */
+  case 256: /* InitializerList: MatchedInitializerList DesignatedInitializer  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           Multiverse<List<Initializer>> lists = (Multiverse<List<Initializer>>) getTransformationValue(subparser, 2);
@@ -3621,14 +3671,14 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 255: /* MatchedInitializerList: %empty  */
+  case 257: /* MatchedInitializerList: %empty  */
         {
           setTransformationValue(value, new Multiverse<List>(new LinkedList<Initializer>(),
                                                                   subparser.getPresenceCondition()));
         }
     break;
 
-  case 256: /* MatchedInitializerList: MatchedInitializerList DesignatedInitializer COMMA  */
+  case 258: /* MatchedInitializerList: MatchedInitializerList DesignatedInitializer COMMA  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           Multiverse<List<Initializer>> lists = getCompleteNodeMultiverseValue(subparser, 3, pc);
@@ -3639,7 +3689,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 257: /* DesignatedInitializer: Initializer  */
+  case 259: /* DesignatedInitializer: Initializer  */
         {
           // pass through
           todoReminder("typecheck initializers DesignatedInitializer (1)");
@@ -3649,7 +3699,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 258: /* DesignatedInitializer: Designation Initializer  */
+  case 260: /* DesignatedInitializer: Designation Initializer  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           // DesignatedInitializer
@@ -3659,7 +3709,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 259: /* Designation: DesignatorList ASSIGN  */
+  case 261: /* Designation: DesignatorList ASSIGN  */
         {
           // TODO: unit tests
           Multiverse<List<Designator>> list = (Multiverse<List<Designator>>) getTransformationValue(subparser, 2);
@@ -3667,21 +3717,23 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 260: /* Designation: ObsoleteArrayDesignation  */
+  case 262: /* Designation: ObsoleteArrayDesignation  */
         {
           System.err.println("ERROR: unsupported semantic action: Designation (2)");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 261: /* Designation: ObsoleteFieldDesignation  */
+  case 263: /* Designation: ObsoleteFieldDesignation  */
         {
           System.err.println("ERROR: unsupported semantic action: Designation (3)");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 262: /* DesignatorList: Designator  */
+  case 264: /* DesignatorList: Designator  */
         {
           // TODO: unit tests
           Multiverse<Designator> designators = (Multiverse<Designator>) getTransformationValue(subparser, 1);
@@ -3690,7 +3742,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 263: /* DesignatorList: DesignatorList Designator  */
+  case 265: /* DesignatorList: DesignatorList Designator  */
         {
           // TODO: unit tests
           Multiverse<List<Designator>> list = (Multiverse<List<Designator>>) getTransformationValue(subparser, 2);
@@ -3701,7 +3753,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 264: /* Designator: LBRACK ConstantExpression RBRACK  */
+  case 266: /* Designator: LBRACK ConstantExpression RBRACK  */
         {
           ExpressionValue exprval = getCompleteNodeExpressionValue(subparser, 2, subparser.getPresenceCondition());
           setTransformationValue(value,
@@ -3709,14 +3761,15 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 265: /* Designator: LBRACK ConstantExpression ELLIPSIS ConstantExpression RBRACK  */
+  case 267: /* Designator: LBRACK ConstantExpression ELLIPSIS ConstantExpression RBRACK  */
         {
           System.err.println("ERROR: unsupported semantic action: Designator (2)");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 266: /* Designator: DOT IDENTIFIER  */
+  case 268: /* Designator: DOT IDENTIFIER  */
         {
           todoReminder("replace the designator with the renamed struct field");
           setTransformationValue(value,
@@ -3725,7 +3778,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 267: /* Designator: DOT TYPEDEFname  */
+  case 269: /* Designator: DOT TYPEDEFname  */
         {
           todoReminder("replace the designator with the renamed struct field");
           setTransformationValue(value,
@@ -3734,28 +3787,31 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 268: /* ObsoleteArrayDesignation: LBRACK ConstantExpression RBRACK  */
+  case 270: /* ObsoleteArrayDesignation: LBRACK ConstantExpression RBRACK  */
         {
           System.err.println("ERROR: unsupported semantic action: ObsoleteArrayDesignation");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 269: /* ObsoleteArrayDesignation: LBRACK ConstantExpression ELLIPSIS ConstantExpression RBRACK  */
+  case 271: /* ObsoleteArrayDesignation: LBRACK ConstantExpression ELLIPSIS ConstantExpression RBRACK  */
         {
           System.err.println("ERROR: unsupported semantic action: ObsoleteArrayDesignation");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 270: /* ObsoleteFieldDesignation: IDENTIFIER COLON  */
+  case 272: /* ObsoleteFieldDesignation: IDENTIFIER COLON  */
         {
           System.err.println("ERROR: unsupported semantic action: ObsoleteFieldDesignation");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 271: /* Declarator: TypedefDeclarator  */
+  case 273: /* Declarator: TypedefDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -3763,14 +3819,14 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 272: /* Declarator: IdentifierDeclarator  */
+  case 274: /* Declarator: IdentifierDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           setTransformationValue(value, this.<Declarator>getCompleteNodeMultiverseValue(subparser, 1, pc));
         }
     break;
 
-  case 273: /* TypedefDeclarator: TypedefDeclaratorMain  */
+  case 275: /* TypedefDeclarator: TypedefDeclaratorMain  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -3778,7 +3834,7 @@ public class CActions implements SemanticActions {
       	}
     break;
 
-  case 274: /* TypedefDeclaratorMain: ParenTypedefDeclarator  */
+  case 276: /* TypedefDeclaratorMain: ParenTypedefDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -3786,7 +3842,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 275: /* TypedefDeclaratorMain: ParameterTypedefDeclarator  */
+  case 277: /* TypedefDeclaratorMain: ParameterTypedefDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -3794,7 +3850,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 276: /* ParameterTypedefDeclarator: TYPEDEFname  */
+  case 278: /* ParameterTypedefDeclarator: TYPEDEFname  */
         {
           System.err.println("TODO: do we need to expand all possible typedef names here? parametertypedefdeclarator");
           Multiverse<Declarator> valuemv = new Multiverse<Declarator>(new SimpleDeclarator(getStringAt(subparser, 1)), subparser.getPresenceCondition());
@@ -3802,7 +3858,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 277: /* ParameterTypedefDeclarator: TYPEDEFname PostfixingAbstractDeclarator  */
+  case 279: /* ParameterTypedefDeclarator: TYPEDEFname PostfixingAbstractDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -3817,7 +3873,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 278: /* ParameterTypedefDeclarator: CleanTypedefDeclarator  */
+  case 280: /* ParameterTypedefDeclarator: CleanTypedefDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -3825,7 +3881,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 279: /* CleanTypedefDeclarator: CleanPostfixTypedefDeclarator  */
+  case 281: /* CleanTypedefDeclarator: CleanPostfixTypedefDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -3833,7 +3889,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 280: /* CleanTypedefDeclarator: STAR ParameterTypedefDeclarator  */
+  case 282: /* CleanTypedefDeclarator: STAR ParameterTypedefDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -3847,7 +3903,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 281: /* CleanTypedefDeclarator: STAR TypeQualifierList ParameterTypedefDeclarator  */
+  case 283: /* CleanTypedefDeclarator: STAR TypeQualifierList ParameterTypedefDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -3862,7 +3918,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 282: /* CleanPostfixTypedefDeclarator: LPAREN CleanTypedefDeclarator RPAREN  */
+  case 284: /* CleanPostfixTypedefDeclarator: LPAREN CleanTypedefDeclarator RPAREN  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -3870,7 +3926,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 283: /* CleanPostfixTypedefDeclarator: LPAREN CleanTypedefDeclarator RPAREN PostfixingAbstractDeclarator  */
+  case 285: /* CleanPostfixTypedefDeclarator: LPAREN CleanTypedefDeclarator RPAREN PostfixingAbstractDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -3885,7 +3941,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 284: /* ParenTypedefDeclarator: ParenPostfixTypedefDeclarator  */
+  case 286: /* ParenTypedefDeclarator: ParenPostfixTypedefDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -3893,7 +3949,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 285: /* ParenTypedefDeclarator: STAR LPAREN SimpleParenTypedefDeclarator RPAREN  */
+  case 287: /* ParenTypedefDeclarator: STAR LPAREN SimpleParenTypedefDeclarator RPAREN  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -3906,7 +3962,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 286: /* ParenTypedefDeclarator: STAR TypeQualifierList LPAREN SimpleParenTypedefDeclarator RPAREN  */
+  case 288: /* ParenTypedefDeclarator: STAR TypeQualifierList LPAREN SimpleParenTypedefDeclarator RPAREN  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -3921,7 +3977,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 287: /* ParenTypedefDeclarator: STAR ParenTypedefDeclarator  */
+  case 289: /* ParenTypedefDeclarator: STAR ParenTypedefDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -3934,7 +3990,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 288: /* ParenTypedefDeclarator: STAR TypeQualifierList ParenTypedefDeclarator  */
+  case 290: /* ParenTypedefDeclarator: STAR TypeQualifierList ParenTypedefDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -3949,7 +4005,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 289: /* ParenPostfixTypedefDeclarator: LPAREN ParenTypedefDeclarator RPAREN  */
+  case 291: /* ParenPostfixTypedefDeclarator: LPAREN ParenTypedefDeclarator RPAREN  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -3957,7 +4013,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 290: /* ParenPostfixTypedefDeclarator: LPAREN SimpleParenTypedefDeclarator PostfixingAbstractDeclarator RPAREN  */
+  case 292: /* ParenPostfixTypedefDeclarator: LPAREN SimpleParenTypedefDeclarator PostfixingAbstractDeclarator RPAREN  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -3972,7 +4028,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 291: /* ParenPostfixTypedefDeclarator: LPAREN ParenTypedefDeclarator RPAREN PostfixingAbstractDeclarator  */
+  case 293: /* ParenPostfixTypedefDeclarator: LPAREN ParenTypedefDeclarator RPAREN PostfixingAbstractDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -3987,7 +4043,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 292: /* SimpleParenTypedefDeclarator: TYPEDEFname  */
+  case 294: /* SimpleParenTypedefDeclarator: TYPEDEFname  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -3995,7 +4051,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 293: /* SimpleParenTypedefDeclarator: LPAREN SimpleParenTypedefDeclarator RPAREN  */
+  case 295: /* SimpleParenTypedefDeclarator: LPAREN SimpleParenTypedefDeclarator RPAREN  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4003,7 +4059,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 294: /* IdentifierDeclarator: IdentifierDeclaratorMain  */
+  case 296: /* IdentifierDeclarator: IdentifierDeclaratorMain  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4011,7 +4067,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 295: /* IdentifierDeclaratorMain: UnaryIdentifierDeclarator  */
+  case 297: /* IdentifierDeclaratorMain: UnaryIdentifierDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4019,7 +4075,7 @@ public class CActions implements SemanticActions {
       	}
     break;
 
-  case 296: /* IdentifierDeclaratorMain: ParenIdentifierDeclarator  */
+  case 298: /* IdentifierDeclaratorMain: ParenIdentifierDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4027,7 +4083,7 @@ public class CActions implements SemanticActions {
       	}
     break;
 
-  case 297: /* UnaryIdentifierDeclarator: PostfixIdentifierDeclarator  */
+  case 299: /* UnaryIdentifierDeclarator: PostfixIdentifierDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4035,7 +4091,7 @@ public class CActions implements SemanticActions {
       	}
     break;
 
-  case 298: /* UnaryIdentifierDeclarator: STAR IdentifierDeclarator  */
+  case 300: /* UnaryIdentifierDeclarator: STAR IdentifierDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4048,7 +4104,7 @@ public class CActions implements SemanticActions {
       	}
     break;
 
-  case 299: /* UnaryIdentifierDeclarator: STAR TypeQualifierList IdentifierDeclarator  */
+  case 301: /* UnaryIdentifierDeclarator: STAR TypeQualifierList IdentifierDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -4063,7 +4119,7 @@ public class CActions implements SemanticActions {
       	}
     break;
 
-  case 300: /* PostfixIdentifierDeclarator: FunctionDeclarator  */
+  case 302: /* PostfixIdentifierDeclarator: FunctionDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4071,7 +4127,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 301: /* PostfixIdentifierDeclarator: ArrayDeclarator  */
+  case 303: /* PostfixIdentifierDeclarator: ArrayDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4079,7 +4135,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 302: /* PostfixIdentifierDeclarator: AttributedDeclarator  */
+  case 304: /* PostfixIdentifierDeclarator: AttributedDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4087,7 +4143,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 303: /* PostfixIdentifierDeclarator: LPAREN UnaryIdentifierDeclarator RPAREN PostfixingAbstractDeclarator  */
+  case 305: /* PostfixIdentifierDeclarator: LPAREN UnaryIdentifierDeclarator RPAREN PostfixingAbstractDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -4102,7 +4158,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 304: /* AttributedDeclarator: LPAREN UnaryIdentifierDeclarator RPAREN  */
+  case 306: /* AttributedDeclarator: LPAREN UnaryIdentifierDeclarator RPAREN  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4110,7 +4166,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 305: /* FunctionDeclarator: ParenIdentifierDeclarator PostfixingFunctionDeclarator  */
+  case 307: /* FunctionDeclarator: ParenIdentifierDeclarator PostfixingFunctionDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -4125,15 +4181,15 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 306: /* $@23: %empty  */
+  case 308: /* $@25: %empty  */
                { EnterScope(subparser); }
     break;
 
-  case 307: /* $@24: %empty  */
+  case 309: /* $@26: %empty  */
                                                                { ExitReentrantScope(subparser); }
     break;
 
-  case 308: /* PostfixingFunctionDeclarator: LPAREN $@23 ParameterTypeListOpt $@24 RPAREN  */
+  case 310: /* PostfixingFunctionDeclarator: LPAREN $@25 ParameterTypeListOpt $@26 RPAREN  */
         {
           // TODO: account for parameterdeclarationvalue that is the ellipsis
           ParameterTypeListValue parametertypelist
@@ -4182,7 +4238,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 309: /* ArrayDeclarator: ParenIdentifierDeclarator ArrayAbstractDeclarator  */
+  case 311: /* ArrayDeclarator: ParenIdentifierDeclarator ArrayAbstractDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -4197,7 +4253,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 310: /* ParenIdentifierDeclarator: SimpleDeclarator  */
+  case 312: /* ParenIdentifierDeclarator: SimpleDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4205,7 +4261,7 @@ public class CActions implements SemanticActions {
       	}
     break;
 
-  case 311: /* ParenIdentifierDeclarator: LPAREN ParenIdentifierDeclarator RPAREN  */
+  case 313: /* ParenIdentifierDeclarator: LPAREN ParenIdentifierDeclarator RPAREN  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4213,7 +4269,7 @@ public class CActions implements SemanticActions {
       	}
     break;
 
-  case 312: /* SimpleDeclarator: IDENTIFIER  */
+  case 314: /* SimpleDeclarator: IDENTIFIER  */
         {
           Multiverse<Declarator> valuemv
             = new Multiverse<Declarator>(new SimpleDeclarator(getStringAt(subparser, 1)), subparser.getPresenceCondition());
@@ -4221,57 +4277,60 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 313: /* OldFunctionDeclarator: PostfixOldFunctionDeclarator  */
+  case 315: /* OldFunctionDeclarator: PostfixOldFunctionDeclarator  */
         {
           System.err.println("OldFunctionDecl not supported");
           System.exit(1);
         }
     break;
 
-  case 314: /* OldFunctionDeclarator: STAR OldFunctionDeclarator  */
+  case 316: /* OldFunctionDeclarator: STAR OldFunctionDeclarator  */
         {
           System.err.println("OldFunctionDecl not supported");
           System.exit(1);
         }
     break;
 
-  case 315: /* OldFunctionDeclarator: STAR TypeQualifierList OldFunctionDeclarator  */
+  case 317: /* OldFunctionDeclarator: STAR TypeQualifierList OldFunctionDeclarator  */
         {
           System.err.println("OldFunctionDecl not supported");
           System.exit(1);
         }
     break;
 
-  case 316: /* $@25: %empty  */
+  case 318: /* $@27: %empty  */
                                          { EnterScope(subparser); }
     break;
 
-  case 317: /* $@26: %empty  */
+  case 319: /* $@28: %empty  */
                                                                                    { ExitReentrantScope(subparser); }
     break;
 
-  case 318: /* PostfixOldFunctionDeclarator: ParenIdentifierDeclarator LPAREN $@25 IdentifierList $@26 RPAREN  */
+  case 320: /* PostfixOldFunctionDeclarator: ParenIdentifierDeclarator LPAREN $@27 IdentifierList $@28 RPAREN  */
         {
           System.err.println("ERROR: unsupported semantic action: PostfixOldFunctionDeclarator");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 319: /* PostfixOldFunctionDeclarator: LPAREN OldFunctionDeclarator RPAREN  */
+  case 321: /* PostfixOldFunctionDeclarator: LPAREN OldFunctionDeclarator RPAREN  */
         {
           System.err.println("ERROR: unsupported semantic action: PostfixOldFunctionDeclarator");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 320: /* PostfixOldFunctionDeclarator: LPAREN OldFunctionDeclarator RPAREN PostfixingAbstractDeclarator  */
+  case 322: /* PostfixOldFunctionDeclarator: LPAREN OldFunctionDeclarator RPAREN PostfixingAbstractDeclarator  */
         {
           System.err.println("ERROR: unsupported semantic action: PostfixOldFunctionDeclarator");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 321: /* AbstractDeclarator: UnaryAbstractDeclarator  */
+  case 323: /* AbstractDeclarator: UnaryAbstractDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4279,7 +4338,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 322: /* AbstractDeclarator: PostfixAbstractDeclarator  */
+  case 324: /* AbstractDeclarator: PostfixAbstractDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4287,7 +4346,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 323: /* AbstractDeclarator: PostfixingAbstractDeclarator  */
+  case 325: /* AbstractDeclarator: PostfixingAbstractDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4295,7 +4354,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 324: /* PostfixingAbstractDeclarator: ArrayAbstractDeclarator  */
+  case 326: /* PostfixingAbstractDeclarator: ArrayAbstractDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4303,7 +4362,7 @@ public class CActions implements SemanticActions {
       	}
     break;
 
-  case 325: /* PostfixingAbstractDeclarator: PostfixingFunctionDeclarator  */
+  case 327: /* PostfixingAbstractDeclarator: PostfixingFunctionDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4311,19 +4370,19 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 326: /* ParameterTypeListOpt: %empty  */
+  case 328: /* ParameterTypeListOpt: %empty  */
         {
           setTransformationValue(value, new ParameterTypeListValue(new LinkedList<Multiverse<Declaration>>(), false));
         }
     break;
 
-  case 327: /* ParameterTypeListOpt: ParameterTypeList  */
+  case 329: /* ParameterTypeListOpt: ParameterTypeList  */
         {
           setTransformationValue(value, (ParameterTypeListValue) getTransformationValue(subparser,1));
         }
     break;
 
-  case 328: /* ArrayAbstractDeclarator: LBRACK RBRACK  */
+  case 330: /* ArrayAbstractDeclarator: LBRACK RBRACK  */
         {
           String expression = "";
           Multiverse<Declarator> valuemv
@@ -4332,7 +4391,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 329: /* ArrayAbstractDeclarator: LBRACK ConstantExpression RBRACK  */
+  case 331: /* ArrayAbstractDeclarator: LBRACK ConstantExpression RBRACK  */
         {
           todoReminder("check expression in ArrayAbstractDeclarator (2)");
           ExpressionValue exprval = getCompleteNodeExpressionValue(subparser, 2, subparser.getPresenceCondition());
@@ -4354,7 +4413,7 @@ public class CActions implements SemanticActions {
 	      }
     break;
 
-  case 330: /* ArrayAbstractDeclarator: ArrayAbstractDeclarator LBRACK ConstantExpression RBRACK  */
+  case 332: /* ArrayAbstractDeclarator: ArrayAbstractDeclarator LBRACK ConstantExpression RBRACK  */
               {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4400,7 +4459,7 @@ public class CActions implements SemanticActions {
 	      }
     break;
 
-  case 331: /* UnaryAbstractDeclarator: STAR  */
+  case 333: /* UnaryAbstractDeclarator: STAR  */
         {
           Multiverse<Declarator> valuemv
             = new Multiverse<Declarator>(new PointerAbstractDeclarator(), subparser.getPresenceCondition());
@@ -4408,7 +4467,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 332: /* UnaryAbstractDeclarator: STAR TypeQualifierList  */
+  case 334: /* UnaryAbstractDeclarator: STAR TypeQualifierList  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -4421,7 +4480,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 333: /* UnaryAbstractDeclarator: STAR AbstractDeclarator  */
+  case 335: /* UnaryAbstractDeclarator: STAR AbstractDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4434,7 +4493,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 334: /* UnaryAbstractDeclarator: STAR TypeQualifierList AbstractDeclarator  */
+  case 336: /* UnaryAbstractDeclarator: STAR TypeQualifierList AbstractDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -4449,7 +4508,7 @@ public class CActions implements SemanticActions {
       	}
     break;
 
-  case 335: /* PostfixAbstractDeclarator: LPAREN UnaryAbstractDeclarator RPAREN  */
+  case 337: /* PostfixAbstractDeclarator: LPAREN UnaryAbstractDeclarator RPAREN  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4457,7 +4516,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 336: /* PostfixAbstractDeclarator: LPAREN PostfixAbstractDeclarator RPAREN  */
+  case 338: /* PostfixAbstractDeclarator: LPAREN PostfixAbstractDeclarator RPAREN  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4465,7 +4524,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 337: /* PostfixAbstractDeclarator: LPAREN PostfixingAbstractDeclarator RPAREN  */
+  case 339: /* PostfixAbstractDeclarator: LPAREN PostfixingAbstractDeclarator RPAREN  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4473,7 +4532,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 338: /* PostfixAbstractDeclarator: LPAREN UnaryAbstractDeclarator RPAREN PostfixingAbstractDeclarator  */
+  case 340: /* PostfixAbstractDeclarator: LPAREN UnaryAbstractDeclarator RPAREN PostfixingAbstractDeclarator  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4488,13 +4547,13 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 339: /* Statement: LabeledStatement  */
+  case 341: /* Statement: LabeledStatement  */
         {
           setTransformationValue(value, getCompleteNodeMultiverseValue(getNodeAt(subparser, 1), subparser.getPresenceCondition()));
         }
     break;
 
-  case 340: /* Statement: CompoundStatement  */
+  case 342: /* Statement: CompoundStatement  */
         {
           // CompoundStatement produces just a string (not a multiverse), since it's children resolve all
           // configurations, so we only need to resolve static conditionals around the CompoundStatement.
@@ -4502,37 +4561,37 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 341: /* Statement: ExpressionStatement  */
+  case 343: /* Statement: ExpressionStatement  */
         {
           setTransformationValue(value, getCompleteNodeMultiverseValue(getNodeAt(subparser, 1), subparser.getPresenceCondition()));
         }
     break;
 
-  case 342: /* Statement: SelectionStatement  */
+  case 344: /* Statement: SelectionStatement  */
         {
           setTransformationValue(value, getCompleteNodeMultiverseValue(getNodeAt(subparser, 1), subparser.getPresenceCondition()));
         }
     break;
 
-  case 343: /* Statement: IterationStatement  */
+  case 345: /* Statement: IterationStatement  */
         {
           setTransformationValue(value, getCompleteNodeMultiverseValue(getNodeAt(subparser, 1), subparser.getPresenceCondition()));
         }
     break;
 
-  case 344: /* Statement: JumpStatement  */
+  case 346: /* Statement: JumpStatement  */
         {
           setTransformationValue(value, getCompleteNodeMultiverseValue(getNodeAt(subparser, 1), subparser.getPresenceCondition()));
         }
     break;
 
-  case 345: /* Statement: AssemblyStatement  */
+  case 347: /* Statement: AssemblyStatement  */
         {
           setTransformationValue(value, getCompleteNodeMultiverseValue(getNodeAt(subparser, 1), subparser.getPresenceCondition()));
         }
     break;
 
-  case 346: /* LabeledStatement: IDENTIFIER COLON AttributeSpecifierListOpt Statement  */
+  case 348: /* LabeledStatement: IDENTIFIER COLON AttributeSpecifierListOpt Statement  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           Syntax id = (getSyntaxMV(subparser, 4,pc)).get(0).getData();
@@ -4549,7 +4608,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 347: /* LabeledStatement: TYPEDEFname COLON AttributeSpecifierListOpt Statement  */
+  case 349: /* LabeledStatement: TYPEDEFname COLON AttributeSpecifierListOpt Statement  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4565,7 +4624,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 348: /* SwitchLabeledStatement: CASE ConstantExpression COLON CompoundStatementBody  */
+  case 350: /* SwitchLabeledStatement: CASE ConstantExpression COLON CompoundStatementBody  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           String casestr = "case";  // hacky fix for unexpected conditionals around the case keyword
@@ -4587,16 +4646,17 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 349: /* SwitchLabeledStatement: CASE ConstantExpression ELLIPSIS ConstantExpression COLON CompoundStatementBody  */
+  case 351: /* SwitchLabeledStatement: CASE ConstantExpression ELLIPSIS ConstantExpression COLON CompoundStatementBody  */
         {
           todoReminder("check that case expression is int");
           PresenceCondition pc = subparser.getPresenceCondition();
           System.err.println("ERROR: unsupported semantic action: SwitchLabeledStatement (2)");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 350: /* SwitchLabeledStatement: DEFAULT COLON CompoundStatementBody  */
+  case 352: /* SwitchLabeledStatement: DEFAULT COLON CompoundStatementBody  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           String defaultstr = ((Syntax) getNodeAt(subparser, 3)).getTokenText();
@@ -4612,7 +4672,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 351: /* SwitchLabeledStatementList: SwitchLabeledStatement  */
+  case 353: /* SwitchLabeledStatementList: SwitchLabeledStatement  */
         {
           Multiverse<DeclarationOrStatementValue> stmtmv = getCompleteNodeMultiverseValue(subparser, 1, subparser.getPresenceCondition());
           List<Multiverse<DeclarationOrStatementValue>> l = new LinkedList<Multiverse<DeclarationOrStatementValue>>();
@@ -4621,7 +4681,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 352: /* SwitchLabeledStatementList: SwitchLabeledStatementList SwitchLabeledStatement  */
+  case 354: /* SwitchLabeledStatementList: SwitchLabeledStatementList SwitchLabeledStatement  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           List<Multiverse<DeclarationOrStatementValue>> list = getCompleteNodeDeclStmtValueList(subparser, 2, pc);
@@ -4632,29 +4692,31 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 353: /* $@27: %empty  */
+  case 355: /* $@29: %empty  */
                { ReenterScope(subparser); }
     break;
 
-  case 354: /* $@28: %empty  */
+  case 356: /* $@30: %empty  */
                                                                   {   ExitScope(subparser); }
     break;
 
-  case 355: /* CompoundStatement: LBRACE $@27 CompoundStatementBody $@28 RBRACE  */
+  case 357: /* CompoundStatement: LBRACE $@29 CompoundStatementBody $@30 RBRACE  */
         {
+          LineNumbers lBraceLN = new LineNumbers((Syntax)getNodeAt(subparser,5));
+          LineNumbers rBraceLN = new LineNumbers((Syntax)getNodeAt(subparser,1));
           PresenceCondition pc = subparser.getPresenceCondition();
           CContext scope = ((CContext) subparser.scope);
           
           List<Multiverse<DeclarationOrStatementValue>> body = (List<Multiverse<DeclarationOrStatementValue>>) getTransformationValue(subparser, 3);
           StringBuilder valuesb = new StringBuilder();
           DeclarationOrStatementValue dsv = new DeclarationOrStatementValue("");
-          dsv.setChildrenBlock("{",body,"}");
+          dsv.setChildrenBlock("{"+lBraceLN.getComment(),body,"}"+rBraceLN.getComment());
 
           setTransformationValue(value, dsv);
         }
     break;
 
-  case 356: /* CompoundStatementBody: LocalLabelDeclarationListOpt DeclarationOrStatementList  */
+  case 358: /* CompoundStatementBody: LocalLabelDeclarationListOpt DeclarationOrStatementList  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           CContext scope = ((CContext) subparser.scope);
@@ -4669,13 +4731,13 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 357: /* LocalLabelDeclarationListOpt: %empty  */
+  case 359: /* LocalLabelDeclarationListOpt: %empty  */
         {
           setTransformationValue(value, "");
         }
     break;
 
-  case 358: /* LocalLabelDeclarationListOpt: LocalLabelDeclarationList  */
+  case 360: /* LocalLabelDeclarationListOpt: LocalLabelDeclarationList  */
         {
           System.err.println("implement locallabeldeclarationlistopt (2)");
           // do hoisting here, return a stringbuilder, not a multiverse
@@ -4683,52 +4745,55 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 359: /* LocalLabelDeclarationList: LocalLabelDeclaration  */
+  case 361: /* LocalLabelDeclarationList: LocalLabelDeclaration  */
         {
           System.err.println("implement locallabeldeclarationlist (1)");
           System.exit(1);
         }
     break;
 
-  case 360: /* LocalLabelDeclarationList: LocalLabelDeclarationList LocalLabelDeclaration  */
+  case 362: /* LocalLabelDeclarationList: LocalLabelDeclarationList LocalLabelDeclaration  */
         {
           System.err.println("implement locallabeldeclarationlist (2)");
           System.exit(1);
         }
     break;
 
-  case 361: /* LocalLabelDeclaration: __LABEL__ LocalLabelList SEMICOLON  */
+  case 363: /* LocalLabelDeclaration: __LABEL__ LocalLabelList SEMICOLON  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           System.err.println("ERROR: unsupported semantic action: LocalLabelDeclaration");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 362: /* LocalLabelList: IDENTIFIER  */
+  case 364: /* LocalLabelList: IDENTIFIER  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           System.err.println("ERROR: unsupported semantic action: LocalLabelList");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 363: /* LocalLabelList: LocalLabelList COMMA IDENTIFIER  */
+  case 365: /* LocalLabelList: LocalLabelList COMMA IDENTIFIER  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           System.err.println("ERROR: unsupported semantic action: LocalLabelList");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 364: /* DeclarationOrStatementList: %empty  */
+  case 366: /* DeclarationOrStatementList: %empty  */
         {
           List<Multiverse<DeclarationOrStatementValue>> n = new LinkedList<Multiverse<DeclarationOrStatementValue>>();
           setTransformationValue(value, n);
         }
     break;
 
-  case 365: /* DeclarationOrStatementList: DeclarationOrStatementList DeclarationOrStatement  */
+  case 367: /* DeclarationOrStatementList: DeclarationOrStatementList DeclarationOrStatement  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           List<Multiverse<DeclarationOrStatementValue>> list = getCompleteNodeDeclStmtValueList(subparser, 2, pc);
@@ -4738,7 +4803,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 366: /* DeclarationOrStatement: DeclarationExtension  */
+  case 368: /* DeclarationOrStatement: DeclarationExtension  */
         {
           // declarations are already just strings, so get the multiverse of any static conditionals around them
           List<Multiverse<String>> ss = getCompleteNodeListValue(getNodeAt(subparser, 1),subparser.getPresenceCondition());
@@ -4754,7 +4819,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 367: /* DeclarationOrStatement: Statement  */
+  case 369: /* DeclarationOrStatement: Statement  */
         {
           // statements have multiverses, so hoist any static conditionals around them by combining with the statement multiverses
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -4765,21 +4830,21 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 368: /* DeclarationOrStatement: NestedFunctionDefinition  */
+  case 370: /* DeclarationOrStatement: NestedFunctionDefinition  */
         {
           System.err.println("nestedfunctiondefinition not implemented yet");
           System.exit(1);
         }
     break;
 
-  case 369: /* DeclarationList: DeclarationExtension  */
+  case 371: /* DeclarationList: DeclarationExtension  */
         {
           Multiverse<String> valuemv = getCompleteNodeMultiverseValue(getNodeAt(subparser, 1), subparser.getPresenceCondition());
           setTransformationValue(value, concatMultiverseStrings(valuemv)); valuemv.destruct();
         }
     break;
 
-  case 370: /* DeclarationList: DeclarationList DeclarationExtension  */
+  case 372: /* DeclarationList: DeclarationList DeclarationExtension  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           StringBuilder valuesb = new StringBuilder();
@@ -4791,7 +4856,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 371: /* ExpressionStatement: ExpressionOpt SEMICOLON  */
+  case 373: /* ExpressionStatement: ExpressionOpt SEMICOLON  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -4812,7 +4877,7 @@ public class CActions implements SemanticActions {
            // should not violate mutual-exclusion in the multiverse
             // TODO: use dce and other optimizations to remove superfluous __static_type_error calls
             // since desugarOps can't have empty multiverses we need to add error entries
-            // so here we should purge the errorCond from the string multiverse before appending
+           // so here we should purge the errorCond from the string multiverse before appending
             todoReminder("add emitError back to ExpressionStatement once type checking is done");
             if (errorCond.isNotFalse()) {
               expr = expr.filter(errorCond.not());
@@ -4838,12 +4903,11 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 372: /* SelectionStatement: IF LPAREN Expression RPAREN Statement  */
+  case 374: /* SelectionStatement: IF LPAREN Expression RPAREN Statement  */
         {
           todoReminder("check the type of the conditional expression SelectionStatement (1)");
           PresenceCondition pc = subparser.getPresenceCondition();
           ExpressionValue exprval = getCompleteNodeExpressionValue(subparser, 3, pc);
-	  System.err.println(exprval);
           Syntax ifsyn = (getSyntaxMV(subparser, 5,pc)).get(0).getData();
           String ifstr = ifsyn.getTokenText();
           String lparenstr = (getSyntaxMV(subparser, 4,pc)).get(0).getData().getTokenText();
@@ -4876,7 +4940,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 373: /* SelectionStatement: IF LPAREN Expression RPAREN Statement ELSE Statement  */
+  case 375: /* SelectionStatement: IF LPAREN Expression RPAREN Statement ELSE Statement  */
         {
           todoReminder("check the type of the conditional expression SelectionStatement (2)");
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -4891,6 +4955,8 @@ public class CActions implements SemanticActions {
           LineNumbers lw = new LineNumbers(ifsyn, rparensyn);
           Multiverse<DeclarationOrStatementValue> ifbranchmv = getCompleteNodeMultiverseValue(subparser, 3, pc);
           String elsestr = (getSyntaxMV(subparser, 2,pc)).get(0).getData().getTokenText();
+          LineNumbers elw = new LineNumbers((getSyntaxMV(subparser, 2,pc)).get(0).getData());
+          elsestr += elw.getComment();
           Multiverse<DeclarationOrStatementValue> elsebranchmv = getCompleteNodeMultiverseValue(subparser, 1, pc);
 
           String errorstmt = String.format("%s;", emitError("invalid type found in ifelse statement"));
@@ -4905,7 +4971,7 @@ public class CActions implements SemanticActions {
             Multiverse<DeclarationOrStatementValue> dsv = DesugarOps.StringToDSV.transform(appendmv);
 
             for (Element<DeclarationOrStatementValue> d : dsv) {
-              d.getData().setChildrenElse(ifbranchmv,elsebranchmv);
+              d.getData().setChildrenElse(ifbranchmv,elsestr,elsebranchmv);
             }
                         
             PresenceCondition invalidCond = exprval.invalidTypeCondition(pc);
@@ -4917,7 +4983,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 374: /* SelectionStatement: SWITCH LPAREN Expression RPAREN LBRACE SwitchLabeledStatementList RBRACE  */
+  case 376: /* SelectionStatement: SWITCH LPAREN Expression RPAREN LBRACE SwitchLabeledStatementList RBRACE  */
         {
           // n1570 6.8.4.2 for switch statements
 	  PresenceCondition pc = subparser.getPresenceCondition();
@@ -4991,7 +5057,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 375: /* IterationStatement: WHILE LPAREN Expression RPAREN Statement  */
+  case 377: /* IterationStatement: WHILE LPAREN Expression RPAREN Statement  */
         {
           todoReminder("check the type of the conditional expression IterationStatement (1)");
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -5029,7 +5095,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 376: /* IterationStatement: DO Statement WHILE LPAREN Expression RPAREN SEMICOLON  */
+  case 378: /* IterationStatement: DO Statement WHILE LPAREN Expression RPAREN SEMICOLON  */
         {
           todoReminder("check the type of the conditional expression IterationStatement (2)");
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -5064,7 +5130,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 377: /* IterationStatement: FOR LPAREN ExpressionOpt SEMICOLON ExpressionOpt SEMICOLON ExpressionOpt RPAREN Statement  */
+  case 379: /* IterationStatement: FOR LPAREN ExpressionOpt SEMICOLON ExpressionOpt SEMICOLON ExpressionOpt RPAREN Statement  */
         {
           todoReminder("check the type of the conditional expression IterationStatement (3)");
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -5075,10 +5141,9 @@ public class CActions implements SemanticActions {
           ExpressionValue initval = getCompleteNodeExpressionValue(subparser, 7, pc);
           String semi1 = ";";
           ExpressionValue testval = getCompleteNodeExpressionValue(subparser, 5, pc);
-	  String semi2 = ";";
+          String semi2 = ";";
           ExpressionValue updateval = getCompleteNodeExpressionValue(subparser, 3, pc);
-	  System.err.println(updateval);
-	  Syntax rparensyn = (getSyntaxMV(subparser, 2,pc)).get(0).getData(); 
+          Syntax rparensyn = (getSyntaxMV(subparser, 2,pc)).get(0).getData(); 
           String rparen = rparensyn.getTokenText();
           LineNumbers lw = new LineNumbers(forsyn,rparensyn);
 
@@ -5132,15 +5197,15 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 378: /* $@29: %empty  */
+  case 380: /* $@31: %empty  */
                      { EnterScope(subparser); }
     break;
 
-  case 379: /* $@30: %empty  */
+  case 381: /* $@32: %empty  */
                                                { ExitScope(subparser); }
     break;
 
-  case 380: /* IterationStatement: FOR LPAREN $@29 Declaration ExpressionOpt SEMICOLON ExpressionOpt RPAREN Statement $@30  */
+  case 382: /* IterationStatement: FOR LPAREN $@31 Declaration ExpressionOpt SEMICOLON ExpressionOpt RPAREN Statement $@32  */
         {
           // TODO: use a reentrant scope to add the declaration's symbol to the for-loop's scope
           // TODO: Declaration returns a String, not a multiverse.  We need a multiverse to hoist around the entire for loop.
@@ -5196,31 +5261,31 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 381: /* JumpStatement: GotoStatement  */
+  case 383: /* JumpStatement: GotoStatement  */
         {
           setTransformationValue(value, getCompleteNodeMultiverseValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 382: /* JumpStatement: ContinueStatement  */
+  case 384: /* JumpStatement: ContinueStatement  */
         {
           setTransformationValue(value, DesugarOps.StringToDSV.transform(getCompleteNodeMultiverseValue(getNodeAt(subparser, 1), subparser.getPresenceCondition())));
         }
     break;
 
-  case 383: /* JumpStatement: BreakStatement  */
+  case 385: /* JumpStatement: BreakStatement  */
         {
           setTransformationValue(value, DesugarOps.StringToDSV.transform(getCompleteNodeMultiverseValue(getNodeAt(subparser, 1), subparser.getPresenceCondition())));
         }
     break;
 
-  case 384: /* JumpStatement: ReturnStatement  */
+  case 386: /* JumpStatement: ReturnStatement  */
         {
           setTransformationValue(value, DesugarOps.StringToDSV.transform(getCompleteNodeMultiverseValue(getNodeAt(subparser, 1), subparser.getPresenceCondition())));
         }
     break;
 
-  case 385: /* GotoStatement: GOTO IdentifierOrTypedefName SEMICOLON  */
+  case 387: /* GotoStatement: GOTO IdentifierOrTypedefName SEMICOLON  */
         {
           String ident = ((Syntax) getNodeAt(subparser, 2).get(0)).getTokenText();
 
@@ -5231,15 +5296,16 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 386: /* GotoStatement: GOTO STAR Expression SEMICOLON  */
+  case 388: /* GotoStatement: GOTO STAR Expression SEMICOLON  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           System.err.println("ERROR: unsupported semantic action: GotoStatement (2)");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 387: /* ContinueStatement: CONTINUE SEMICOLON  */
+  case 389: /* ContinueStatement: CONTINUE SEMICOLON  */
         {
           LineNumbers lw = new LineNumbers((Syntax) getNodeAt(subparser, 2),(Syntax) getNodeAt(subparser, 1));
           String continuetoken = ((Syntax) getNodeAt(subparser, 2)).getTokenText();
@@ -5249,7 +5315,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 388: /* BreakStatement: BREAK SEMICOLON  */
+  case 390: /* BreakStatement: BREAK SEMICOLON  */
         {
           LineNumbers lw = new LineNumbers((Syntax) getNodeAt(subparser, 2),(Syntax) getNodeAt(subparser, 1));
           String breaktoken = ((Syntax) getNodeAt(subparser, 2)).getTokenText();
@@ -5259,7 +5325,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 389: /* ReturnStatement: RETURN ExpressionOpt SEMICOLON  */
+  case 391: /* ReturnStatement: RETURN ExpressionOpt SEMICOLON  */
         {
           LineNumbers lw = new LineNumbers((Syntax) getNodeAt(subparser, 3),(Syntax) getNodeAt(subparser, 1));
           todoReminder("check the type of the return value");
@@ -5286,7 +5352,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 390: /* Constant: FLOATINGconstant  */
+  case 392: /* Constant: FLOATINGconstant  */
         {
           setTransformationValue(value,
                                  new ExpressionValue(((Syntax) getNodeAt(subparser, 1)).getTokenText(),
@@ -5294,7 +5360,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 391: /* Constant: INTEGERconstant  */
+  case 393: /* Constant: INTEGERconstant  */
         {
           /* value = GNode.create("Constant", getNodeAt(subparser, 1)); */
           /* System.err.println(value); */
@@ -5308,7 +5374,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 392: /* Constant: OCTALconstant  */
+  case 394: /* Constant: OCTALconstant  */
         {
           setTransformationValue(value,
                                  new ExpressionValue(((Syntax) getNodeAt(subparser, 1)).getTokenText(),
@@ -5316,7 +5382,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 393: /* Constant: HEXconstant  */
+  case 395: /* Constant: HEXconstant  */
         {
           setTransformationValue(value,
                                  new ExpressionValue(((Syntax) getNodeAt(subparser, 1)).getTokenText(),
@@ -5324,7 +5390,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 394: /* Constant: CHARACTERconstant  */
+  case 396: /* Constant: CHARACTERconstant  */
         {
           setTransformationValue(value,
                                  new ExpressionValue(((Syntax) getNodeAt(subparser, 1)).getTokenText(),
@@ -5332,14 +5398,14 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 395: /* StringLiteralListString: STRINGliteral  */
+  case 397: /* StringLiteralListString: STRINGliteral  */
         {
           setTransformationValue(value, new StringListPair(((Syntax) getNodeAt(subparser, 1)).getTokenText(),
                                                            new LineNumbers((Syntax) getNodeAt(subparser, 1))));
         }
     break;
 
-  case 396: /* StringLiteralListString: StringLiteralListString STRINGliteral  */
+  case 398: /* StringLiteralListString: StringLiteralListString STRINGliteral  */
         {
           StringListPair s = new StringListPair(((StringListPair)getTransformationValue(subparser, 2)).str +
                                                 ((Syntax) getNodeAt(subparser, 1)).getTokenText(),
@@ -5348,7 +5414,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 397: /* StringLiteralList: StringLiteralListString  */
+  case 399: /* StringLiteralList: StringLiteralListString  */
         {
           // TODO: CAnalyzer distinguishes between wide and non-wide characters
           // TODO: use a fixed-size array instead of a pointer to char
@@ -5360,25 +5426,25 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 398: /* PrimaryExpression: PrimaryIdentifier  */
+  case 400: /* PrimaryExpression: PrimaryIdentifier  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 399: /* PrimaryExpression: Constant  */
+  case 401: /* PrimaryExpression: Constant  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 400: /* PrimaryExpression: StringLiteralList  */
+  case 402: /* PrimaryExpression: StringLiteralList  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 401: /* PrimaryExpression: LPAREN Expression RPAREN  */
+  case 403: /* PrimaryExpression: LPAREN Expression RPAREN  */
         {
           LineNumbers lw = new LineNumbers((Syntax) getNodeAt(subparser, 3),(Syntax) getNodeAt(subparser, 1));
           
@@ -5404,19 +5470,19 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 402: /* PrimaryExpression: StatementAsExpression  */
+  case 404: /* PrimaryExpression: StatementAsExpression  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 403: /* PrimaryExpression: VariableArgumentAccess  */
+  case 405: /* PrimaryExpression: VariableArgumentAccess  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 404: /* PrimaryIdentifier: IDENTIFIER  */
+  case 406: /* PrimaryIdentifier: IDENTIFIER  */
         {
           String originalName = ((Node)getNodeAt(subparser, 1)).getTokenText();
           //Multiverse<String> sbmv = new Multiverse<String>();
@@ -5427,7 +5493,6 @@ public class CActions implements SemanticActions {
           // get the renamings from the symtab
           PresenceCondition cond = subparser.getPresenceCondition();
           Multiverse<SymbolTable.Entry<Type>> entries = scope.getInAnyScope(originalName, cond);
-
           // convert the renamings to stringbuilders
           Multiverse<String> sbmv = new Multiverse<String>();
           Multiverse<Type> typemv = new Multiverse<Type>();
@@ -5475,8 +5540,12 @@ public class CActions implements SemanticActions {
                   typemv.add(entry.getData().getValue().toVariable().getType(), entry.getCondition());
                 }
               } else if (entry.getData().getValue() instanceof NamedFunctionT) {
-                String result  // use the renamed symbol
-                  = String.format(" %s ", ((NamedFunctionT) entry.getData().getValue()).getName());
+                String result;  // use the renamed symbol
+                if (!keepMem || !(Arrays.asList(memNames)).contains(originalName) ) {
+                  result = String.format(" %s ", ((NamedFunctionT) entry.getData().getValue()).getName());
+                } else {
+                  result = originalName;
+                }
                 sbmv.add(result, entry.getCondition());
                 typemv.add(((NamedFunctionT) entry.getData().getValue()).toFunctionT(), entry.getCondition());
               } else if (entry.getData().getValue() instanceof EnumeratorT) {
@@ -5496,12 +5565,11 @@ public class CActions implements SemanticActions {
           // it and the symtab should always return a non-empty mv
           assert ! sbmv.isEmpty();
           entries.destruct();
-          System.err.println(typemv);
           setTransformationValue(value, new ExpressionValue(sbmv, typemv,new Multiverse<LineNumbers>(new LineNumbers((Syntax)getNodeAt(subparser, 1)),cond)));
         }
     break;
 
-  case 405: /* VariableArgumentAccess: __BUILTIN_VA_ARG LPAREN AssignmentExpression COMMA TypeName RPAREN  */
+  case 407: /* VariableArgumentAccess: __BUILTIN_VA_ARG LPAREN AssignmentExpression COMMA TypeName RPAREN  */
         {
           LineNumbers lw = new LineNumbers((Syntax) getNodeAt(subparser, 6),(Syntax) getNodeAt(subparser, 1));
    
@@ -5534,15 +5602,15 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 406: /* $@31: %empty  */
+  case 408: /* $@33: %empty  */
                { EnterScope(subparser); }
     break;
 
-  case 407: /* $@32: %empty  */
+  case 409: /* $@34: %empty  */
                                                             { ExitScope(subparser); }
     break;
 
-  case 408: /* StatementAsExpression: LPAREN $@31 CompoundStatement $@32 RPAREN  */
+  case 410: /* StatementAsExpression: LPAREN $@33 CompoundStatement $@34 RPAREN  */
         {
           LineNumbers lw = new LineNumbers((Syntax) getNodeAt(subparser, 5),(Syntax) getNodeAt(subparser, 1));
           
@@ -5577,7 +5645,6 @@ public class CActions implements SemanticActions {
             String res = "( " + e.getData().getString(e.getCondition(),this) + " )";
             valuemv.add(res,e.getCondition());
             Multiverse<Type> tt = e.getData().getType();
-            System.err.println(tt);
             if (tt != null && !tt.isEmpty()) {
               typemv.addAll(tt);
             } else {
@@ -5590,55 +5657,55 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 409: /* PostfixExpression: PrimaryExpression  */
+  case 411: /* PostfixExpression: PrimaryExpression  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 410: /* PostfixExpression: Subscript  */
+  case 412: /* PostfixExpression: Subscript  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 411: /* PostfixExpression: FunctionCall  */
+  case 413: /* PostfixExpression: FunctionCall  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 412: /* PostfixExpression: DirectSelection  */
+  case 414: /* PostfixExpression: DirectSelection  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 413: /* PostfixExpression: IndirectSelection  */
+  case 415: /* PostfixExpression: IndirectSelection  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 414: /* PostfixExpression: Increment  */
+  case 416: /* PostfixExpression: Increment  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 415: /* PostfixExpression: Decrement  */
+  case 417: /* PostfixExpression: Decrement  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 416: /* PostfixExpression: CompoundLiteral  */
+  case 418: /* PostfixExpression: CompoundLiteral  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 417: /* Subscript: PostfixExpression LBRACK Expression RBRACK  */
+  case 419: /* Subscript: PostfixExpression LBRACK Expression RBRACK  */
         {
           // TODO: check that expression is numeric, check that postfixexpression is array, and get arrays types
           todoReminder("typecheck Subscript");
@@ -5700,7 +5767,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 418: /* FunctionCall: PostfixExpression LPAREN RPAREN  */
+  case 420: /* FunctionCall: PostfixExpression LPAREN RPAREN  */
         {
           
           todoReminder("typecheck functioncall (1)");
@@ -5709,8 +5776,8 @@ public class CActions implements SemanticActions {
           // the type
           PresenceCondition pc = subparser.getPresenceCondition();
           ExpressionValue exprval = getCompleteNodeExpressionValue(subparser, 3, pc);
-          String lparen = getNodeAt(subparser, 2).getTokenText();
-          String rparen = getNodeAt(subparser, 1).getTokenText();
+          String lparen = "(";
+          String rparen = ")";
 
 
           if (exprval.hasValidType()) {
@@ -5755,7 +5822,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 419: /* FunctionCall: PostfixExpression LPAREN ExpressionList RPAREN  */
+  case 421: /* FunctionCall: PostfixExpression LPAREN ExpressionList RPAREN  */
         {
           // type check by making sure the postfixexpression type is a
           // function, that each type of the expressionlist matches
@@ -5765,12 +5832,12 @@ public class CActions implements SemanticActions {
           ExpressionValue postfixexprval = getCompleteNodeExpressionValue(subparser, 4, pc);
           /* System.err.println("PFTYPE: " + postfixexprval.type); */
           /* System.err.println("PFTRAN: " + postfixexprval.transformation); */
-	  if (postfixexprval.hasValidType()) {
+          if (postfixexprval.hasValidType()) {
             /* postfixexprval.transformation; */
             Multiverse<String> lparen
-              = new Multiverse<String>((String) getNodeAt(subparser, 3).getTokenText(), pc);
+              = new Multiverse<String>("(", pc);
             Multiverse<String> rparen
-              = new Multiverse<String>((String) getNodeAt(subparser, 1).getTokenText(), pc);
+              = new Multiverse<String>(")", pc);
 
             // Get all possible expression lists by successively taking
             // the combined product of each element of the list.  See
@@ -5778,15 +5845,14 @@ public class CActions implements SemanticActions {
             // similar.
             List<ExpressionValue> exprlist
               = (List<ExpressionValue>) getTransformationValue(subparser, 2);
-	    System.err.println(exprlist);
             Multiverse<List<String>> exprlistmv
               = new Multiverse<List<String>>(new LinkedList<String>(), pc);
             Multiverse<List<Type>> exprlisttypemv
               = new Multiverse<List<Type>>(new LinkedList<Type>(), pc);
             boolean hasinvalidparameter = false;
             for (ExpressionValue listelem : exprlist) {
-	      if (! listelem.hasValidType()) {
-	      hasinvalidparameter = true;
+              if (! listelem.hasValidType()) {
+                hasinvalidparameter = true;
                 break;
               }
               // wrap each listelem's string and type in a list
@@ -5895,7 +5961,7 @@ public class CActions implements SemanticActions {
                               break;
                             }
                           
-                          } else if (compatTypes(formal, actual)) {
+                          } else if (compatParam(formal, actual)) {
                             valuemv = appendStringToMV(valuemv, exprliststring.getData().get(i) + ",", combinedCond);
                           } else {
                             match = false;
@@ -5935,8 +6001,8 @@ public class CActions implements SemanticActions {
                   PresenceCondition new_errorCond = errorCond.or(postfixelem.getCondition());
                   // TODO: unit test
                   valuemv = valuemv.filter(postfixelem.getCondition().not());
-		  valuemv.add(emitError("attempting function call on non-function type"),postfixelem.getCondition());
-		  errorCond.delRef(); errorCond = new_errorCond;
+                  valuemv.add(emitError("attempting function call on non-function type"),postfixelem.getCondition());
+                  errorCond.delRef(); errorCond = new_errorCond;
                 } // end check for function type
               } // end loop over postfixelems
               typemv.add(ErrorT.TYPE, errorCond);
@@ -5954,7 +6020,6 @@ public class CActions implements SemanticActions {
               errorCond.delRef(); validTypes.delRef();
               
               assert ! valuemv.isEmpty();
-              System.err.println(valuemv + "::" + typemv);
               setTransformationValue(value, new ExpressionValue(valuemv, typemv, postfixexprval.integrateSyntax((Syntax)getNodeAt(subparser, 1))));
             } else {
               setTransformationValue(value, new ExpressionValue(emitError("no valid type for one or more arguments of the function call"),
@@ -5971,7 +6036,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 420: /* DirectSelection: PostfixExpression DOT IdentifierOrTypedefName  */
+  case 422: /* DirectSelection: PostfixExpression DOT IdentifierOrTypedefName  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -6127,7 +6192,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 421: /* IndirectSelection: PostfixExpression ARROW IdentifierOrTypedefName  */
+  case 423: /* IndirectSelection: PostfixExpression ARROW IdentifierOrTypedefName  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           // TODO: need to cast PostfixExpression to the union field
@@ -6270,7 +6335,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 422: /* Increment: PostfixExpression ICR  */
+  case 424: /* Increment: PostfixExpression ICR  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           ExpressionValue exprval = getCompleteNodeExpressionValue(subparser, 2, pc);
@@ -6297,7 +6362,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 423: /* Decrement: PostfixExpression DECR  */
+  case 425: /* Decrement: PostfixExpression DECR  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           ExpressionValue exprval = getCompleteNodeExpressionValue(subparser, 2, pc);
@@ -6323,7 +6388,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 424: /* CompoundLiteral: LPAREN TypeName RPAREN LBRACE InitializerList RBRACE  */
+  case 426: /* CompoundLiteral: LPAREN TypeName RPAREN LBRACE InitializerList RBRACE  */
         {
           LineNumbers lw = new LineNumbers((Syntax) getNodeAt(subparser, 6),(Syntax) getNodeAt(subparser, 1));
           
@@ -6358,8 +6423,7 @@ public class CActions implements SemanticActions {
               cc.delRef();
             }
           }
-	  System.err.println(error);
-          initializerlistmv.destruct();
+	        initializerlistmv.destruct();
 
           Multiverse<String> mv4
             = mv2.product(initializerliststr, DesugarOps.concatStrings); initializerliststr.destruct(); //mv3.destruct();
@@ -6373,7 +6437,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 425: /* ExpressionList: AssignmentExpression  */
+  case 427: /* ExpressionList: AssignmentExpression  */
         {
           // create a new list
           List<ExpressionValue> exprlist = new LinkedList<ExpressionValue>();
@@ -6384,7 +6448,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 426: /* ExpressionList: ExpressionList COMMA AssignmentExpression  */
+  case 428: /* ExpressionList: ExpressionList COMMA AssignmentExpression  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           
@@ -6409,13 +6473,13 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 427: /* UnaryExpression: PostfixExpression  */
+  case 429: /* UnaryExpression: PostfixExpression  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 428: /* UnaryExpression: ICR UnaryExpression  */
+  case 430: /* UnaryExpression: ICR UnaryExpression  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           ExpressionValue exprval = getCompleteNodeExpressionValue(subparser, 1, pc);
@@ -6442,7 +6506,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 429: /* UnaryExpression: DECR UnaryExpression  */
+  case 431: /* UnaryExpression: DECR UnaryExpression  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           ExpressionValue exprval = getCompleteNodeExpressionValue(subparser, 1, pc);
@@ -6469,39 +6533,93 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 430: /* UnaryExpression: Unaryoperator CastExpression  */
-        {
-          // TODO: need to look at the unaryoperator to determine whether it's the correct type usage
-          PresenceCondition pc = subparser.getPresenceCondition();
-          ExpressionValue exprval = getCompleteNodeExpressionValue(subparser, 1, pc);
+  case 432: /* UnaryExpression: Unaryoperator CastExpression  */
+{
+  // TODO: need to look at the unaryoperator to determine whether it's the correct type usage
+  PresenceCondition pc = subparser.getPresenceCondition();
+  ExpressionValue exprval = getCompleteNodeExpressionValue(subparser, 1, pc);
+  Multiverse<String> resultmv = new Multiverse<String>();
+  Multiverse<Type> resulttypemv = new Multiverse<Type>();
+          
+  Multiverse<Syntax> opmv = this.<Syntax>getCompleteNodeSingleValue(subparser, 2, pc);
+  Multiverse<String> opstr = DesugarOps.syntaxToString.transform(opmv);
+  for (Element<String> op : opstr) {
+    if (op.getData().equals("*")) {
 
-          Multiverse<Syntax> opmv = this.<Syntax>getCompleteNodeSingleValue(subparser, 2, pc);
-          if (exprval.hasValidType() && !exprval.transformation.isEmpty()) {
-            Multiverse<String> opstr = DesugarOps.syntaxToString.transform(opmv);
-            Multiverse<String> resultmv = opstr.product(exprval.transformation, DesugarOps.concatStrings);
-            Multiverse<Type> typemv = exprval.type.join(opmv, DesugarOps.checkUnaryOp);
-            PresenceCondition errorCond = typemv.getConditionOf(ErrorT.TYPE);
-            PresenceCondition validTypes = errorCond.not();
-            resultmv = resultmv.filter(validTypes);
-            
-            setTransformationValue(value,
-                                   new ExpressionValue(resultmv,
-                                                       typemv,
-                                                       exprval.integrateSyntax(opmv)));  // TODO: placeholder until type checking
+      Multiverse<Type> types = exprval.type.filter(op.getCondition());
+      for (Element<Type> t : types) {
+        if (!t.getData().isPointer() && !t.getData().isArray()) {
+          resultmv.add(emitError("no valid type found in unary operation"),t.getCondition());
+          resulttypemv.add(ErrorT.TYPE,t.getCondition());
+        } else {
+          
+          Type innerType;
+          if (t.getData().isPointer()) {
+            innerType = t.getData().toPointer().getType();
           } else {
-            setTransformationValue(value, new ExpressionValue(emitError("no valid type found in unary operation"),                                                                                    ErrorT.TYPE,
-                                                              exprval.integrateSyntax(opmv),pc));
+            innerType = t.getData().toArray().getType();
+          }
+          if (innerType.isStruct() && innerType.toStruct().getName().startsWith("__forward_tag_reference")) {
+            CContext scope = (CContext) subparser.scope;
+            String originalTag = scope.getForwardTagReferenceAnyScope(innerType.getName());
+                       
+            Multiverse<SymbolTable.Entry<Type>> originalTagEntries
+              = scope.getInAnyScope(CContext.toTagName(originalTag), t.getCondition());
+            
+            for (Element<SymbolTable.Entry<Type>> e : originalTagEntries) {
+              if (e.getData().isError()) {
+                resultmv.add(emitError("no valid type found in unary operation"),t.getCondition());
+                resulttypemv.add(ErrorT.TYPE,e.getCondition());
+              } else {
+                StructT refed =  e.getData().getValue().toStruct();
+                for (Element<String> es : exprval.transformation.filter(e.getCondition())) {
+                  resultmv.add(es.getData() + "->" + refed.getName(), es.getCondition());
+                  resulttypemv.add(refed,es.getCondition());
+                }
+              }
+            }
+          } else {
+            if (exprval.hasValidType() && !exprval.transformation.isEmpty()) {
+              Multiverse<String> strings = opstr.filter(t.getCondition()).product(exprval.transformation, DesugarOps.concatStrings);
+              Multiverse<Type> subtypes = exprval.type.filter(t.getCondition()).join(opmv, DesugarOps.checkUnaryOp);
+              PresenceCondition errorCond = subtypes.getConditionOf(ErrorT.TYPE);
+              PresenceCondition validTypes = errorCond.not();
+              resultmv.addAll(strings.filter(validTypes));
+              resulttypemv.addAll(subtypes);
+            } else {
+              resultmv.add(emitError("no valid type found in unary operation"),t.getCondition());
+              resulttypemv.add(ErrorT.TYPE,t.getCondition());
+
+            }
           }
         }
+      }
+    } else {
+      if (exprval.hasValidType() && !exprval.transformation.isEmpty()) {
+        Multiverse<String> strings = opstr.filter(op.getCondition()).product(exprval.transformation, DesugarOps.concatStrings);
+        Multiverse<Type> types = exprval.type.filter(op.getCondition()).join(opmv, DesugarOps.checkUnaryOp);
+        PresenceCondition errorCond = types.getConditionOf(ErrorT.TYPE);
+        PresenceCondition validTypes = errorCond.not();
+        resultmv.addAll(strings.filter(validTypes));
+        resulttypemv.addAll(types);
+      } else {
+        resultmv.add(emitError("no valid type found in unary operation"),op.getCondition());
+        resulttypemv.add(ErrorT.TYPE,op.getCondition());
+
+      }
+    }
+  }
+setTransformationValue(value, new ExpressionValue(resultmv,resulttypemv,
+                                                  exprval.integrateSyntax(opmv)));
+}
     break;
 
-  case 431: /* UnaryExpression: SIZEOF UnaryExpression  */
+  case 433: /* UnaryExpression: SIZEOF UnaryExpression  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           ExpressionValue exprval = getCompleteNodeExpressionValue(subparser, 1, pc);
 
           Multiverse<String> exprmv = sizeofExpansion(exprval.transformation, exprval.type,freshIdCreator,(CContext)subparser.scope,pc);
-          
           todoReminder("typecheck unaryexpression (5)");
 
           Type constSizeOf = C.SIZEOF.copy();
@@ -6521,7 +6639,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 432: /* UnaryExpression: SIZEOF LPAREN TypeName RPAREN  */
+  case 434: /* UnaryExpression: SIZEOF LPAREN TypeName RPAREN  */
         {
          
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -6560,49 +6678,50 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 433: /* UnaryExpression: LabelAddressExpression  */
+  case 435: /* UnaryExpression: LabelAddressExpression  */
         {
           todoReminder("typecheck unaryexpression (7)");
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 434: /* UnaryExpression: AlignofExpression  */
+  case 436: /* UnaryExpression: AlignofExpression  */
         {
           todoReminder("typecheck unaryexpression (8)");
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 435: /* UnaryExpression: ExtensionExpression  */
+  case 437: /* UnaryExpression: ExtensionExpression  */
         {
           todoReminder("typecheck unaryexpression (9)");
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 436: /* UnaryExpression: OffsetofExpression  */
+  case 438: /* UnaryExpression: OffsetofExpression  */
         {
           todoReminder("typecheck unaryexpression (10)");
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 437: /* UnaryExpression: TypeCompatibilityExpression  */
+  case 439: /* UnaryExpression: TypeCompatibilityExpression  */
         {
           todoReminder("typecheck unaryexpression (11)");
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 438: /* TypeCompatibilityExpression: __BUILTIN_TYPES_COMPATIBLE_P LPAREN TypeName COMMA TypeName RPAREN  */
+  case 440: /* TypeCompatibilityExpression: __BUILTIN_TYPES_COMPATIBLE_P LPAREN TypeName COMMA TypeName RPAREN  */
         {
           System.err.println("ERROR: unsupported semantic action: TypeCompatibilityExpression");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 439: /* OffsetofMemberDesignator: IDENTIFIER  */
+  case 441: /* OffsetofMemberDesignator: IDENTIFIER  */
         {
           todoReminder("typcheck offsetofmemberdesignator (1)");
           String ident = ((Syntax) getNodeAt(subparser, 1)).getTokenText();
@@ -6613,7 +6732,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 440: /* OffsetofMemberDesignator: IDENTIFIER DesignatorList  */
+  case 442: /* OffsetofMemberDesignator: IDENTIFIER DesignatorList  */
         {
           todoReminder("typcheck offsetofmemberdesignator (2)");
           Multiverse<String> identmv
@@ -6625,7 +6744,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 441: /* OffsetofExpression: __BUILTIN_OFFSETOF LPAREN TypeName COMMA OffsetofMemberDesignator RPAREN  */
+  case 443: /* OffsetofExpression: __BUILTIN_OFFSETOF LPAREN TypeName COMMA OffsetofMemberDesignator RPAREN  */
         {
           LineNumbers lw = new LineNumbers((Syntax) getNodeAt(subparser, 6),(Syntax) getNodeAt(subparser, 1));
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -6659,7 +6778,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 442: /* ExtensionExpression: __EXTENSION__ CastExpression  */
+  case 444: /* ExtensionExpression: __EXTENSION__ CastExpression  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           ExpressionValue exprval = getCompleteNodeExpressionValue(subparser, 1, pc);
@@ -6674,7 +6793,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 443: /* AlignofExpression: Alignofkeyword LPAREN TypeName RPAREN  */
+  case 445: /* AlignofExpression: Alignofkeyword LPAREN TypeName RPAREN  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           Syntax keysyn = (Syntax) getTransformationValue(subparser, 4);
@@ -6721,75 +6840,77 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 444: /* AlignofExpression: Alignofkeyword UnaryExpression  */
+  case 446: /* AlignofExpression: Alignofkeyword UnaryExpression  */
         {
           System.err.println("ERROR: unsupported semantic action: AlignofExpression (2)");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 445: /* Alignofkeyword: __ALIGNOF__  */
+  case 447: /* Alignofkeyword: __ALIGNOF__  */
         {
           setTransformationValue(value, (Syntax)getNodeAt(subparser, 1));
         }
     break;
 
-  case 446: /* Alignofkeyword: __ALIGNOF  */
+  case 448: /* Alignofkeyword: __ALIGNOF  */
         {
           setTransformationValue(value, (Syntax) getNodeAt(subparser, 1));
         }
     break;
 
-  case 447: /* LabelAddressExpression: ANDAND IDENTIFIER  */
+  case 449: /* LabelAddressExpression: ANDAND IDENTIFIER  */
         {
           System.err.println("ERROR: unsupported semantic action: LabelAddressExpression");
-          System.exit(1);
+          subparser.lookahead.setError();
+          //System.exit(1);
         }
     break;
 
-  case 448: /* Unaryoperator: AND  */
+  case 450: /* Unaryoperator: AND  */
         {
           setTransformationValue(value, ((Syntax) getNodeAt(subparser, 1)));
         }
     break;
 
-  case 449: /* Unaryoperator: STAR  */
+  case 451: /* Unaryoperator: STAR  */
         {
           setTransformationValue(value, ((Syntax) getNodeAt(subparser, 1)));
         }
     break;
 
-  case 450: /* Unaryoperator: PLUS  */
+  case 452: /* Unaryoperator: PLUS  */
         {
           setTransformationValue(value, ((Syntax) getNodeAt(subparser, 1)));
         }
     break;
 
-  case 451: /* Unaryoperator: MINUS  */
+  case 453: /* Unaryoperator: MINUS  */
         {
           setTransformationValue(value, ((Syntax) getNodeAt(subparser, 1)));
         }
     break;
 
-  case 452: /* Unaryoperator: NEGATE  */
+  case 454: /* Unaryoperator: NEGATE  */
         {
           setTransformationValue(value, ((Syntax) getNodeAt(subparser, 1)));
         }
     break;
 
-  case 453: /* Unaryoperator: NOT  */
+  case 455: /* Unaryoperator: NOT  */
         {
           setTransformationValue(value, ((Syntax) getNodeAt(subparser, 1)));
         }
     break;
 
-  case 454: /* CastExpression: UnaryExpression  */
+  case 456: /* CastExpression: UnaryExpression  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 455: /* CastExpression: LPAREN TypeName RPAREN CastExpression  */
+  case 457: /* CastExpression: LPAREN TypeName RPAREN CastExpression  */
         {
           // TODO compare the expression's type against the type name
           // to rule out invalid casts.
@@ -6823,19 +6944,18 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 456: /* MultiplicativeExpression: CastExpression  */
+  case 458: /* MultiplicativeExpression: CastExpression  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 457: /* MultiplicativeExpression: MultiplicativeExpression STAR CastExpression  */
+  case 459: /* MultiplicativeExpression: MultiplicativeExpression STAR CastExpression  */
         {
           todoReminder("typecheck MultiplicativeExpression (2)");
           PresenceCondition pc = subparser.getPresenceCondition();
           ExpressionValue leftval = getCompleteNodeExpressionValue(subparser, 3, pc);
           ExpressionValue rightval = getCompleteNodeExpressionValue(subparser, 1, pc);
-          System.err.println(leftval);
           Multiverse<String> leftmv = leftval.transformation;
           Multiverse<String> opmv = new Multiverse<String>(((Syntax) getNodeAt(subparser, 2)).getTokenText(), pc);
           Multiverse<String> rightmv = rightval.transformation;
@@ -6855,7 +6975,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 458: /* MultiplicativeExpression: MultiplicativeExpression DIV CastExpression  */
+  case 460: /* MultiplicativeExpression: MultiplicativeExpression DIV CastExpression  */
         {
           todoReminder("typecheck MultiplicativeExpression (3)");
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -6880,7 +7000,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 459: /* MultiplicativeExpression: MultiplicativeExpression MOD CastExpression  */
+  case 461: /* MultiplicativeExpression: MultiplicativeExpression MOD CastExpression  */
         {
           todoReminder("typecheck MultiplicativeExpression (4)");
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -6904,13 +7024,13 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 460: /* AdditiveExpression: MultiplicativeExpression  */
+  case 462: /* AdditiveExpression: MultiplicativeExpression  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 461: /* AdditiveExpression: AdditiveExpression PLUS MultiplicativeExpression  */
+  case 463: /* AdditiveExpression: AdditiveExpression PLUS MultiplicativeExpression  */
         {
           todoReminder("typecheck AdditiveExpression (2)");
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -6936,7 +7056,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 462: /* AdditiveExpression: AdditiveExpression MINUS MultiplicativeExpression  */
+  case 464: /* AdditiveExpression: AdditiveExpression MINUS MultiplicativeExpression  */
         {
           todoReminder("typecheck AdditiveExpression (3)");
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -6962,13 +7082,13 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 463: /* ShiftExpression: AdditiveExpression  */
+  case 465: /* ShiftExpression: AdditiveExpression  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 464: /* ShiftExpression: ShiftExpression LS AdditiveExpression  */
+  case 466: /* ShiftExpression: ShiftExpression LS AdditiveExpression  */
         {
           todoReminder("typecheck ShiftExpression (2)");
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -6995,7 +7115,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 465: /* ShiftExpression: ShiftExpression RS AdditiveExpression  */
+  case 467: /* ShiftExpression: ShiftExpression RS AdditiveExpression  */
         {
           todoReminder("typecheck ShiftExpression (3)");
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -7022,13 +7142,13 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 466: /* RelationalExpression: ShiftExpression  */
+  case 468: /* RelationalExpression: ShiftExpression  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 467: /* RelationalExpression: RelationalExpression LT ShiftExpression  */
+  case 469: /* RelationalExpression: RelationalExpression LT ShiftExpression  */
         {
           todoReminder("typecheck RelationalExpression (2)");
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -7054,7 +7174,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 468: /* RelationalExpression: RelationalExpression GT ShiftExpression  */
+  case 470: /* RelationalExpression: RelationalExpression GT ShiftExpression  */
         {
           todoReminder("typecheck RelationalExpression (3)");
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -7080,7 +7200,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 469: /* RelationalExpression: RelationalExpression LE ShiftExpression  */
+  case 471: /* RelationalExpression: RelationalExpression LE ShiftExpression  */
         {
           todoReminder("typecheck RelationalExpression (4)");
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -7106,7 +7226,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 470: /* RelationalExpression: RelationalExpression GE ShiftExpression  */
+  case 472: /* RelationalExpression: RelationalExpression GE ShiftExpression  */
         {
           todoReminder("typecheck RelationalExpression (5)");
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -7132,13 +7252,13 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 471: /* EqualityExpression: RelationalExpression  */
+  case 473: /* EqualityExpression: RelationalExpression  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 472: /* EqualityExpression: EqualityExpression EQ RelationalExpression  */
+  case 474: /* EqualityExpression: EqualityExpression EQ RelationalExpression  */
         {
           todoReminder("typecheck EqualityExpression (2)");
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -7166,7 +7286,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 473: /* EqualityExpression: EqualityExpression NE RelationalExpression  */
+  case 475: /* EqualityExpression: EqualityExpression NE RelationalExpression  */
         {
           todoReminder("typecheck EqualityExpression (3)");
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -7192,13 +7312,13 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 474: /* AndExpression: EqualityExpression  */
+  case 476: /* AndExpression: EqualityExpression  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 475: /* AndExpression: AndExpression AND EqualityExpression  */
+  case 477: /* AndExpression: AndExpression AND EqualityExpression  */
         {
           todoReminder("typecheck AndExpression (2)");
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -7224,13 +7344,13 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 476: /* ExclusiveOrExpression: AndExpression  */
+  case 478: /* ExclusiveOrExpression: AndExpression  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 477: /* ExclusiveOrExpression: ExclusiveOrExpression XOR AndExpression  */
+  case 479: /* ExclusiveOrExpression: ExclusiveOrExpression XOR AndExpression  */
         {
           todoReminder("typecheck ExclusiveOrExpression (2)");
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -7256,13 +7376,13 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 478: /* InclusiveOrExpression: ExclusiveOrExpression  */
+  case 480: /* InclusiveOrExpression: ExclusiveOrExpression  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 479: /* InclusiveOrExpression: InclusiveOrExpression PIPE ExclusiveOrExpression  */
+  case 481: /* InclusiveOrExpression: InclusiveOrExpression PIPE ExclusiveOrExpression  */
         {
           todoReminder("typecheck InclusiveOrExpression (2)");
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -7288,13 +7408,13 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 480: /* LogicalAndExpression: InclusiveOrExpression  */
+  case 482: /* LogicalAndExpression: InclusiveOrExpression  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 481: /* LogicalAndExpression: LogicalAndExpression ANDAND InclusiveOrExpression  */
+  case 483: /* LogicalAndExpression: LogicalAndExpression ANDAND InclusiveOrExpression  */
         {
           todoReminder("typecheck LogicalAndExpression (2)");
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -7323,13 +7443,13 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 482: /* LogicalORExpression: LogicalAndExpression  */
+  case 484: /* LogicalORExpression: LogicalAndExpression  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 483: /* LogicalORExpression: LogicalORExpression OROR LogicalAndExpression  */
+  case 485: /* LogicalORExpression: LogicalORExpression OROR LogicalAndExpression  */
         {
           todoReminder("typecheck LogicalORExpression (2)");
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -7355,13 +7475,13 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 484: /* ConditionalExpression: LogicalORExpression  */
+  case 486: /* ConditionalExpression: LogicalORExpression  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 485: /* ConditionalExpression: LogicalORExpression QUESTION Expression COLON ConditionalExpression  */
+  case 487: /* ConditionalExpression: LogicalORExpression QUESTION Expression COLON ConditionalExpression  */
         {
           todoReminder("typecheck ConditionalExpression (2)");
           PresenceCondition pc = subparser.getPresenceCondition();
@@ -7399,7 +7519,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 486: /* ConditionalExpression: LogicalORExpression QUESTION COLON ConditionalExpression  */
+  case 488: /* ConditionalExpression: LogicalORExpression QUESTION COLON ConditionalExpression  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           ExpressionValue condval = getCompleteNodeExpressionValue(subparser, 4, pc);
@@ -7426,13 +7546,13 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 487: /* AssignmentExpression: ConditionalExpression  */
+  case 489: /* AssignmentExpression: ConditionalExpression  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 488: /* AssignmentExpression: UnaryExpression AssignmentOperator AssignmentExpression  */
+  case 490: /* AssignmentExpression: UnaryExpression AssignmentOperator AssignmentExpression  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
 
@@ -7480,8 +7600,7 @@ public class CActions implements SemanticActions {
 	      valuemv.add("invalid assignment expression", errorCond);
 	    }
             errorCond.delRef(); typesafeCond.delRef();
-	    System.err.println(typemv);
-            setTransformationValue(value, new ExpressionValue(valuemv, typemv, leftval.lines.product(rightval.lines, DesugarOps.combineLineNumbers)));
+	          setTransformationValue(value, new ExpressionValue(valuemv, typemv, leftval.lines.product(rightval.lines, DesugarOps.combineLineNumbers)));
             
           } else {  // no valid types
             setTransformationValue(value, new ExpressionValue(emitError("no valid type found in assignment expression"),
@@ -7492,73 +7611,73 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 489: /* AssignmentOperator: ASSIGN  */
+  case 491: /* AssignmentOperator: ASSIGN  */
         {
           setTransformationValue(value, ((Syntax) getNodeAt(subparser, 1)).getTokenText());
         }
     break;
 
-  case 490: /* AssignmentOperator: MULTassign  */
+  case 492: /* AssignmentOperator: MULTassign  */
         {
           setTransformationValue(value, ((Syntax) getNodeAt(subparser, 1)).getTokenText());
         }
     break;
 
-  case 491: /* AssignmentOperator: DIVassign  */
+  case 493: /* AssignmentOperator: DIVassign  */
         {
           setTransformationValue(value, ((Syntax) getNodeAt(subparser, 1)).getTokenText());
         }
     break;
 
-  case 492: /* AssignmentOperator: MODassign  */
+  case 494: /* AssignmentOperator: MODassign  */
         {
           setTransformationValue(value, ((Syntax) getNodeAt(subparser, 1)).getTokenText());
         }
     break;
 
-  case 493: /* AssignmentOperator: PLUSassign  */
+  case 495: /* AssignmentOperator: PLUSassign  */
         {
           setTransformationValue(value, ((Syntax) getNodeAt(subparser, 1)).getTokenText());
         }
     break;
 
-  case 494: /* AssignmentOperator: MINUSassign  */
+  case 496: /* AssignmentOperator: MINUSassign  */
         {
           setTransformationValue(value, ((Syntax) getNodeAt(subparser, 1)).getTokenText());
         }
     break;
 
-  case 495: /* AssignmentOperator: LSassign  */
+  case 497: /* AssignmentOperator: LSassign  */
         {
           setTransformationValue(value, ((Syntax) getNodeAt(subparser, 1)).getTokenText());
         }
     break;
 
-  case 496: /* AssignmentOperator: RSassign  */
+  case 498: /* AssignmentOperator: RSassign  */
         {
           setTransformationValue(value, ((Syntax) getNodeAt(subparser, 1)).getTokenText());
         }
     break;
 
-  case 497: /* AssignmentOperator: ANDassign  */
+  case 499: /* AssignmentOperator: ANDassign  */
         {
           setTransformationValue(value, ((Syntax) getNodeAt(subparser, 1)).getTokenText());
         }
     break;
 
-  case 498: /* AssignmentOperator: ERassign  */
+  case 500: /* AssignmentOperator: ERassign  */
         {
           setTransformationValue(value, ((Syntax) getNodeAt(subparser, 1)).getTokenText());
         }
     break;
 
-  case 499: /* AssignmentOperator: ORassign  */
+  case 501: /* AssignmentOperator: ORassign  */
         {
           setTransformationValue(value, ((Syntax) getNodeAt(subparser, 1)).getTokenText());
         }
     break;
 
-  case 500: /* ExpressionOpt: %empty  */
+  case 502: /* ExpressionOpt: %empty  */
         {
           PresenceCondition pc = subparser.getPresenceCondition();
           setTransformationValue(value, new ExpressionValue("",
@@ -7567,19 +7686,19 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 501: /* ExpressionOpt: Expression  */
+  case 503: /* ExpressionOpt: Expression  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 502: /* Expression: AssignmentExpression  */
+  case 504: /* Expression: AssignmentExpression  */
         {
           setTransformationValue(value, this.<ExpressionValue>getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 503: /* Expression: Expression COMMA AssignmentExpression  */
+  case 505: /* Expression: Expression COMMA AssignmentExpression  */
         {
           // n1570, 6.5.17. left operand is a void expression; result
           // has right operand's type (and value).
@@ -7605,41 +7724,41 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 504: /* ConstantExpression: ConditionalExpression  */
+  case 506: /* ConstantExpression: ConditionalExpression  */
         {
           setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
         }
     break;
 
-  case 505: /* AttributeSpecifierListOpt: %empty  */
+  case 507: /* AttributeSpecifierListOpt: %empty  */
         {
           todoReminder("support AttributeSpecifierListOpt (1), replaced with empty string now");
           setTransformationValue(value, new Multiverse<String>("", subparser.getPresenceCondition()));
         }
     break;
 
-  case 506: /* AttributeSpecifierListOpt: AttributeSpecifierList  */
+  case 508: /* AttributeSpecifierListOpt: AttributeSpecifierList  */
         {
           todoReminder("support AttributeSpecifierListOpt (2), replaced with empty string now");
           setTransformationValue(value, new Multiverse<String>("", subparser.getPresenceCondition()));
         }
     break;
 
-  case 507: /* AttributeSpecifierList: AttributeSpecifier  */
+  case 509: /* AttributeSpecifierList: AttributeSpecifier  */
         {
           todoReminder("support AttributeSpecifierList (1), replaced with empty string now");
           setTransformationValue(value, new Multiverse<String>("", subparser.getPresenceCondition()));
         }
     break;
 
-  case 508: /* AttributeSpecifierList: AttributeSpecifierList AttributeSpecifier  */
+  case 510: /* AttributeSpecifierList: AttributeSpecifierList AttributeSpecifier  */
         {
           todoReminder("support AttributeSpecifierList (2), replaced with empty string now");
           setTransformationValue(value, new Multiverse<String>("", subparser.getPresenceCondition()));
         }
     break;
 
-  case 509: /* AttributeSpecifier: AttributeKeyword LPAREN LPAREN AttributeListOpt RPAREN RPAREN  */
+  case 511: /* AttributeSpecifier: AttributeKeyword LPAREN LPAREN AttributeListOpt RPAREN RPAREN  */
         {
           Syntax keyword = ((Syntax) getNodeAt(subparser, 6).get(0));
           todoReminder("support AttributeSpecifier, replaced with empty string now");
@@ -7647,33 +7766,33 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 510: /* AttributeKeyword: __ATTRIBUTE  */
+  case 512: /* AttributeKeyword: __ATTRIBUTE  */
         {
           // read token from parent
         }
     break;
 
-  case 511: /* AttributeKeyword: __ATTRIBUTE__  */
+  case 513: /* AttributeKeyword: __ATTRIBUTE__  */
         {
           // read token from parent
         }
     break;
 
-  case 512: /* AttributeListOpt: %empty  */
+  case 514: /* AttributeListOpt: %empty  */
         {
           todoReminder("support AttributeListOpt (1), replaced with empty string now");
           setTransformationValue(value, new Multiverse<String>("", subparser.getPresenceCondition()));
         }
     break;
 
-  case 513: /* AttributeListOpt: AttributeList  */
+  case 515: /* AttributeListOpt: AttributeList  */
         {
           todoReminder("support AttributeListOpt (1), replaced with empty string now");
           setTransformationValue(value, new Multiverse<String>("", subparser.getPresenceCondition()));
         }
     break;
 
-  case 514: /* AttributeList: Word AttributeExpressionOpt  */
+  case 516: /* AttributeList: Word AttributeExpressionOpt  */
         {
           String word = ((Syntax) getNodeAt(subparser, 2).get(0)).getTokenText();
           todoReminder("support AttributeList (1), replaced with empty string now");
@@ -7681,7 +7800,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 515: /* AttributeList: AttributeList COMMA Word AttributeExpressionOpt  */
+  case 517: /* AttributeList: AttributeList COMMA Word AttributeExpressionOpt  */
         {
           String word = ((Syntax) getNodeAt(subparser, 2).get(0)).getTokenText();
           todoReminder("support AttributeList (2), replaced with empty string now");
@@ -7689,13 +7808,20 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 516: /* AttributeExpressionOpt: %empty  */
+  case 518: /* AttributeList: AttributeList COMMA  */
+        {
+          //attribute lists may end in a series of commas, to accomodate VA_ARGS
+          setTransformationValue(value, new Multiverse<String>("", subparser.getPresenceCondition()));
+        }
+    break;
+
+  case 519: /* AttributeExpressionOpt: %empty  */
         {
           setTransformationValue(value, "");
         }
     break;
 
-  case 517: /* AttributeExpressionOpt: LPAREN RPAREN  */
+  case 520: /* AttributeExpressionOpt: LPAREN RPAREN  */
         {
           setTransformationValue(value, String.format("%s %s",
                                                       getNodeAt(subparser, 2).getTokenText(),
@@ -7703,7 +7829,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 518: /* AttributeExpressionOpt: LPAREN ExpressionList RPAREN  */
+  case 521: /* AttributeExpressionOpt: LPAREN ExpressionList RPAREN  */
         {
           // TODO: need to check type of expression list to make sure
           // it's legal and return a type error if it is.
@@ -7712,410 +7838,410 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 519: /* Word: IDENTIFIER  */
+  case 522: /* Word: IDENTIFIER  */
         {
           // get token from parent
         }
     break;
 
-  case 520: /* Word: AUTO  */
+  case 523: /* Word: AUTO  */
         {
           // get token from parent
         }
     break;
 
-  case 521: /* Word: DOUBLE  */
+  case 524: /* Word: DOUBLE  */
         {
           // get token from parent
         }
     break;
 
-  case 522: /* Word: INT  */
+  case 525: /* Word: INT  */
         {
           // get token from parent
         }
     break;
 
-  case 523: /* Word: STRUCT  */
+  case 526: /* Word: STRUCT  */
         {
           // get token from parent
         }
     break;
 
-  case 524: /* Word: BREAK  */
+  case 527: /* Word: BREAK  */
         {
           // get token from parent
         }
     break;
 
-  case 525: /* Word: ELSE  */
+  case 528: /* Word: ELSE  */
         {
           // get token from parent
         }
     break;
 
-  case 526: /* Word: LONG  */
+  case 529: /* Word: LONG  */
         {
           // get token from parent
         }
     break;
 
-  case 527: /* Word: SWITCH  */
+  case 530: /* Word: SWITCH  */
         {
           // get token from parent
         }
     break;
 
-  case 528: /* Word: CASE  */
+  case 531: /* Word: CASE  */
         {
           // get token from parent
         }
     break;
 
-  case 529: /* Word: ENUM  */
+  case 532: /* Word: ENUM  */
         {
           // get token from parent
         }
     break;
 
-  case 530: /* Word: REGISTER  */
+  case 533: /* Word: REGISTER  */
         {
           // get token from parent
         }
     break;
 
-  case 531: /* Word: TYPEDEF  */
+  case 534: /* Word: TYPEDEF  */
         {
           // get token from parent
         }
     break;
 
-  case 532: /* Word: CHAR  */
+  case 535: /* Word: CHAR  */
         {
           // get token from parent
         }
     break;
 
-  case 533: /* Word: EXTERN  */
+  case 536: /* Word: EXTERN  */
         {
           // get token from parent
         }
     break;
 
-  case 534: /* Word: RETURN  */
+  case 537: /* Word: RETURN  */
         {
           // get token from parent
         }
     break;
 
-  case 535: /* Word: UNION  */
+  case 538: /* Word: UNION  */
         {
           // get token from parent
         }
     break;
 
-  case 536: /* Word: CONST  */
+  case 539: /* Word: CONST  */
         {
           // get token from parent
         }
     break;
 
-  case 537: /* Word: FLOAT  */
+  case 540: /* Word: FLOAT  */
         {
           // get token from parent
         }
     break;
 
-  case 538: /* Word: SHORT  */
+  case 541: /* Word: SHORT  */
         {
           // get token from parent
         }
     break;
 
-  case 539: /* Word: UNSIGNED  */
+  case 542: /* Word: UNSIGNED  */
         {
           // get token from parent
         }
     break;
 
-  case 540: /* Word: CONTINUE  */
+  case 543: /* Word: CONTINUE  */
         {
           // get token from parent
         }
     break;
 
-  case 541: /* Word: FOR  */
+  case 544: /* Word: FOR  */
         {
           // get token from parent
         }
     break;
 
-  case 542: /* Word: SIGNED  */
+  case 545: /* Word: SIGNED  */
         {
           // get token from parent
         }
     break;
 
-  case 543: /* Word: VOID  */
+  case 546: /* Word: VOID  */
         {
           // get token from parent
         }
     break;
 
-  case 544: /* Word: DEFAULT  */
+  case 547: /* Word: DEFAULT  */
         {
           // get token from parent
         }
     break;
 
-  case 545: /* Word: GOTO  */
+  case 548: /* Word: GOTO  */
         {
           // get token from parent
         }
     break;
 
-  case 546: /* Word: SIZEOF  */
+  case 549: /* Word: SIZEOF  */
         {
           // get token from parent
         }
     break;
 
-  case 547: /* Word: VOLATILE  */
+  case 550: /* Word: VOLATILE  */
         {
           // get token from parent
         }
     break;
 
-  case 548: /* Word: DO  */
+  case 551: /* Word: DO  */
         {
           // get token from parent
         }
     break;
 
-  case 549: /* Word: IF  */
+  case 552: /* Word: IF  */
         {
           // get token from parent
         }
     break;
 
-  case 550: /* Word: STATIC  */
+  case 553: /* Word: STATIC  */
         {
           // get token from parent
         }
     break;
 
-  case 551: /* Word: WHILE  */
+  case 554: /* Word: WHILE  */
         {
           // get token from parent
         }
     break;
 
-  case 552: /* Word: ASMSYM  */
+  case 555: /* Word: ASMSYM  */
         {
           // get token from parent
         }
     break;
 
-  case 553: /* Word: _BOOL  */
+  case 556: /* Word: _BOOL  */
         {
           // get token from parent
         }
     break;
 
-  case 554: /* Word: _COMPLEX  */
+  case 557: /* Word: _COMPLEX  */
         {
           // get token from parent
         }
     break;
 
-  case 555: /* Word: RESTRICT  */
+  case 558: /* Word: RESTRICT  */
         {
           // get token from parent
         }
     break;
 
-  case 556: /* Word: __ALIGNOF  */
+  case 559: /* Word: __ALIGNOF  */
         {
           // get token from parent
         }
     break;
 
-  case 557: /* Word: __ALIGNOF__  */
+  case 560: /* Word: __ALIGNOF__  */
         {
           // get token from parent
         }
     break;
 
-  case 558: /* Word: ASM  */
+  case 561: /* Word: ASM  */
         {
           // get token from parent
         }
     break;
 
-  case 559: /* Word: __ASM  */
+  case 562: /* Word: __ASM  */
         {
           // get token from parent
         }
     break;
 
-  case 560: /* Word: __ASM__  */
+  case 563: /* Word: __ASM__  */
         {
           // get token from parent
         }
     break;
 
-  case 561: /* Word: __ATTRIBUTE  */
+  case 564: /* Word: __ATTRIBUTE  */
         {
           // get token from parent
         }
     break;
 
-  case 562: /* Word: __ATTRIBUTE__  */
+  case 565: /* Word: __ATTRIBUTE__  */
         {
           // get token from parent
         }
     break;
 
-  case 563: /* Word: __BUILTIN_OFFSETOF  */
+  case 566: /* Word: __BUILTIN_OFFSETOF  */
         {
           // get token from parent
         }
     break;
 
-  case 564: /* Word: __BUILTIN_TYPES_COMPATIBLE_P  */
+  case 567: /* Word: __BUILTIN_TYPES_COMPATIBLE_P  */
         {
           // get token from parent
         }
     break;
 
-  case 565: /* Word: __BUILTIN_VA_ARG  */
+  case 568: /* Word: __BUILTIN_VA_ARG  */
         {
           // get token from parent
         }
     break;
 
-  case 566: /* Word: __BUILTIN_VA_LIST  */
+  case 569: /* Word: __BUILTIN_VA_LIST  */
         {
           // get token from parent
         }
     break;
 
-  case 567: /* Word: __COMPLEX__  */
+  case 570: /* Word: __COMPLEX__  */
         {
           // get token from parent
         }
     break;
 
-  case 568: /* Word: __CONST  */
+  case 571: /* Word: __CONST  */
         {
           // get token from parent
         }
     break;
 
-  case 569: /* Word: __CONST__  */
+  case 572: /* Word: __CONST__  */
         {
           // get token from parent
         }
     break;
 
-  case 570: /* Word: __EXTENSION__  */
+  case 573: /* Word: __EXTENSION__  */
         {
           // get token from parent
         }
     break;
 
-  case 571: /* Word: INLINE  */
+  case 574: /* Word: INLINE  */
         {
           // get token from parent
         }
     break;
 
-  case 572: /* Word: __INLINE  */
+  case 575: /* Word: __INLINE  */
         {
           // get token from parent
         }
     break;
 
-  case 573: /* Word: __INLINE__  */
+  case 576: /* Word: __INLINE__  */
         {
           // get token from parent
         }
     break;
 
-  case 574: /* Word: __LABEL__  */
+  case 577: /* Word: __LABEL__  */
         {
           // get token from parent
         }
     break;
 
-  case 575: /* Word: __RESTRICT  */
+  case 578: /* Word: __RESTRICT  */
         {
           // get token from parent
         }
     break;
 
-  case 576: /* Word: __RESTRICT__  */
+  case 579: /* Word: __RESTRICT__  */
         {
           // get token from parent
         }
     break;
 
-  case 577: /* Word: __SIGNED  */
+  case 580: /* Word: __SIGNED  */
         {
           // get token from parent
         }
     break;
 
-  case 578: /* Word: __SIGNED__  */
+  case 581: /* Word: __SIGNED__  */
         {
           // get token from parent
         }
     break;
 
-  case 579: /* Word: __THREAD  */
+  case 582: /* Word: __THREAD  */
         {
           // get token from parent
         }
     break;
 
-  case 580: /* Word: TYPEOF  */
+  case 583: /* Word: TYPEOF  */
         {
           // get token from parent
         }
     break;
 
-  case 581: /* Word: __TYPEOF  */
+  case 584: /* Word: __TYPEOF  */
         {
           // get token from parent
         }
     break;
 
-  case 582: /* Word: __TYPEOF__  */
+  case 585: /* Word: __TYPEOF__  */
         {
           // get token from parent
         }
     break;
 
-  case 583: /* Word: __VOLATILE  */
+  case 586: /* Word: __VOLATILE  */
         {
           // get token from parent
         }
     break;
 
-  case 584: /* Word: __VOLATILE__  */
+  case 587: /* Word: __VOLATILE__  */
         {
           // get token from parent
         }
     break;
 
-  case 585: /* AssemblyDefinition: AssemblyExpression SEMICOLON  */
+  case 588: /* AssemblyDefinition: AssemblyExpression SEMICOLON  */
         {
           todoReminder("support AssemblyDefinition (1)");
           setTransformationValue(value, new Multiverse<String>("", subparser.getPresenceCondition()));
         }
     break;
 
-  case 586: /* AssemblyExpression: AsmKeyword LPAREN StringLiteralList RPAREN  */
+  case 589: /* AssemblyExpression: AsmKeyword LPAREN StringLiteralList RPAREN  */
         {
           ExpressionValue e = getCompleteNodeExpressionValue(subparser, 2, subparser.getPresenceCondition());
           Multiverse<String> temp = e.transformation;
@@ -8126,23 +8252,23 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 587: /* AssemblyExpressionOpt: %empty  */
+  case 590: /* AssemblyExpressionOpt: %empty  */
         {
           todoReminder("support AssemblyExpressionOpt (1)");
           setTransformationValue(value, new Multiverse<String>("", subparser.getPresenceCondition()));
         }
     break;
 
-  case 588: /* AssemblyExpressionOpt: AssemblyExpression  */
+  case 591: /* AssemblyExpressionOpt: AssemblyExpression  */
         {
           todoReminder("support AssemblyExpressionOpt (2)");
           setTransformationValue(value, new Multiverse<String>("", subparser.getPresenceCondition()));
         }
     break;
 
-  case 589: /* AssemblyStatement: AsmKeyword LPAREN Assemblyargument RPAREN SEMICOLON  */
+  case 592: /* AssemblyStatement: AsmKeyword LPAREN Assemblyargument RPAREN SEMICOLON  */
         {
-          ExpressionValue temp = (ExpressionValue)getTransformationValue(subparser,3);
+          ExpressionValue temp = getCompleteNodeExpressionValue(subparser,3,subparser.getPresenceCondition());
           Multiverse<String> prepended = temp.transformation.prependScalar("__asm__(", DesugarOps.concatStrings);
           Multiverse<String> appended = prepended.appendScalar(");", DesugarOps.concatStrings);
           temp.transformation.destruct(); prepended.destruct();
@@ -8152,7 +8278,7 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 590: /* AssemblyStatement: AsmKeyword GOTO LPAREN AssemblyGotoargument RPAREN SEMICOLON  */
+  case 593: /* AssemblyStatement: AsmKeyword GOTO LPAREN AssemblyGotoargument RPAREN SEMICOLON  */
         {
           todoReminder("support AssemblyStatement (2)");
           System.exit(0);
@@ -8162,14 +8288,14 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 591: /* AssemblyStatement: AsmKeyword TypeQualifier LPAREN Assemblyargument RPAREN SEMICOLON  */
+  case 594: /* AssemblyStatement: AsmKeyword TypeQualifier LPAREN Assemblyargument RPAREN SEMICOLON  */
         {
           Multiverse<TypeSpecifier> qual = getCompleteNodeMultiverseValue(subparser, 5, subparser.getPresenceCondition());
           Multiverse<String> qualS = DesugarOps.TypeSpecifierToString.transform(qual);
           qual.destruct();
           Multiverse<String> preTemp = qualS.prependScalar("__asm__ ", DesugarOps.concatStrings);
           qualS.destruct();
-          ExpressionValue temp = (ExpressionValue)getTransformationValue(subparser,3);
+          ExpressionValue temp = getCompleteNodeExpressionValue(subparser,3,subparser.getPresenceCondition());
           
           Multiverse<String> prepended = temp.transformation.prependScalar(" (", DesugarOps.concatStrings);
           Multiverse<String> appended = prepended.appendScalar(");", DesugarOps.concatStrings);
@@ -8182,90 +8308,129 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 592: /* Assemblyargument: StringLiteralList COLON AssemblyoperandsOpt COLON AssemblyoperandsOpt COLON Assemblyclobbers  */
+  case 595: /* Assemblyargument: StringLiteralList COLON AssemblyoperandsOpt COLON AssemblyoperandsOpt COLON Assemblyclobbers  */
         {
-        Multiverse<String> first = getCompleteNodeExpressionValue(subparser,7,subparser.getPresenceCondition()).transformation;
-          ExpressionValue sec = (ExpressionValue)getTransformationValue(subparser,5);
-          ExpressionValue third = (ExpressionValue)getTransformationValue(subparser,3);
+          Multiverse<String> first = getCompleteNodeExpressionValue(subparser,7,subparser.getPresenceCondition()).transformation;
+          ExpressionValue sec = getCompleteNodeExpressionValue(subparser,5,subparser.getPresenceCondition());
+          ExpressionValue third = getCompleteNodeExpressionValue(subparser,3,subparser.getPresenceCondition());
           Multiverse<String> fourth = (Multiverse<String>)getTransformationValue(subparser,1);
-          Multiverse<String> prep2 = sec.transformation.prependScalar(":", DesugarOps.concatStrings);
-          Multiverse<String> prep3 = third.transformation.prependScalar(":", DesugarOps.concatStrings);
-          Multiverse<String> prep4 = fourth.prependScalar(":", DesugarOps.concatStrings);
-          fourth.destruct();
-          Multiverse<String> last = prep3.product(prep4, DesugarOps.concatStrings);
-          prep3.destruct(); prep4.destruct();
-          Multiverse<String> later = prep2.product(last, DesugarOps.concatStrings);
-          prep2.destruct(); last.destruct();
-          Multiverse<String> res = first.product(later, DesugarOps.concatStrings);
-          first.destruct(); later.destruct();
-          Multiverse<Type> ty = sec.type.product(third.type,DesugarOps.propTypeError);
-          setTransformationValue(value, new ExpressionValue(res,ty));
+          if (sec.isEmpty() || third.isEmpty() || first.isEmpty() || fourth.isEmpty()) {
+            setTransformationValue(value, new ExpressionValue(
+                                                              new Multiverse<String>("",subparser.getPresenceCondition()),
+                                                              new Multiverse<Type>(ErrorT.TYPE,subparser.getPresenceCondition())
+                                                              ));
+          
+          } else {
+            Multiverse<String> prep2 = sec.transformation.prependScalar(":", DesugarOps.concatStrings);
+            Multiverse<String> prep3 = third.transformation.prependScalar(":", DesugarOps.concatStrings);
+            Multiverse<String> prep4 = fourth.prependScalar(":", DesugarOps.concatStrings);
+            fourth.destruct();
+            Multiverse<String> last = prep3.product(prep4, DesugarOps.concatStrings);
+            prep3.destruct(); prep4.destruct();
+            Multiverse<String> later = prep2.product(last, DesugarOps.concatStrings);
+            prep2.destruct(); last.destruct();
+            Multiverse<String> res = first.product(later, DesugarOps.concatStrings);
+            first.destruct(); later.destruct();
+            Multiverse<Type> ty = sec.type.product(third.type,DesugarOps.propTypeError);
+            setTransformationValue(value, new ExpressionValue(res,ty));
+          }
         }
     break;
 
-  case 593: /* Assemblyargument: StringLiteralList COLON AssemblyoperandsOpt COLON AssemblyoperandsOpt  */
+  case 596: /* Assemblyargument: StringLiteralList COLON AssemblyoperandsOpt COLON AssemblyoperandsOpt  */
         {
           Multiverse<String> first = getCompleteNodeExpressionValue(subparser,5,subparser.getPresenceCondition()).transformation;
-          ExpressionValue sec = (ExpressionValue)getTransformationValue(subparser,3);
-          ExpressionValue third = (ExpressionValue)getTransformationValue(subparser,1);
-          Multiverse<String> prep2 = sec.transformation.prependScalar(":", DesugarOps.concatStrings);
-          sec.transformation.destruct();
-          Multiverse<String> prep3 = third.transformation.prependScalar(":", DesugarOps.concatStrings);
-          third.transformation.destruct();
-          Multiverse<String> later = prep2.product(prep3, DesugarOps.concatStrings);
-          Multiverse<Type> ty = sec.type.product(third.type,DesugarOps.propTypeError);
-          Multiverse<String> res = first.product(later, DesugarOps.concatStrings);
-          setTransformationValue(value, new ExpressionValue(res,ty));
+          ExpressionValue sec = getCompleteNodeExpressionValue(subparser,3,subparser.getPresenceCondition());
+          ExpressionValue third = getCompleteNodeExpressionValue(subparser,1,subparser.getPresenceCondition());
+          if (sec.isEmpty() || third.isEmpty() || first.isEmpty()) {
+            setTransformationValue(value, new ExpressionValue(
+                                                              new Multiverse<String>("",subparser.getPresenceCondition()),
+                                                              new Multiverse<Type>(ErrorT.TYPE,subparser.getPresenceCondition())
+                                                              ));
+          } else {
+            Multiverse<String> prep2 = sec.transformation.prependScalar(":", DesugarOps.concatStrings);
+            sec.transformation.destruct();
+            Multiverse<String> prep3 = third.transformation.prependScalar(":", DesugarOps.concatStrings);
+            third.transformation.destruct();
+            Multiverse<String> later = prep2.product(prep3, DesugarOps.concatStrings);
+            Multiverse<Type> ty = sec.type.product(third.type,DesugarOps.propTypeError);
+            Multiverse<String> res = first.product(later, DesugarOps.concatStrings);
+            setTransformationValue(value, new ExpressionValue(res,ty));
+          }
         }
     break;
 
-  case 594: /* Assemblyargument: StringLiteralList COLON AssemblyoperandsOpt  */
+  case 597: /* Assemblyargument: StringLiteralList COLON AssemblyoperandsOpt  */
         {
           Multiverse<String> first = getCompleteNodeExpressionValue(subparser,3,subparser.getPresenceCondition()).transformation;
-          ExpressionValue sec = (ExpressionValue)getTransformationValue(subparser,1);
-          Multiverse<String> prep = sec.transformation.prependScalar(":", DesugarOps.concatStrings);
-          prep = first.product(prep,DesugarOps.concatStrings);
-          setTransformationValue(value, new ExpressionValue(prep,sec.type));
+          ExpressionValue sec = getCompleteNodeExpressionValue(subparser,1,subparser.getPresenceCondition());
+          if (sec.isEmpty() || first.isEmpty()) {
+            setTransformationValue(value, new ExpressionValue(
+                                                              new Multiverse<String>("",subparser.getPresenceCondition()),
+                                                              new Multiverse<Type>(ErrorT.TYPE,subparser.getPresenceCondition())
+                                                              ));
+            
+          } else {
+            Multiverse<String> prep = sec.transformation.prependScalar(":", DesugarOps.concatStrings);
+            prep = first.product(prep,DesugarOps.concatStrings);
+            setTransformationValue(value, new ExpressionValue(prep,sec.type));
+          }
         }
     break;
 
-  case 595: /* Assemblyargument: StringLiteralList  */
+  case 598: /* Assemblyargument: StringLiteralList  */
         {
-          setTransformationValue(value, getCompleteNodeExpressionValue(subparser, 1, subparser.getPresenceCondition()));
+          ExpressionValue first = getCompleteNodeExpressionValue(subparser,1,subparser.getPresenceCondition());
+          if (first.isEmpty()) {
+            setTransformationValue(value, new ExpressionValue(
+                                                              new Multiverse<String>("",subparser.getPresenceCondition()),
+                                                              new Multiverse<Type>(ErrorT.TYPE,subparser.getPresenceCondition())
+                                                              ));
+            
+          } else {
+            setTransformationValue(value,first);
+          }
+          
         }
     break;
 
-  case 596: /* AssemblyoperandsOpt: %empty  */
+  case 599: /* AssemblyoperandsOpt: %empty  */
         {
           setTransformationValue(value, new ExpressionValue(new Multiverse<String>("", subparser.getPresenceCondition()),new Multiverse<Type>(new IntegerT(NumberT.Kind.INT),subparser.getPresenceCondition())));
         }
     break;
 
-  case 597: /* AssemblyoperandsOpt: Assemblyoperands  */
+  case 600: /* AssemblyoperandsOpt: Assemblyoperands  */
         {
           setTransformationValue(value, getTransformationValue(subparser,1));
         }
     break;
 
-  case 598: /* Assemblyoperands: Assemblyoperand  */
+  case 601: /* Assemblyoperands: Assemblyoperand  */
         {
           setTransformationValue(value, getTransformationValue(subparser,1));
         }
     break;
 
-  case 599: /* Assemblyoperands: Assemblyoperands COMMA Assemblyoperand  */
+  case 602: /* Assemblyoperands: Assemblyoperands COMMA Assemblyoperand  */
         {
-          ExpressionValue  prev = (ExpressionValue)getTransformationValue(subparser,3);
-          ExpressionValue  cur = (ExpressionValue)getTransformationValue(subparser,1);
+          ExpressionValue  prev = getCompleteNodeExpressionValue(subparser,3,subparser.getPresenceCondition());
+          ExpressionValue  cur = getCompleteNodeExpressionValue(subparser,1,subparser.getPresenceCondition());
           Multiverse<String> prep = cur.transformation.prependScalar(",", DesugarOps.concatStrings);
-          Multiverse<Type> prept = prev.type.product(cur.type,DesugarOps.propTypeError);
-          setTransformationValue(value, new ExpressionValue(prev.transformation.product(prep, DesugarOps.concatStrings),prept));
+          if (!prev.type.isEmpty() && !cur.type.isEmpty() && !cur.transformation.isEmpty() && !prev.transformation.isEmpty()) {
+            Multiverse<Type> prept;
+            prept = prev.type.product(cur.type,DesugarOps.propTypeError);
+            setTransformationValue(value, new ExpressionValue(prev.transformation.product(prep, DesugarOps.concatStrings),prept));
+          } else {
+            setTransformationValue(value,
+                                   new ExpressionValue(new Multiverse<String>("",subparser.getPresenceCondition()),
+                                                       new Multiverse<Type>(ErrorT.TYPE,subparser.getPresenceCondition())));
+          }
         }
     break;
 
-  case 600: /* Assemblyoperand: StringLiteralList LPAREN Expression RPAREN  */
+  case 603: /* Assemblyoperand: StringLiteralList LPAREN Expression RPAREN  */
         {
-          todoReminder("typecheck Assemblyoperand (1)");
           ExpressionValue str = getCompleteNodeExpressionValue(subparser,4,subparser.getPresenceCondition());
           ExpressionValue expr = getCompleteNodeExpressionValue(subparser,2,subparser.getPresenceCondition());
           Multiverse<String> temp = expr.transformation;
@@ -8277,35 +8442,41 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 601: /* Assemblyoperand: LBRACK Word RBRACK StringLiteralList LPAREN Expression RPAREN  */
+  case 604: /* Assemblyoperand: LBRACK Word RBRACK StringLiteralList LPAREN Expression RPAREN  */
         {
-          String word = ((Syntax) getNodeAt(subparser, 6).get(0)).getTokenText();
-          todoReminder("support Assemblyoperand (2)");
-          System.exit(0);
+          //String word = ((Syntax) getNodeAt(subparser, 6).get(0)).getTokenText();
+          todoReminder("Assembly operand 2, add Word");
+          ExpressionValue str = getCompleteNodeExpressionValue(subparser,4,subparser.getPresenceCondition());
+          ExpressionValue expr = getCompleteNodeExpressionValue(subparser,2,subparser.getPresenceCondition());
+          Multiverse<String> temp = expr.transformation;
+          Multiverse<String> prepended = temp.prependScalar("(", DesugarOps.concatStrings);
+          Multiverse<String> appended = prepended.appendScalar(")", DesugarOps.concatStrings);
+          temp.destruct(); prepended.destruct();
+          
+          setTransformationValue(value, new ExpressionValue(str.transformation.product(appended, DesugarOps.concatStrings),expr.type));
+        }
+    break;
+
+  case 605: /* AssemblyclobbersOpt: %empty  */
+        {
           setTransformationValue(value, new Multiverse<String>("", subparser.getPresenceCondition()));
         }
     break;
 
-  case 602: /* AssemblyclobbersOpt: %empty  */
-        {
-          setTransformationValue(value, new Multiverse<String>("", subparser.getPresenceCondition()));
-        }
-    break;
-
-  case 603: /* AssemblyclobbersOpt: Assemblyclobbers  */
+  case 606: /* AssemblyclobbersOpt: Assemblyclobbers  */
         {
           setTransformationValue(value, (Multiverse<String>)getTransformationValue(subparser,1));
         }
     break;
 
-  case 604: /* Assemblyclobbers: StringLiteralList  */
+  case 607: /* Assemblyclobbers: StringLiteralList  */
         {
           Multiverse<String> first = getCompleteNodeExpressionValue(subparser,1,subparser.getPresenceCondition()).transformation;
           setTransformationValue(value, first);
         }
     break;
 
-  case 605: /* Assemblyclobbers: Assemblyclobbers COMMA StringLiteralList  */
+  case 608: /* Assemblyclobbers: Assemblyclobbers COMMA StringLiteralList  */
         {
           Multiverse<String> first = (Multiverse<String>)getTransformationValue(subparser,3);
           Multiverse<String> second = getCompleteNodeExpressionValue(subparser,1,subparser.getPresenceCondition()).transformation;
@@ -8317,21 +8488,21 @@ public class CActions implements SemanticActions {
         }
     break;
 
-  case 606: /* AssemblyGotoargument: StringLiteralList COLON AssemblyoperandsOpt COLON AssemblyoperandsOpt COLON AssemblyclobbersOpt COLON AssemblyJumpLabels  */
+  case 609: /* AssemblyGotoargument: StringLiteralList COLON AssemblyoperandsOpt COLON AssemblyoperandsOpt COLON AssemblyclobbersOpt COLON AssemblyJumpLabels  */
         {
           todoReminder("support AssemblyGotoargument (1)");
           setTransformationValue(value, new Multiverse<String>("", subparser.getPresenceCondition()));
         }
     break;
 
-  case 607: /* AssemblyJumpLabels: Identifier  */
+  case 610: /* AssemblyJumpLabels: Identifier  */
         {
           todoReminder("support AssemblyJumpLabels (1)");
           setTransformationValue(value, new Multiverse<String>("", subparser.getPresenceCondition()));
         }
     break;
 
-  case 608: /* AssemblyJumpLabels: AssemblyJumpLabels COMMA Identifier  */
+  case 611: /* AssemblyJumpLabels: AssemblyJumpLabels COMMA Identifier  */
         {
           todoReminder("support AssemblyJumpLabels (2)");
           setTransformationValue(value, new Multiverse<String>("", subparser.getPresenceCondition()));
@@ -8349,18 +8520,177 @@ public class CActions implements SemanticActions {
 
 
 boolean wrotePrologue = false;
-        
+
+static boolean keepMem = false;
+static String memNames[] = {"malloc", "calloc", "free", "fopen", "fclose", "rand", "memcpy", "memset", "strdup", "strcmp"};
+
+public static void keepMemoryNames(boolean f) {
+  keepMem = f;
+}
+
 // TUTORIAL: this section of the grammar gets copied into the
 // resulting parser, specifically the CActions.java class
 
 /***************************************************************************
  **** Semantic actions
  ***************************************************************************/
+ protected List<Multiverse<String>> declAddSemi(List<DeclaringListValue> declaringlistvalues,
+                                               String semi,
+                                               PresenceCondition pc) {
+  List<Multiverse<String>> toret = new LinkedList<Multiverse<String>>();
+  for (DeclaringListValue d : declaringlistvalues ) {
+    toret.add(d.desugared.appendScalar(semi,DesugarOps.concatStrings));
+  }
+  return toret;
+ }
+
+ protected void setupInitials(List<DeclaringListValue> declList, DeclaringListValue decl, Multiverse<Initializer> initializermv, PresenceCondition pc, CContext scope){
+   if (initializermv.size() == 1 && initializermv.get(0).getData().isEmpty()) {
+     declList.add(decl);
+   } else {
+     for (Element<Declarator> declarator : decl.declarator) {
+       String originalName = declarator.getData().getName();
+       Multiverse<SymbolTable.Entry<Type>> entries = scope.getInCurrentScope(originalName, declarator.getCondition());
+       for (Element<SymbolTable.Entry<Type>> entry : entries) {
+         if (!entry.getData().isDeclared()) {
+           continue;
+         }
+         Type t = entry.getData().getValue().toVariable().getType();
+         if (initializermv.size() == 1 && ! initializermv.get(0).getData().hasList()) {
+           declList.add(checkInitializers(decl.filter(entry.getCondition()),initializermv,entry.getCondition(),scope,false));
+         } else {
+           declList.add(decl.filter(entry.getCondition()));
+           for (Element<Initializer> ei : initializermv) {
+             if (!ei.getData().isEmpty()) {
+               declList.add(checkInitializers(decl.filter(entry.getCondition()),initializermv.filter(ei.getCondition()),ei.getCondition(),scope,true));
+             }
+           }
+         }
+       }
+     }
+   }
+ }
+
+ protected DeclaringListValue checkInitializers(DeclaringListValue decl, Multiverse<Initializer> initializermv, PresenceCondition pc, CContext scope, boolean splitMainInit) {
+   Multiverse<String> initStr;
+   if (splitMainInit) {
+     initStr = new Multiverse<String>("if (" + condToCVar(pc) + ") {\n" ,pc);
+   } else {
+     initStr = new Multiverse<String>("",pc);
+   }
+  for (Element<Initializer> initializer : initializermv) {
+    if (initializer.getData().isEmpty()) {
+      continue;
+    }
+    for (Element<Declarator> declarator : decl.declarator) {
+      PresenceCondition combinedCond = initializer.getCondition().and(declarator.getCondition()).and(pc);
+      String originalName = declarator.getData().getName();
+      if (!initializer.getData().hasValidType()) {
+        scope.putError(originalName,combinedCond);
+        continue;
+      }
+      for (Element<TypeSpecifier> typespecifier : decl.typespecifier) {
+        PresenceCondition finalcond = typespecifier.getCondition().and(combinedCond);
+        if (finalcond.isFalse()) {
+          continue;
+        }
+        Declaration originalDeclaration = new Declaration(typespecifier.getData(), declarator.getData());
+        Type declarationType = originalDeclaration.getType();
+        
+        StringBuilder entrysb = new StringBuilder();  // the desugared output
+        Multiverse<SymbolTable.Entry<Type>> entries = scope.getInCurrentScope(originalName, finalcond);
+        for (Element<SymbolTable.Entry<Type>> entry : entries) {
+          String renaming = entry.getData().getValue().toVariable().getName();
+          if (initializer.getData().hasList() && !scope.isGlobal() &&
+              (!declarationType.hasAttribute(Constants.ATT_CONSTANT) && !declarationType.hasConstant())) {
+            Type tempT = declarationType;
+            while (tempT.isWrapped()) {
+              tempT = ((WrappedT)tempT).getType();
+            }
+            if (tempT.isStruct() || tempT.isUnion()){
+              entrysb.append("{\n" + initStruct(renaming, (StructOrUnionT)tempT, initializer.getData(), scope, finalcond) + "}");
+            }
+            if (tempT.isArray()){
+              entrysb.append("{\n" + initArray(renaming, (ArrayT)tempT, initializer.getData(), scope, finalcond) + "}");
+            }
+          } else {
+            boolean compatibleTypes = true;
+            //check for initializer list
+            if (initializer.getData().hasList()) {
+              compatibleTypes = !initializer.getData().hasNonConst();
+            }
+            if (compatibleTypes) {
+              String toAddStr = "";
+              if (initializer.getData().hasList()) {
+                Multiverse<String> mvs = initializer.getData().renamedList(new Multiverse<Type>(declarationType.resolve(),finalcond),finalcond,scope);
+                for (Element<String> evs : mvs) {
+                  if (evs.getData() != "") {
+                    if (splitMainInit) {
+                      toAddStr += renaming;
+                    }
+                    toAddStr += (evs.getData());
+                  } else {
+                    scope.putError(originalName, entry.getCondition());
+                    recordInvalidGlobalRedeclaration(originalName, entry.getCondition());
+                    if (scope.isGlobal() && isGlobalOrExtern(typespecifier.getData())) {
+                      externalLinkage.putError(originalName, entry.getCondition());
+                    } else if (!scope.isGlobal()) {
+                      toAddStr += ("if (");
+                      toAddStr += (condToCVar(entry.getCondition()));
+                      toAddStr += (") {\n");
+                      toAddStr += (emitError(String.format("improper designator value: %s", originalName)));
+                      toAddStr += (";\n");
+                      toAddStr += ("}\n");
+                    }
+                  }
+                }
+              } else {
+                if (splitMainInit) {
+                  toAddStr += renaming;
+                }
+                toAddStr += (initializer.getData().toString());
+              }
+              if ((declarationType.hasAttribute(Constants.ATT_CONSTANT) || declarationType.hasConstant()) &&
+                  scope.isGlobal()) {
+              } else {
+                entrysb.append(toAddStr + ";");
+              }
+            } else {
+              scope.putError(originalName, entry.getCondition());
+              recordInvalidGlobalRedeclaration(originalName, entry.getCondition());
+              if (scope.isGlobal() && isGlobalOrExtern(typespecifier.getData())) {
+                externalLinkage.putError(originalName, entry.getCondition());
+              } else if (!scope.isGlobal()) {
+                entrysb.append("if (");
+                entrysb.append(condToCVar(entry.getCondition()));
+                entrysb.append(") {\n");
+                entrysb.append(emitError(String.format("non const value in constant list or struct: %s",
+                                                       originalName)));
+                entrysb.append(";\n");
+                entrysb.append("}\n");
+              }
+            } 
+          }
+          Multiverse<String> toApply = new Multiverse<String>();
+          toApply.add(entrysb.toString(),finalcond);
+          toApply.add("",finalcond.not());
+          initStr = initStr.product(toApply,DesugarOps.concatStrings);
+          toApply.destruct();
+        }
+      }
+    }
+  }
+  if (splitMainInit) {
+    initStr = initStr.product(new Multiverse<String>("}",pc), DesugarOps.concatStrings);
+    return new DeclaringListValue(decl.typespecifier, decl.declarator, initializermv, initStr);
+  }
+  return new DeclaringListValue(decl.typespecifier, decl.declarator, initializermv, decl.desugared.product(initStr,DesugarOps.concatStrings));
+ }        
 
 protected List<Multiverse<String>> declarationAction(List<DeclaringListValue> declaringlistvalues,
-                                   String semi,
-                                   PresenceCondition pc,
-                                   CContext scope) {
+                                                     String semi,
+                                                     PresenceCondition pc,
+                                                     CContext scope) {
   /*
    * to desugar declarations, we need to iterate over all
    * combinations of (1) declarators in the declaring list,
@@ -8547,7 +8877,7 @@ protected List<Multiverse<String>> declarationAction(List<DeclaringListValue> de
                                 Multiverse<String> mvs = initializer.getData().renamedList(new Multiverse<Type>(declarationType.resolve(),combinedCond),combinedCond,scope);
                                 for (Element<String> evs : mvs) {
                                   if (evs.getData() != "") {
-                                    toAddStr += (desugaredDeclaration);
+                                    toAddStr += desugaredDeclaration;
                                     toAddStr += (evs.getData());
                                     toAddStr += (semi);  // semi-colon
                                     recordRenaming(renaming, originalName);
@@ -8567,7 +8897,7 @@ protected List<Multiverse<String>> declarationAction(List<DeclaringListValue> de
                                   }
                                 }
                               } else {
-                                toAddStr += (desugaredDeclaration);
+                                toAddStr += desugaredDeclaration;
                                 toAddStr += (initializer.getData().toString());
                                 toAddStr += (semi);  // semi-colon
                                 recordRenaming(renaming, originalName);
@@ -8607,11 +8937,11 @@ protected List<Multiverse<String>> declarationAction(List<DeclaringListValue> de
                           entrysb.append(";\n");
                           entrysb.append("}\n");
                         } else {  // global scope
-                        
                           // declarations only set VariableT or AliasT
                           boolean sameTypeKind
                             = entry.getData().getValue().isVariable() && type.isVariable()
-                            ||  entry.getData().getValue().isAlias() && type.isAlias();
+                            ||  entry.getData().getValue().isAlias() && type.isAlias()
+                            ||  entry.getData().getValue().isNamedFunction() && type.isNamedFunction();
 
                           // check compatibility of types
                           if (sameTypeKind) {
@@ -8622,6 +8952,10 @@ protected List<Multiverse<String>> declarationAction(List<DeclaringListValue> de
                             } else if (type.isAlias()) {
                               compatibleTypes = cOps.equal(entry.getData().getValue().toAlias().getType(),
                                                            type.toAlias().getType());
+                            } else if (type.isNamedFunction()) {
+                              compatibleTypes = cOps.equal(entry.getData().getValue(),
+                                                           type.toFunction());
+
                             } else {
                               throw new AssertionError("should not be possible given sameTypeKind");
                             }
@@ -8652,7 +8986,6 @@ protected List<Multiverse<String>> declarationAction(List<DeclaringListValue> de
                           } // end check for variable type
                         } // end check global/local scope
                       } // end entry kind
-                      entrysb.append("\n");
 
                       if (renamedDeclaration.typespecifier.contains(Constants.ATT_STORAGE_TYPEDEF)) {
                         // typedefs are moved to the top of the scope
@@ -8688,6 +9021,197 @@ protected List<Multiverse<String>> declarationAction(List<DeclaringListValue> de
   } // end loop over declaringlistvalues
   return retmv;
 }
+
+protected Multiverse<String> declarationListAction(Multiverse<TypeSpecifier> typespecifiermv,
+                                                         Multiverse<Declarator> declaratormv,
+                                                         PresenceCondition pc,
+                                                   CContext scope) {
+  
+  StringBuilder valuesb = new StringBuilder();  // the desugared output
+  Multiverse<String> valuemv = new Multiverse<String>();
+  
+  valuemv.add("",pc);
+  // TODO: use typespecifier/declarator to reclassify the
+  // tokens as typedef/ident in parsing context
+  for (Element<TypeSpecifier> typespecifier : typespecifiermv) {
+    PresenceCondition typespecifierCond = pc.and(typespecifier.getCondition());
+    for (Element<Declarator> declarator : declaratormv) {
+      PresenceCondition combinedCond = typespecifierCond.and(declarator.getCondition());
+      if (combinedCond.isNotFalse()) {
+                
+        String originalName = declarator.getData().getName();
+        // get xtc type from type and declarator
+        Declaration tempD = new Declaration(typespecifier.getData(), declarator.getData());
+        if (typespecifier.getData().getType().isError()
+            || tempD.hasTypeError()
+            || (!scope.isGlobal() && new Declaration(typespecifier.getData(), declarator.getData()).isNonPointerForwardRef())
+            ) {
+          // if type is invalid, put an error entry, emit a call
+          // to the type error function
+          scope.putError(originalName, combinedCond);
+          if (scope.isGlobal()) {
+            recordInvalidGlobalDeclaration(originalName, combinedCond);
+          } else {
+            valuesb.append("if (");
+            valuemv = appendStringToMV(valuemv,"if (",combinedCond);
+            String tempC = condToCVar(combinedCond); 
+            valuesb.append(tempC);
+            valuemv = appendStringToMV(valuemv,tempC,combinedCond);
+            valuesb.append(") {\n");
+            valuemv = appendStringToMV(valuemv,") {\n",combinedCond);
+            valuesb.append(emitError(String.format("invalid declaration of %s under this presence condition",
+                                                   originalName)));
+            valuemv = appendStringToMV(valuemv,emitError(String.format("invalid declaration of %s under this presence condition",
+                                                                       originalName)),combinedCond);
+            valuesb.append(";\n");
+            valuemv = appendStringToMV(valuemv,";\n",combinedCond);
+            valuesb.append("}\n");
+            valuemv = appendStringToMV(valuemv,"}\n",combinedCond);
+            
+          }
+        } else {
+          // otherwise loop over each existing entry check for
+          // type errors or add a new declaration
+          Multiverse<SymbolTable.Entry<Type>> entries = scope.getInCurrentScope(originalName, combinedCond);
+          for (Element<SymbolTable.Entry<Type>> entry : entries) {
+            String renaming = freshCId(originalName);
+            Declarator renamedDeclarator = declarator.getData().rename(renaming);
+            Declaration renamedDeclaration = new Declaration(typespecifier.getData(),
+                                                             renamedDeclarator);
+            Declaration originalDeclaration = new Declaration(typespecifier.getData(), declarator.getData());
+
+            StringBuilder entrysb = new StringBuilder();
+
+            Type declarationType = renamedDeclaration.getType();
+            Type type;
+            //System.err.println("has typedef:" + renamedDeclaration.typespecifier.contains(Constants.ATT_STORAGE_TYPEDEF));
+            if (renamedDeclaration.typespecifier.contains(Constants.ATT_STORAGE_TYPEDEF)) {
+              type = new AliasT(renaming, declarationType);
+            } else if (declarationType.isFunction()) {
+              type = new NamedFunctionT(declarationType.toFunction().getResult(),
+                                        renaming,
+                                        declarationType.toFunction().getParameters(),
+                                        declarationType.toFunction().isVarArgs());
+            } else {
+              if (scope.isGlobal()) {
+                type = VariableT.newGlobal(declarationType, renaming);
+              } else {
+                type = VariableT.newLocal(declarationType, renaming);
+              }
+            }
+            
+            // make all renamed declarations static until project-wide, configuration-aware linking is possible
+            String desugaredDeclaration;
+            // disabling the thunks for now, pending
+            // configuration-aware linking support
+            desugaredDeclaration = renamedDeclaration.toString();
+            if (entry.getData().isError()) {
+              // ERROR entry
+              System.err.println(String.format("INFO: \"%s\" is being redeclared in an existing invalid declaration", originalName));
+
+            } else if (entry.getData().isUndeclared()) {
+              // UNDECLARED entry
+              // update the symbol table for this presence condition
+
+              // the renamed function is static to enable linking the original function name
+              if (scope.isGlobal() && Constants.ATT_STORAGE_AUTO ==
+                  typespecifier.getData().getStorageClass()) {
+                scope.putError(originalName, entry.getCondition());
+              } else {
+                
+                scope.put(originalName, type, entry.getCondition());
+
+                if (scope.isGlobal() && isGlobalOrExtern(typespecifier.getData())) {
+                  externalLinkage.put(originalName, originalDeclaration, entry.getCondition());
+                }
+                String toAddStr = "";
+                
+                toAddStr += desugaredDeclaration;
+                recordRenaming(renaming, originalName);
+                if ((declarationType.hasAttribute(Constants.ATT_CONSTANT) || declarationType.hasConstant()) &&
+                    scope.isGlobal()) {
+                  scope.addDeclaration(toAddStr+";\n");
+                } else {
+                  entrysb.append(toAddStr);
+                }
+              }    
+            } else {  // already declared entries
+              if (! scope.isGlobal()) {
+                // not allowed to redeclare local symbols at all
+                scope.putError(originalName, entry.getCondition());
+                entrysb.append("if (");
+                entrysb.append(condToCVar(entry.getCondition()));
+                entrysb.append(") {\n");
+                entrysb.append(emitError(String.format("redeclaration of local symbol: %s",
+                                                       originalName)));
+                entrysb.append(";\n");
+                entrysb.append("}\n");
+              } else {  // global scope
+                        
+                // declarations only set VariableT or AliasT
+                boolean sameTypeKind
+                  = entry.getData().getValue().isVariable() && type.isVariable()
+                  ||  entry.getData().getValue().isAlias() && type.isAlias();
+
+                // check compatibility of types
+                if (sameTypeKind) {
+                  boolean compatibleTypes = false;
+                  if (type.isVariable()) {
+                    compatibleTypes = cOps.equal(entry.getData().getValue().toVariable().getType(),
+                                                 type.toVariable().getType());
+                  } else if (type.isAlias()) {
+                    compatibleTypes = cOps.equal(entry.getData().getValue().toAlias().getType(),
+                                                 type.toAlias().getType());
+                  } else {
+                    throw new AssertionError("should not be possible given sameTypeKind");
+                  }
+
+                  if (! compatibleTypes) {
+                    // not allowed to redeclare globals to a different type
+                    scope.putError(originalName, entry.getCondition());
+                    recordInvalidGlobalRedeclaration(originalName, entry.getCondition());
+                    if (scope.isGlobal() && isGlobalOrExtern(typespecifier.getData())) {
+                      externalLinkage.putError(originalName, entry.getCondition());
+                    }
+                  } else {
+                    // emit the same declaration, since it's legal to redeclare globals to a compatible type
+                    /* entrysb.append(renamedDeclaration.toString()); */
+                    entrysb.append(desugaredDeclaration);
+                    System.err.println(String.format("INFO: \"%s\" is being redeclared in global scope to compatible type", originalName));
+                  }
+
+                } else { // not the same kind of type
+                  scope.putError(originalName, entry.getCondition());
+                  System.err.println(String.format("INFO: attempted to redeclare global to a different kind of type: %s", originalName));
+                  recordInvalidGlobalRedeclaration(originalName, entry.getCondition());
+                  if (scope.isGlobal() && isGlobalOrExtern(typespecifier.getData())) {
+                    externalLinkage.putError(originalName, entry.getCondition());
+                  }
+                } // end check for variable type
+              } // end check global/local scope
+            } // end entry kind
+
+            if (renamedDeclaration.typespecifier.contains(Constants.ATT_STORAGE_TYPEDEF)) {
+              // typedefs are moved to the top of the scope
+              // to support forward references of structs
+              scope.addDeclaration(entrysb.toString() + ";");
+              valuesb.append("// typedef moved to top of scope\n");
+              valuemv = appendStringToMV(valuemv,"// typedef moved to top of scope\n",combinedCond);
+            } else {
+              // not a typedef, so add it to regular output
+              valuesb.append(entrysb.toString());
+              valuemv = appendStringToMV(valuemv,entrysb.toString(),combinedCond);
+            }
+          } // end loop over symtab entries
+          entries.destruct();
+        }
+      } // end check for false combinedCond
+      combinedCond.delRef();
+    } // end loop over declarators
+  } // end loop over typespecifiers
+  return valuemv;
+}
+
 
 class IDSort implements Comparator<Map.Entry<String,Declaration>> {
   private int getID(String x){
@@ -9274,29 +9798,29 @@ static public Multiverse<String> sizeofExpansion(Multiverse<String> es, Multiver
     if (tempT.isStruct() || tempT.isUnion()) {
       Multiverse<String> innerStruct = sizeofBody(tempT,fic,scope,et.getCondition());
       for (Element<String> e : innerStruct) {
-	if (!es.isEmpty()) {
-	  String standin = "";
-	  standin = fic.freshCId("sizeofStandin");
-	  scope.addDeclaration(e.getData() + standin + ";\n");
-	  ret.add("sizeof(" + standin + ")",e.getCondition());
-	} else {
-	  String standin = "";
-	  standin = fic.freshCId("sizeofStandin");
-	  scope.addDeclaration(e.getData() + standin + ";\n");
-	  ret.add("sizeof(typeof(" + standin + "))",e.getCondition());
-	}
+        if (!es.isEmpty()) {
+          String standin = "";
+          standin = fic.freshCId("sizeofStandin");
+          scope.addDeclaration(e.getData() + standin + ";\n");
+          ret.add("sizeof(" + standin + ")",e.getCondition());
+        } else {
+          String standin = "";
+          standin = fic.freshCId("sizeofStandin");
+          scope.addDeclaration(e.getData() + standin + ";\n");
+          ret.add("sizeof(typeof(" + standin + "))",e.getCondition());
+        }
       }
     } else {
       if (!es.isEmpty() && !(es.filter(et.getCondition())).isEmpty()) {
-	for (Element<String> ex : es.filter(et.getCondition())) {
-	  if (ex.getData().equals("")) {
-	    ret.add("sizeof(" + et.getData().printType() + ")",ex.getCondition());
-	  } else {
-	    ret.add("sizeof(" + ex.getData() + ")",ex.getCondition());
-	  }
-	}
+        for (Element<String> ex : es.filter(et.getCondition())) {
+          if (ex.getData().equals("")) {
+            ret.add("sizeof(" + et.getData().printType() + ")",ex.getCondition());
+          } else {
+            ret.add("sizeof(" + ex.getData() + ")",ex.getCondition());
+          }
+        }
       } else {
-	ret.add("sizeof(" + et.getData().printType() + ")", et.getCondition());
+        ret.add("sizeof(" + et.getData().printType() + ")", et.getCondition());
       }
     }
   }
@@ -9318,6 +9842,18 @@ static public Multiverse<Boolean> hasField(UnionT u, Type t, CContext scope, Pre
     res.add(found,e.getCondition());
   }
   return res;
+}
+
+static public boolean compatParam(Type t1u, Type t2u) {
+  Type t1 = t1u.resolve(), t2 = t2u.resolve();
+  if ((t1.isPointer() || t1.isArray()) && t2.isNumber()) {
+    return true;
+  } else if (t2.isPointer() && t1.isPointer()) {
+    return true;
+  } else if (t2.isFunction() && (t1.isPointer() || t1.isFunction())) {
+    return true;
+  }
+  return compatTypes(t1u,t2u);
 }
 
 static public boolean compatTypes(Type t1u, Type t2u) {
@@ -9345,6 +9881,111 @@ static public boolean compatTypes(Type t1u, Type t2u) {
   //outside of these, just direct equal
   return cOps.equal(t1, t2);
 }
+
+static public boolean functionCouldExist(Type newType, Type prevType, CContext scope, PresenceCondition cond) {
+  if (!newType.isFunction() || !prevType.isFunction()) {
+    return false;
+  }
+  FunctionT newf = newType.toFunction();
+  FunctionT oldf = prevType.toFunction();
+
+  if (!cOps.equal(newf.getResult(),oldf.getResult())) {
+    if (!typeCouldBeRef(newf.getResult(),oldf.getResult(),scope,cond)) {
+      return false;
+    }
+
+  }
+  
+  List<Type> newParams = newf.getParameters();
+  List<Type> oldParams = oldf.getParameters();
+
+  if (newParams.size() != oldParams.size()) {
+    return false;
+  }
+  for (int i = 0; i < newParams.size(); ++i) {
+    Type newT = ((VariableT)newParams.get(i)).getType();
+    Type oldT = ((VariableT)oldParams.get(i)).getType();
+    if (cOps.equal(newT.resolve(),oldT.resolve())) {
+      continue;
+    }
+    if (!typeCouldBeRef(newT,oldT,scope,cond)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+static public boolean typeCouldBeRef(Type newT, Type oldT, CContext scope, PresenceCondition cond) {
+  while (newT.isPointer() || newT.isAnnotated() || newT.isArray()) {
+    if (newT.isPointer()) {
+      if (!oldT.isPointer()) {
+        return false;
+      }
+      newT = ((PointerT)newT).getType();
+      oldT = ((PointerT)oldT).getType();
+    }
+    if (newT.isArray()) {
+      if (!oldT.isArray()) {
+        return false;
+      }
+      newT = ((ArrayT)newT).getType();
+      oldT = ((ArrayT)oldT).getType();
+    }
+    if (newT.isAnnotated()) {
+      if (newT.toAnnotated().sameAnnotations(oldT)) {
+        return false;
+      }
+      newT = ((AnnotatedT)newT).getType();
+      oldT = ((AnnotatedT)oldT).getType();
+    }
+  }
+  
+  
+  if (newT.isStruct() && oldT.isStruct()) {
+    if (! ((StructT)oldT).getName().startsWith("__forward_tag_reference")){
+      return false;
+    }
+    String originalTag = scope.getForwardTagReferenceAnyScope(((StructT)oldT).getName());                
+    
+    Multiverse<SymbolTable.Entry<Type>> originalTagEntries
+      = scope.getInAnyScope(CContext.toTagName(originalTag), cond);
+    
+    boolean found = false;
+    for (Element<SymbolTable.Entry<Type>> e : originalTagEntries) {
+      found = found || cOps.equal(e.getData().getValue(),newT);
+    }
+    if (!found) {
+      return false;
+    }
+  } else {
+    return false;
+  }
+  return true;
+}
+
+static public void transformFunctionRefs(Declarator toTransform, Type prevType, PresenceCondition cond, Multiverse<Declarator> decs, TypeSpecifier typespec, Multiverse<TypeSpecifier> types , CContext scope) {
+  if (!prevType.isFunction()) {
+    System.err.println("Error reverting refs of nonfunction");
+    System.exit(1);
+  }
+  List<Type> oldParams = ((FunctionT)prevType).getParameters();
+  decs.add(toTransform.switchForwardRef(oldParams,cond,scope),cond);
+  Type resType = prevType.toFunction().getResult();
+  while (resType.isPointer()) {resType = resType.toPointer().getType();}
+  if (resType.isStruct() && ((StructT)resType).getName().startsWith("__forward_tag_reference_")) {
+    String originalTag = scope.getForwardTagReferenceAnyScope(((StructT)resType).getName());
+    Multiverse<SymbolTable.Entry<Type>> originalTagEntries
+      = scope.getInAnyScope(CContext.toTagName(originalTag), cond);
+    List<String> names = new LinkedList<String>();
+    for (Element<SymbolTable.Entry<Type>> e : originalTagEntries) {
+      names.add(((StructT)e.getData().getValue()).getName());
+    }
+    types.add(typespec.revertForwardRefs(names,((StructT)resType).getName(),toTransform.getName()),cond);
+  } else {
+    types.add(typespec,cond);
+  }
+}
+
 
 /***************************************************************************
  **** Class to create fresh ids.
@@ -9519,10 +10160,10 @@ private void setTransformationValue(Object node, Object value) {
  */
 private static class FunctionPrototypeValue {
   /** The type. */
-  public final Multiverse<TypeSpecifier> typespecifier;
+  public Multiverse<TypeSpecifier> typespecifier;
   
   /** The declarator */
-  public final Multiverse<Declarator> declarator;
+  public Multiverse<Declarator> declarator;
 
   /** 
    * This constructor creates a new instance.
@@ -9551,6 +10192,8 @@ private static class DeclaringListValue {
   /** The initializer. */
   public Multiverse<Initializer> initializer;
 
+  public Multiverse<String> desugared;
+  
   /** 
    * This constructor creates a new instance.
    * @param type is the type.
@@ -9559,24 +10202,52 @@ private static class DeclaringListValue {
    */
   private DeclaringListValue(Multiverse<TypeSpecifier> typespecifier,
                              Multiverse<Declarator> declarator,
-                             Multiverse<Initializer> initializer) {
+                             Multiverse<Initializer> initializer,
+                             PresenceCondition p) {
     this.typespecifier = typespecifier;
     this.declarator = declarator;
     this.initializer = initializer;
+    this.desugared = new Multiverse<String>("",p);
   }
 
+    private DeclaringListValue(Multiverse<TypeSpecifier> typespecifier,
+                             Multiverse<Declarator> declarator,
+                             Multiverse<Initializer> initializer,
+                             Multiverse<String> desugared) {
+    this.typespecifier = typespecifier;
+    this.declarator = declarator;
+    this.initializer = initializer;
+    this.desugared = desugared;
+  }
 
   public boolean isEmpty() {
     return typespecifier.isEmpty() ||
       declarator.isEmpty() ||
-      initializer.isEmpty();
+      initializer.isEmpty() ||
+      desugared.isEmpty();
   }
   
   public String toString()
   {
     return "TypeSpec: " + typespecifier.toString() +
       "\nDeclarator: " + declarator.toString() +
-      "\nInitializer: " + initializer.toString();
+      "\nInitializer: " + initializer.toString() +
+      "\nDesugared: " + desugared.toString();
+  }
+
+  public DeclaringListValue filter(PresenceCondition p ) {
+    return new DeclaringListValue(typespecifier.filter(p),declarator.filter(p),initializer.filter(p),desugared.filter(p));
+  }
+
+  public void destruct() {
+    typespecifier.destruct(); declarator.destruct(); initializer.destruct(); desugared.destruct();
+  }
+
+  public void addAll(DeclaringListValue d) {
+    typespecifier.addAll(d.typespecifier);
+    declarator.addAll(d.declarator);
+    initializer.addAll(d.initializer);
+    desugared.addAll(d.desugared);
   }
 }
 
@@ -10041,6 +10712,7 @@ public static class DeclarationOrStatementValue implements Copyable{
   private List<DeclarationOrStatementValue> switchChildren;
   private String childPrepend;
   private boolean isElse;
+  private String elseString;
   private boolean isDo;
   private String childAppend;
   private boolean isDecl;
@@ -10057,6 +10729,7 @@ public static class DeclarationOrStatementValue implements Copyable{
     children = null;
     switchChildren = null;
     isElse = false;
+    elseString = "else";
     isDo = false;
     isDecl = false;
     isEmpty = false;
@@ -10077,6 +10750,7 @@ public static class DeclarationOrStatementValue implements Copyable{
     children = null;
     switchChildren = null;
     isElse = false;
+    elseString = "else";
     isDo = false;
     isDecl = false;
     isLabel = false;
@@ -10094,6 +10768,7 @@ public static class DeclarationOrStatementValue implements Copyable{
     children = x.children;
     switchChildren = x.switchChildren;
     isElse = x.isElse;
+    elseString = x.elseString;
     isDo = x.isDo;
     isDecl = x.isDecl;
     isLabel = x.isLabel;
@@ -10134,6 +10809,7 @@ public static class DeclarationOrStatementValue implements Copyable{
       d.switchChildren = null;
     }
     d.isElse = isElse;
+    d.elseString = elseString;
     d.isDo = isDo;
     d.isDecl = isDecl;
     d.isLabel = isLabel;
@@ -10186,8 +10862,9 @@ public static class DeclarationOrStatementValue implements Copyable{
     isEmpty = false;
   }
   
-  public void setChildrenElse(Multiverse<DeclarationOrStatementValue> a,Multiverse<DeclarationOrStatementValue> b) {
+  public void setChildrenElse(Multiverse<DeclarationOrStatementValue> a, String elseStr, Multiverse<DeclarationOrStatementValue> b) {
     isElse = true;
+    elseString = elseStr;
     children = new LinkedList<Multiverse<DeclarationOrStatementValue>>();
     children.add(a);
     children.add(b);
@@ -10231,6 +10908,13 @@ public static class DeclarationOrStatementValue implements Copyable{
         }
       }
     }
+  }
+
+  public String getPrepend() {
+    return childPrepend;
+  }
+  public String getAppend() {
+    return childAppend;
   }
   
   public String getString(PresenceCondition p, CActions ca) {
@@ -10313,7 +10997,8 @@ public static class DeclarationOrStatementValue implements Copyable{
         }
       }
       ret += "}\n";
-      ret += "else\n{\n";
+      ret += elseString;
+      ret += "\n{\n";
       for (Element<DeclarationOrStatementValue> e : children.get(1)) {
         if (e.getCondition().and(p).isNotFalse()) {
           if (e.getCondition().is(p) || e.getData().isDecl) {
@@ -10730,6 +11415,71 @@ private List<StructDeclaringListValue> getCompleteNodeStructDeclListValue(Node n
   return resultlist;
 }
 
+private List<DeclaringListValue> getCompleteNodeDeclaringListValueList(Subparser subparser, int component) {
+  return getCompleteNodeDeclaringListValueList(getNodeAt(subparser, component), subparser.getPresenceCondition());
+}
+private List<DeclaringListValue> getCompleteNodeDeclaringListValueList(Node node, PresenceCondition pc) {
+  Multiverse<Node> nodemv = staticCondToMultiverse(node, pc);
+  List<DeclaringListValue> resultlist = new LinkedList<DeclaringListValue>();
+
+  // loop through each node, get its multiverse and add to the
+  // resultmv.  update each node's multiverse elements with the static
+  // conditional branch's presence condition using filter.
+  for (Element<Node> elem : nodemv) {
+    PresenceCondition combinedCond = pc.and(elem.getCondition());
+    List<DeclaringListValue> mvlist = (List<DeclaringListValue>) ((Node) elem.getData()).getProperty(TRANSFORMATION);
+    for (DeclaringListValue dvlval : mvlist) {
+      resultlist.add(dvlval);
+    }
+    combinedCond.delRef();
+  }
+  nodemv.destruct();
+  
+  // the resulting list can be empty, e.g., of the
+  // declarationorstatementlist is empty
+  return resultlist;
+}
+
+
+private DeclaringListValue getCompleteNodeDeclaringListValue(Subparser subparser, int component, PresenceCondition pc) {
+  return getCompleteNodeDeclaringListValue(getNodeAt(subparser, component), pc);
+}
+
+private DeclaringListValue getCompleteNodeDeclaringListValue(Node node, PresenceCondition pc) {
+  Multiverse<Node> nodemv = staticCondToMultiverse(node, pc);
+  DeclaringListValue resultDeclList = new DeclaringListValue(new Multiverse<TypeSpecifier>(), new Multiverse<Declarator>(),
+                                                             new Multiverse<Initializer>(), new Multiverse<String>());
+  if (nodemv.isEmpty()) {
+    return resultDeclList;
+  }
+  for (Element<Node> elem : nodemv) {
+    DeclaringListValue innerDecl = (DeclaringListValue) ((Node) elem.getData()).getProperty(TRANSFORMATION);
+    if (!innerDecl.isEmpty()) {
+      DeclaringListValue filtered = innerDecl.filter(elem.getCondition());
+      if (!filtered.isEmpty()) {
+        resultDeclList.addAll(filtered);
+      }
+      filtered.destruct();
+    }
+  }
+  nodemv.destruct();
+  
+  // it should not be possible to have an empty multiverse, as long as
+  // the pc correponds to the current subparsers's pc.
+  assert ! resultDeclList.isEmpty();
+
+  if (resultDeclList.isEmpty()) {
+    return resultDeclList;
+  }
+  
+  DeclaringListValue filtered = resultDeclList.filter(pc);
+  resultDeclList.destruct();
+    
+  return filtered;
+}
+
+
+
 /**
  * Get the semantic value for node that has a "complete" annotation
  * where the semantic value is an expression value.  The complete
@@ -10882,6 +11632,24 @@ private String emitStatement(Multiverse<String> allStatementConfigs, PresenceCon
     sb.append("\n}");
   }
   return sb.toString();
+}
+
+private String getCompoundRange(Multiverse<DeclarationOrStatementValue> allStatementConfigs, PresenceCondition pc) {
+  int earliest = 0;
+  int latest = 0;
+  for (Multiverse.Element<DeclarationOrStatementValue> statement : allStatementConfigs) {
+    String leftBrace = statement.getData().getPrepend();
+    String rightBrace = statement.getData().getAppend();
+    int leftNum = Integer.parseInt(leftBrace.replaceAll("[^0-9]",""));
+    int rightNum = Integer.parseInt(rightBrace.replaceAll("[^0-9]",""));
+    if (leftNum < earliest || earliest == 0) {
+      earliest = leftNum;
+    }
+    if (rightNum > latest || latest == 0) {
+      latest = rightNum;
+    }
+  }
+  return "L" + Integer.toString(earliest) + ":L" + Integer.toString(latest);
 }
 
 private String emitStatementDSV(Multiverse<DeclarationOrStatementValue> allStatementConfigs, PresenceCondition pc) {
@@ -11100,9 +11868,39 @@ private void recordRenaming(String renaming, String original) {
   recordedRenamings.append(String.format("__static_renaming(\"%s\", \"%s\");\n", renaming, original));
 }
 
+public String printMultiplexes(CContext scope, PresenceCondition pc) {
+  String ret = "";
+  for (Map.Entry<String,Multiverse<String>> m : CContext.getMultiplexes().entrySet()) {
+    String originalName = m.getKey();
+    while (originalName.charAt(originalName.length()-1) >= '0' && originalName.charAt(originalName.length()-1) <= '9') {
+      originalName = originalName.substring(0,originalName.length()-1);
+    }
+    originalName = originalName.substring(2,originalName.length()-1);
+    Multiverse<SymbolTable.Entry<Type>> entries = scope.getInCurrentScope(originalName, pc);
+    System.err.println(entries);
+    for (Element<SymbolTable.Entry<Type>> entry : entries) {
+      if (!entry.getData().isDeclared()) { continue; }
+      Type t = entry.getData().getValue();
+      if (!t.isNamedFunction()) { continue; }
+      NamedFunctionT nft = t.toNamedFunction();
+      if (!m.getKey().equals(nft.getName())) { continue; }
+      ret += nft.printType() + " {\n";
+      String params = nft.getParamNames();
+      for (Element<String> plex : m.getValue()) {
+        ret += String.format("if (%s) { return %s(%s); }\n",
+                             condToCVar(plex.getCondition()),
+                             plex.getData(),
+                             params);
+      }
+      ret += "}\n";
+    }
+  }  
+  return ret;
+}
+
 public String printMain(CContext scope, PresenceCondition pc) {
   String ret = "";
-  ret += "int main() {\n";
+  ret += "int main(int argc, char **argv) {\n__static_initializer_default();\n";
   Multiverse<SymbolTable.Entry<Type>> entries = scope.getInCurrentScope("main", pc);
   for (Element<SymbolTable.Entry<Type>> entry : entries) {
     ret += "if (";
@@ -11115,7 +11913,18 @@ public String printMain(CContext scope, PresenceCondition pc) {
     } else if (!(entry.getData().getValue() instanceof FunctionOrMethodT)){
       ret += emitError("main illegally defined") + ";\n";
     } else {
-      ret += "return " + ((NamedFunctionT) entry.getData().getValue()).getName() + "();";
+      NamedFunctionT mainMethod = (NamedFunctionT) entry.getData().getValue();
+      if (mainMethod.getResult().isInteger()) {
+        ret += "return ";
+      }
+      ret +=  mainMethod.getName() + "(";
+      if (mainMethod.getParameters().size() == 2) {
+        ret += "argc, argv";
+      }
+      ret += ");\n";
+      if (!mainMethod.getResult().isInteger()) {
+        ret += "return 0;\n";
+      }
     }  // end test of symtab entry type
     ret += "}\n";
   } // end loop over symtab entries
@@ -11137,7 +11946,8 @@ public String staticInitialization(boolean showParseError) {
   // writes the extern declarations for the renamed preprocessor BDDs
   System.err.println("TODO: record original presence condition strings in file as well once raw strings are collected");
   for (Integer hash : condVars.keySet()) {
-    sb.append(String.format("extern const bool %s;\n", condVars.get(hash)));
+    //sb.append(String.format("int %s() {return rand()%%2;};\n", condVars.get(hash)));
+    sb.append(String.format("extern const bool %s();\n", condVars.get(hash)));
   }
 
   sb.append(String.format("%s {\n%s\n%s\n",
@@ -11147,7 +11957,7 @@ public String staticInitialization(boolean showParseError) {
                           invalidGlobals.toString()));
   if (showParseError && CContext.getParseErrorCond().isNotFalse()) {
   sb.append("if (" + parseErrorCond +
-            ")\n{\n__static_parse_error(\"Unable to parse\");\n}\n");
+            ") {\n__static_parse_error(\"Unable to parse\");\n}\n");
   }
 
   sb.append("};\n");
@@ -12516,14 +13326,14 @@ public String condToCVar(PresenceCondition cond) {
   } else {
     // TODO: traverse the (simplified) expression AST and convert
     // non-boolean leaves to C variables.
-    int key = cond.hashCode();
+    int key = cond.toString().hashCode();
     if (condVars.containsKey(key)) {
-      return condVars.get(key);
+      return condVars.get(key)+"()";
     } else {
       String cvar = freshCId(String.format("static_condition_%s", unitUID));
       condVars.put(key, cvar);
       staticConditionRenamings.append(String.format("__static_condition_renaming(\"%s\", \"%s\");\n", cvar, cond.toString()));
-      return cvar;
+      return cvar+"()";
     }
   }
 }

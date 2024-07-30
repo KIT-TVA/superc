@@ -48,7 +48,7 @@ PACKAGE     = superc
 PACKAGE_LOC = superc
 
 SOURCE = \
-	BuiltinsGenerator.java \
+	Builtins.java \
 	SugarC.java \
 	SuperC.java \
 	SuperP4.java
@@ -71,19 +71,6 @@ include $(JAVA_DEV_ROOT)/Makerules
 .PHONY: configure parsers clobber
 
 configure:
-	if [ -f Builtins.java ]; then $(RM) Builtins.java; fi
-	$(MAKE) BuiltinsGenerator.class
-	$(MAKE) Builtins.java
-	$(MAKE) Builtins.class
-
-Builtins.java:
-	touch empty.c
-	$(CPP) $(CPPFLAGS) -v empty.c 2> sysdirs > /dev/null
-	$(CPP) $(CPPFLAGS) -dM empty.c > builtins 2> /dev/null
-	$(RM) empty.c
-	$(JAVA) superc.BuiltinsGenerator sysdirs builtins > Builtins.java
-	$(RM) sysdirs
-	$(RM) builtins
 
 parsers:
 	$(MAKE) -C expression generate all

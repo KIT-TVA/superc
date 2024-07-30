@@ -269,6 +269,18 @@ public class SugarC extends Tool {
     I = new LinkedList<String>();
     sysdirs = new LinkedList<String>();
 
+    Builtins builtins = null;
+    boolean nostdinc = runtime.test("nostdinc");
+    boolean nobuiltins = runtime.test("nobuiltins");
+    if (!(nostdinc && nobuiltins)) {
+      try {
+        builtins = new Builtins();
+      } catch (IOException | InterruptedException e) {
+        runtime.error("Could not get builtins and sysdirs.");
+        return;
+      }
+    }
+
     // The following shows which command-line options add to ""
     // headers and which add to <> headers.  Additionally, only
     // -isystem are considered system headers.  System headers have a
@@ -291,10 +303,8 @@ public class SugarC extends Tool {
       }
     }
 
-    if (!runtime.test("nostdinc")) {
-      for (int i = 0; i < Builtins.sysdirs.length; i++) {
-        sysdirs.add(Builtins.sysdirs[i]);
-      }
+    if (!nostdinc) {
+      sysdirs.addAll(builtins.getSysdirs());
     }
     
     for (Object o : runtime.getList("idirafter")) {
@@ -338,9 +348,9 @@ public class SugarC extends Tool {
     StringBuilder commandlinesb;
 
     commandlinesb = new StringBuilder();
-    
-    if (! runtime.test("nobuiltins")) {
-      commandlinesb.append(Builtins.builtin);
+
+    if (!nobuiltins) {
+      commandlinesb.append(builtins.getBuiltin());
     }
     
     if (! runtime.test("nocommandline")) {

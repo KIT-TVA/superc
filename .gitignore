@@ -11,3 +11,4 @@ allTests.out
 /fonda/cpp_testsuite/desugarer/masterTypeCheck/other
 *.desugared.c
 *.desugaredCondHeader.c
+/.idea

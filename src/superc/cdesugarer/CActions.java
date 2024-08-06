@@ -5541,7 +5541,8 @@ public class CActions implements SemanticActions {
                 }
               } else if (entry.getData().getValue() instanceof NamedFunctionT) {
                 String result;  // use the renamed symbol
-                if (!keepMem || !(Arrays.asList(memNames)).contains(originalName) ) {
+                if ((!keepMem || !(Arrays.asList(memNames)).contains(originalName)) &&
+                        (renamingWhitelist == null || !(renamingWhitelist.contains(originalName)))) {
                   result = String.format(" %s ", ((NamedFunctionT) entry.getData().getValue()).getName());
                 } else {
                   result = originalName;
@@ -8526,6 +8527,12 @@ static String memNames[] = {"malloc", "calloc", "free", "fopen", "fclose", "rand
 
 public static void keepMemoryNames(boolean f) {
   keepMem = f;
+}
+
+static List<String> renamingWhitelist = null;
+
+public static void setRenamingWhitelist(List<String> whitelist) {
+  renamingWhitelist = whitelist;
 }
 
 // TUTORIAL: this section of the grammar gets copied into the

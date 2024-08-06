@@ -222,6 +222,8 @@ public class SugarC extends Tool {
            "Create a main function to call main variants.").
       bool("keep-mem", "keep-mem", false,
            "Retains naming for memory related functions used in static analysis.").
+      word("renaming-whitelist", "renaming-whitelist", true,
+           "Retains naming for the specified function name.").
       bool("hide-static-error", "hide-static-error", false,
            "Adds a macro definition to replace static type error functions with empty space").
       
@@ -509,7 +511,15 @@ public class SugarC extends Tool {
     if (runtime.test("keep-mem")) {
       CActions.keepMemoryNames(true);
     }
-    
+
+    List<String> renamingWhitelist = new ArrayList<>();
+    for (Object o : runtime.getList("renaming-whitelist")) {
+      if (o instanceof String functionName) {
+        renamingWhitelist.add(functionName);
+      }
+    }
+    CActions.setRenamingWhitelist(renamingWhitelist);
+
     // Run SuperC.
     
     // Run the SuperC preprocessor and parser.

@@ -21,6 +21,7 @@ package xtc.tree;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -101,30 +102,27 @@ public abstract class Visitor {
   private static final float CACHE_LOAD = (float)0.75;
 
   /** The method lookup cache. */
-  private static final LinkedHashMap<CacheKey, Method> cache;
+  private static final Map<CacheKey, Method> cache;
 
   /** The pre-allocated cache key for looking up methods. */
-  private static final CacheKey key;
+  private final CacheKey key = new CacheKey(null, null);
 
   /** The pre-allocated array for passing the argument to invoke(). */
-  private static final Object[] arguments;
+  private final Object[] arguments = new Object[] { null };
 
   /**
    * The pre-allocated array for passing the type argument to
    * getMethod().
    */
-  private static final Class<?>[] types;
+  private final Class<?>[] types = new Class<?>[] { null };
 
   static {
     cache     =
-      new LinkedHashMap<CacheKey, Method>(CACHE_CAPACITY, CACHE_LOAD, true) {
+      Collections.synchronizedMap(new LinkedHashMap<CacheKey, Method>(CACHE_CAPACITY, CACHE_LOAD, true) {
         protected boolean removeEldestEntry(Map.Entry e) {
           return size() > CACHE_SIZE;
         }
-      };
-    key       = new CacheKey(null, null);
-    arguments = new Object[]   { null };
-    types     = new Class<?>[] { null };
+      });
   }
 
   // ========================================================================
@@ -298,7 +296,7 @@ public abstract class Visitor {
    * @param paramT The parameter type.
    * @return The method or <code>null</code> if no such method exists.
    */
-  private static Method findMethod(Class<?> k, String name, Class paramT) {
+  private Method findMethod(Class<?> k, String name, Class paramT) {
     Method method = null;
 
     do {

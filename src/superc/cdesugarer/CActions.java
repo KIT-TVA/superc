@@ -25,31 +25,23 @@ import superc.core.ForkMergeParser.Subparser;
 
 import java.lang.StringBuilder;
 
+import java.math.BigInteger;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.LinkedList;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Random;
-import java.util.AbstractMap;
-
-import java.io.File;
-import java.io.Reader;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.StringReader;
-import java.io.OutputStreamWriter;
-import java.io.IOException;
-
-import java.math.BigInteger;
-
 import java.util.Collections;
 import java.util.Comparator;
- 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import xtc.Constants;
-import xtc.Limits;
 
 import superc.cdesugarer.OldSymbolTable.STField;
 
@@ -57,20 +49,12 @@ import xtc.tree.Attribute;
 import xtc.tree.GNode;
 import xtc.tree.Location;
 import xtc.tree.Node;
-import xtc.tree.Visitor;
 
 import xtc.util.Pair;
 
 import superc.core.Syntax;
-import superc.core.Syntax.Kind;
-import superc.core.Syntax.LanguageTag;
-import superc.core.Syntax.ConditionalTag;
-import superc.core.Syntax.DirectiveTag;
 import superc.core.Syntax.Layout;
 import superc.core.Syntax.Language;
-import superc.core.Syntax.Text;
-import superc.core.Syntax.Directive;
-import superc.core.Syntax.Conditional;
 import superc.core.Syntax.Error;
 
 import superc.cdesugarer.Multiverse;
@@ -78,10 +62,7 @@ import superc.cdesugarer.Multiverse;
 import superc.cdesugarer.Declarator;
 import superc.cdesugarer.Declarator.EmptyDeclarator;
 import superc.cdesugarer.Declarator.SimpleDeclarator;
-import superc.cdesugarer.Declarator.PointerDeclarator;
-import superc.cdesugarer.Declarator.QualifiedPointerDeclarator;
 import superc.cdesugarer.Declarator.PointerAbstractDeclarator;
-import superc.cdesugarer.Declarator.QualifiedPointerAbstractDeclarator;
 import superc.cdesugarer.Declarator.ArrayDeclarator;
 import superc.cdesugarer.Declarator.ArrayAbstractDeclarator;
 import superc.cdesugarer.Declarator.FunctionDeclarator;
@@ -90,7 +71,6 @@ import superc.cdesugarer.Declarator.BitFieldSizeDeclarator;
 
 import superc.cdesugarer.Initializer;
 import superc.cdesugarer.Initializer.EmptyInitializer;
-import superc.cdesugarer.Initializer.AssignInitializer;
 import superc.cdesugarer.Initializer.ExpressionInitializer;
 import superc.cdesugarer.Initializer.InitializerList;
 import superc.cdesugarer.Initializer.DesignatedInitializer;
@@ -104,42 +84,27 @@ import xtc.type.AliasT;
 import xtc.type.ArrayT;
 import xtc.type.BooleanT;
 import xtc.type.C;
-import xtc.type.CastReference;
 import xtc.type.Constant;
-import xtc.type.DynamicReference;
-import xtc.type.EnumT;
 import xtc.type.EnumeratorT;
 import xtc.type.ErrorT;
-import xtc.type.FieldReference;
 import xtc.type.FunctionOrMethodT;
 import xtc.type.FunctionT;
-import xtc.type.InternalT;
-import xtc.type.LabelT;
-import xtc.type.NullReference;
 import xtc.type.NumberT;
 import xtc.type.IntegerT;
 import xtc.type.FloatT;
 import xtc.type.PointerT;
 import xtc.type.AnnotatedT;
-import xtc.type.Reference;
-import xtc.type.StaticReference;
-import xtc.type.StringReference;
 import xtc.type.StructOrUnionT;
 import xtc.type.StructT;
-import xtc.type.Tagged;
 import xtc.type.Type;
-import xtc.type.Type.Tag;
 import xtc.type.UnionT;
 import xtc.type.VariableT;
 import xtc.type.VoidT;
 import xtc.type.WrappedT;
-import xtc.type.Parameter;
- 
- 
+
+
 /* import xtc.util.SymbolTable; */
 /* import xtc.util.SymbolTable.Scope; */
-import xtc.util.SingletonIterator;
-import xtc.util.Utilities;
 
 import superc.cdesugarer.Multiverse.Element;
 import superc.cdesugarer.SymbolTable.Entry;
@@ -150,10 +115,6 @@ import superc.core.PresenceConditionManager.PresenceCondition;
 import superc.core.ForkMergeParser;
 import superc.core.ForkMergeParser.StackFrame;
 
-import xtc.type.Type;
-import xtc.type.NumberT;
-import xtc.type.StructT;
-import xtc.type.VariableT;
 import xtc.type.UnitT;
 /* TUTORIAL: add any additional type classes here */
 
@@ -8535,6 +8496,7 @@ public static void setRenamingWhitelist(List<String> whitelist) {
   renamingWhitelist = whitelist;
 }
 
+
 // TUTORIAL: this section of the grammar gets copied into the
 // resulting parser, specifically the CActions.java class
 
@@ -10370,7 +10332,7 @@ private static class ExpressionValue {
     lines = new Multiverse<LineNumbers>();
     PresenceConditionManager p = new PresenceConditionManager();
     PresenceCondition one = p.newTrue();
-    lines.add(new LineNumbers(Integer.MAX_VALUE, 0), one);
+    lines.add(new LineNumbers(), one);
   }
 
   public ExpressionValue(Multiverse<String> transformation, Multiverse<Type> type, Multiverse<LineNumbers> lns) {
@@ -10388,7 +10350,7 @@ private static class ExpressionValue {
     this.type = new Multiverse<Type>(type, pc);
     
     lines = new Multiverse<LineNumbers>();
-    lines.add(new LineNumbers(Integer.MAX_VALUE, 0), pc);
+    lines.add(new LineNumbers(), pc);
   }
   /**
    * Create a new expression value from a single type and a single
@@ -10656,56 +10618,193 @@ public static class StringListPair {
 }
 
 public static class LineNumbers {
-  public int earliestLine;
-  public int latestLine;
+  public final static String UNKNOWN_FILE = "???";
+
+  private final HashMap<String, List<Range>> rangesByFile = new HashMap<>();
+
   public LineNumbers() {
-    earliestLine = Integer.MAX_VALUE;
-    latestLine = 0;
   }
+
   public LineNumbers(int line) {
-    
-    earliestLine = line;
-    latestLine = line;
+    this.rangesByFile.put(UNKNOWN_FILE, List.of(new Range(line)));
   }
+
   public LineNumbers(Syntax line) {
-    if (line.getLocation() != null)
-      {
-	earliestLine = line.getLocation().line;
-	latestLine = line.getLocation().line;
-      }
-    else {
-      earliestLine = Integer.MAX_VALUE;
-      latestLine = 0;
+    if (line.getLocation() != null) {
+      this.rangesByFile.put(line.getLocation().file, List.of(new Range(line.getLocation().line)));
     }
   }
+
   public LineNumbers(int line1, int line2) {
-    
-    earliestLine = line1;
-    latestLine = line2;
+    this.rangesByFile.put(UNKNOWN_FILE, List.of(new Range(line1, line2)));
   }
+
   public LineNumbers(Syntax line1, Syntax line2) {
-   
-    earliestLine = line1.getLocation().line;
-    latestLine = line2.getLocation().line;
+    int earliestLine = line1.getLocation().line;
+    int latestLine = line2.getLocation().line;
+    String file = java.util.Objects.equals(line1.getLocation().file, line2.getLocation().file)
+            ? line1.getLocation().file : UNKNOWN_FILE;
+    this.rangesByFile.put(file, List.of(new Range(earliestLine, latestLine)));
   }
+
   public LineNumbers(LineNumbers one, LineNumbers two) {
-    
-    earliestLine = one.earliestLine < two.earliestLine ? one.earliestLine : two.earliestLine;
-    latestLine = one.latestLine > two.latestLine ? one.latestLine : two.latestLine;
+    this.rangesByFile.putAll(one.rangesByFile);
+    for (Map.Entry<String, List<Range>> rightFile : two.rangesByFile.entrySet()) {
+      try {
+        this.rangesByFile.merge(rightFile.getKey(), rightFile.getValue(),
+                (leftRanges, rightRanges) -> {
+                  if (leftRanges.isEmpty())
+                    return rightRanges;
+                  if (rightRanges.isEmpty())
+                    return leftRanges;
+
+                  System.err.println("Merging line ranges for " + rightFile.getKey() + " in "
+                          + String.join(",", one.rangesByFile.get(rightFile.getKey()).stream().map(Object::toString).toList())
+                          + " and "
+                          + String.join(",", rightRanges.stream().map(Object::toString).toList()));
+
+                  LinkedList<Range> mergedRanges = new LinkedList<>(leftRanges);
+                  ListIterator<Range> mergedIterator = mergedRanges.listIterator();
+                  Range currLeftRange = mergedIterator.next();
+                  mergedIterator.previous();
+                  System.err.println("Current left range: " + currLeftRange);
+                  for (Range rightRange : rightRanges) {
+                    while (currLeftRange != null && currLeftRange.compare(rightRange) == RangeOrder.BEFORE) {
+                      System.err.println("Skipping left range: " + currLeftRange);
+                      mergedIterator.next();
+                      if (mergedIterator.hasNext()) {
+                        currLeftRange = mergedIterator.next();
+                        mergedIterator.previous();
+                      } else {
+                        currLeftRange = null;
+                      }
+                    }
+
+                    if (currLeftRange == null) {
+                      System.err.println("Adding right range because current left range is null: " + rightRange);
+                      mergedIterator.add(rightRange);
+                    } else if (currLeftRange.compare(rightRange) == RangeOrder.AFTER) {
+                      System.err.println("Adding right range because current left range is after: " + rightRange);
+                      mergedIterator.add(rightRange);
+                      mergedIterator.next();
+                      mergedIterator.previous();
+                    } else if (currLeftRange.compare(rightRange) == RangeOrder.MERGEABLE) {
+                      System.err.println("Merging right range into current left range: " + rightRange);
+                      currLeftRange = currLeftRange.merge(rightRange);
+                      System.err.println("Result: " + currLeftRange);
+                      mergedIterator.set(currLeftRange);
+                    }
+                  }
+                  return mergedRanges;
+                });
+      } catch (IllegalStateException e) {
+        System.err.println("BUG: Failed to merge line ranges for " + rightFile.getKey() + " in "
+                + String.join(",", one.rangesByFile.get(rightFile.getKey()).stream().map(Object::toString).toList())
+                + " and "
+                + String.join(",", rightFile.getValue().stream().map(Object::toString).toList()));
+        throw e;
+      }
+      Set<Integer> allLines = new HashSet<>();
+        for (Range r : this.rangesByFile.get(rightFile.getKey())) {
+            for (int i = r.getStart(); i <= r.getEnd(); i++) {
+                allLines.add(i);
+            }
+        }
+
+        Set<Integer> intendedLines = new HashSet<>();
+        for (Range r : rightFile.getValue()) {
+            for (int i = r.getStart(); i <= r.getEnd(); i++) {
+                intendedLines.add(i);
+            }
+        }
+        if (one.rangesByFile.containsKey(rightFile.getKey())) {
+          for (Range r : one.rangesByFile.get(rightFile.getKey())) {
+            for (int i = r.getStart(); i <= r.getEnd(); i++) {
+                intendedLines.add(i);
+            }
+          }
+        }
+
+        if (intendedLines.size() != allLines.size()) {
+          throw new IllegalStateException("BUG: Failed to merge line ranges");
+        }
+    }
   }
   
   public String getComment() {
-    if (earliestLine == latestLine)
-      return "// L" + Integer.toString(earliestLine);
-    else if (earliestLine == Integer.MAX_VALUE &&
-             latestLine == 0) {
-      return "// L0";
-    } else {
-      return "// L" + Integer.toString(earliestLine) + ":L" + Integer.toString(latestLine);
+    StringBuilder sb = new StringBuilder("// L ");
+    for (Map.Entry<String, List<Range>> entry : this.rangesByFile.entrySet()) {
+      if (sb.length() > 5) {
+        sb.append(";");
+      }
+      sb.append(entry.getKey());
+      sb.append(":");
+      sb.append(String.join(",", entry.getValue().stream()
+          .map(Range::toString)
+          .toList()));
     }
+    return sb.toString();
   }
+
   public String toString() {
     return getComment();
+  }
+
+  public static class Range {
+    private final int start;
+    private final int end;
+
+    public Range(int start, int end) {
+      if (start > end) {
+        throw new IllegalArgumentException("start must be less than or equal to end");
+      }
+      this.start = start;
+      this.end = end;
+    }
+
+    public Range(int line) {
+      this.start = line;
+      this.end = line;
+    }
+
+    public int getStart() {
+      return start;
+    }
+
+    public int getEnd() {
+      return end;
+    }
+
+    public Range merge(Range other) {
+      if (this.compare(other) != RangeOrder.MERGEABLE) {
+        throw new IllegalArgumentException("Cannot merge non-overlapping ranges");
+      }
+      return new Range(Math.min(this.start, other.start), Math.max(this.end, other.end));
+    }
+
+    public RangeOrder compare(Range other) {
+      if (this.end < other.start - 1) {
+        return RangeOrder.BEFORE;
+      } else if (this.start > other.end + 1) {
+        return RangeOrder.AFTER;
+      } else {
+        return RangeOrder.MERGEABLE;
+      }
+    }
+
+    @Override
+    public String toString() {
+      if (start == end) {
+        return String.format("%d", start);
+      }
+      return String.format("%d-%d", start, end);
+    }
+  }
+
+  public enum RangeOrder {
+    BEFORE,
+    MERGEABLE,
+    AFTER
   }
 }
 
@@ -11644,19 +11743,43 @@ private String emitStatement(Multiverse<String> allStatementConfigs, PresenceCon
 private String getCompoundRange(Multiverse<DeclarationOrStatementValue> allStatementConfigs, PresenceCondition pc) {
   int earliest = 0;
   int latest = 0;
+  String seenFile = null;
   for (Multiverse.Element<DeclarationOrStatementValue> statement : allStatementConfigs) {
     String leftBrace = statement.getData().getPrepend();
     String rightBrace = statement.getData().getAppend();
-    int leftNum = Integer.parseInt(leftBrace.replaceAll("[^0-9]",""));
-    int rightNum = Integer.parseInt(rightBrace.replaceAll("[^0-9]",""));
-    if (leftNum < earliest || earliest == 0) {
-      earliest = leftNum;
+
+    Location leftLocation = parseBrace(leftBrace);
+    Location rightLocation = parseBrace(rightBrace);
+
+    if (seenFile == null) {
+      seenFile = leftLocation.file;
     }
-    if (rightNum > latest || latest == 0) {
-      latest = rightNum;
+    if (!seenFile.equals(leftLocation.file) || !seenFile.equals(rightLocation.file)) {
+      // Somehow, the method spans multiple files. This is probably due to macro expansion. We cannot
+      // determine the range in this case, and to avoid confusion, we just use the UNKNOWN_FILE.
+      seenFile = LineNumbers.UNKNOWN_FILE;
+    }
+
+    if (leftLocation.line < earliest || earliest == 0) {
+      earliest = leftLocation.line;
+    }
+    if (rightLocation.line > latest || latest == 0) {
+      latest = rightLocation.line;
     }
   }
-  return "L" + Integer.toString(earliest) + ":L" + Integer.toString(latest);
+  if (seenFile == null) {
+    seenFile = LineNumbers.UNKNOWN_FILE;
+  }
+  return "L " + seenFile + ":" + Integer.toString(earliest) + "-" + Integer.toString(latest);
+}
+
+private static Location parseBrace(String leftBrace) {
+  Pattern lineNumberPattern = Pattern.compile(".*// L ([^;]*):(\\d+)$");
+  Matcher matcher = lineNumberPattern.matcher(leftBrace);
+  if (!matcher.matches()) {
+    throw new IllegalStateException("Error parsing brace: " + leftBrace);
+  }
+  return new Location(matcher.group(1), Integer.parseInt(matcher.group(2)), 0);
 }
 
 private String emitStatementDSV(Multiverse<DeclarationOrStatementValue> allStatementConfigs, PresenceCondition pc) {

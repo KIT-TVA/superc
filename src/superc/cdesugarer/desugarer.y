@@ -174,12 +174,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
-import java.util.Set;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -10495,87 +10494,61 @@ public static class LineNumbers {
     this.rangesByFile.put(file, List.of(new Range(earliestLine, latestLine)));
   }
 
+  public LineNumbers(String file, List<Range> ranges) {
+    this.rangesByFile.put(file, List.copyOf(ranges));
+  }
+
   public LineNumbers(LineNumbers one, LineNumbers two) {
     this.rangesByFile.putAll(one.rangesByFile);
     for (Map.Entry<String, List<Range>> rightFile : two.rangesByFile.entrySet()) {
-      try {
-        this.rangesByFile.merge(rightFile.getKey(), rightFile.getValue(),
-                (leftRanges, rightRanges) -> {
-                  if (leftRanges.isEmpty())
-                    return rightRanges;
-                  if (rightRanges.isEmpty())
-                    return leftRanges;
+      // For each file of the right side, add the ranges to this object. If the file already exists, merge the ranges.
+      this.rangesByFile.merge(rightFile.getKey(), rightFile.getValue(),
+              (leftRanges, rightRanges) -> {
+                if (leftRanges.isEmpty())
+                  return rightRanges;
+                if (rightRanges.isEmpty())
+                  return leftRanges;
 
-                  System.err.println("Merging line ranges for " + rightFile.getKey() + " in "
-                          + String.join(",", one.rangesByFile.get(rightFile.getKey()).stream().map(Object::toString).toList())
-                          + " and "
-                          + String.join(",", rightRanges.stream().map(Object::toString).toList()));
+                // Naively merge the ranges from both sides by interleaving them,
+                // keeping them sorted by starting line number.
+                List<Range> naiveMerge = new ArrayList<>(leftRanges.size() + rightRanges.size());
+                Iterator<Range> leftIter = leftRanges.iterator();
+                Iterator<Range> rightIter = rightRanges.iterator();
+                Range leftRange = leftIter.hasNext() ? leftIter.next() : null;
+                Range rightRange = rightIter.hasNext() ? rightIter.next() : null;
 
-                  LinkedList<Range> mergedRanges = new LinkedList<>(leftRanges);
-                  ListIterator<Range> mergedIterator = mergedRanges.listIterator();
-                  Range currLeftRange = mergedIterator.next();
-                  mergedIterator.previous();
-                  System.err.println("Current left range: " + currLeftRange);
-                  for (Range rightRange : rightRanges) {
-                    while (currLeftRange != null && currLeftRange.compare(rightRange) == RangeOrder.BEFORE) {
-                      System.err.println("Skipping left range: " + currLeftRange);
-                      mergedIterator.next();
-                      if (mergedIterator.hasNext()) {
-                        currLeftRange = mergedIterator.next();
-                        mergedIterator.previous();
-                      } else {
-                        currLeftRange = null;
-                      }
-                    }
+                while (leftRange != null || rightRange != null) {
+                  if (leftRange == null || (rightRange != null && rightRange.start <= leftRange.start)) {
+                    naiveMerge.add(rightRange);
+                    rightRange = rightIter.hasNext() ? rightIter.next() : null;
+                  } else {
+                    naiveMerge.add(leftRange);
+                    leftRange = leftIter.hasNext() ? leftIter.next() : null;
+                  }
+                }
 
-                    if (currLeftRange == null) {
-                      System.err.println("Adding right range because current left range is null: " + rightRange);
-                      mergedIterator.add(rightRange);
-                    } else if (currLeftRange.compare(rightRange) == RangeOrder.AFTER) {
-                      System.err.println("Adding right range because current left range is after: " + rightRange);
-                      mergedIterator.add(rightRange);
-                      mergedIterator.next();
-                      mergedIterator.previous();
-                    } else if (currLeftRange.compare(rightRange) == RangeOrder.MERGEABLE) {
-                      System.err.println("Merging right range into current left range: " + rightRange);
-                      currLeftRange = currLeftRange.merge(rightRange);
-                      System.err.println("Result: " + currLeftRange);
-                      mergedIterator.set(currLeftRange);
+                // Now merge overlapping or adjacent ranges.
+                List<Range> mergedRanges = new ArrayList<>(naiveMerge.size());
+                Range currentRange = null;
+                for (Range range : naiveMerge) {
+                  if (currentRange == null) {
+                    currentRange = range;
+                  } else {
+                    RangeOrder order = currentRange.compare(range);
+                    if (order == RangeOrder.MERGEABLE) {
+                      currentRange = currentRange.merge(range);
+                    } else {
+                      mergedRanges.add(currentRange);
+                      currentRange = range;
                     }
                   }
-                  return mergedRanges;
-                });
-      } catch (IllegalStateException e) {
-        System.err.println("BUG: Failed to merge line ranges for " + rightFile.getKey() + " in "
-                + String.join(",", one.rangesByFile.get(rightFile.getKey()).stream().map(Object::toString).toList())
-                + " and "
-                + String.join(",", rightFile.getValue().stream().map(Object::toString).toList()));
-        throw e;
-      }
-      Set<Integer> allLines = new HashSet<>();
-        for (Range r : this.rangesByFile.get(rightFile.getKey())) {
-            for (int i = r.getStart(); i <= r.getEnd(); i++) {
-                allLines.add(i);
-            }
-        }
+                }
+                if (currentRange != null) {
+                  mergedRanges.add(currentRange);
+                }
 
-        Set<Integer> intendedLines = new HashSet<>();
-        for (Range r : rightFile.getValue()) {
-            for (int i = r.getStart(); i <= r.getEnd(); i++) {
-                intendedLines.add(i);
-            }
-        }
-        if (one.rangesByFile.containsKey(rightFile.getKey())) {
-          for (Range r : one.rangesByFile.get(rightFile.getKey())) {
-            for (int i = r.getStart(); i <= r.getEnd(); i++) {
-                intendedLines.add(i);
-            }
-          }
-        }
-
-        if (intendedLines.size() != allLines.size()) {
-          throw new IllegalStateException("BUG: Failed to merge line ranges");
-        }
+                return mergedRanges;
+              });
     }
   }
   
@@ -10596,6 +10569,18 @@ public static class LineNumbers {
 
   public String toString() {
     return getComment();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o == null || getClass() != o.getClass()) return false;
+    LineNumbers that = (LineNumbers) o;
+    return Objects.equals(rangesByFile, that.rangesByFile);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(rangesByFile);
   }
 
   public static class Range {
@@ -10646,6 +10631,18 @@ public static class LineNumbers {
         return String.format("%d", start);
       }
       return String.format("%d-%d", start, end);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (o == null || getClass() != o.getClass()) return false;
+      Range range = (Range) o;
+      return start == range.start && end == range.end;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(start, end);
     }
   }
 

@@ -456,7 +456,7 @@ pre-check:
 	fi
 
 check-unit: pre-check
-	$(JUNIT) xtc.util.UtilitiesTest
+	$(JUNIT) xtc.util.UtilitiesTest superc.cdesugarer.LineNumbersTest
 
 check-rats: pre-check
 	runtest --tool rats SUBTOOL=rats $(RUNTESTFLAGS)

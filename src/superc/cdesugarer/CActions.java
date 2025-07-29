@@ -11741,10 +11741,16 @@ private String getCompoundRange(Multiverse<DeclarationOrStatementValue> allState
   int earliest = 0;
   int latest = 0;
   String seenFile = null;
+
+  // Check the line numbers of all possible statements in the compound statement
+  // to determine a range that includes all of them.
   for (Multiverse.Element<DeclarationOrStatementValue> statement : allStatementConfigs) {
     String leftBrace = statement.getData().getPrepend();
     String rightBrace = statement.getData().getAppend();
 
+    // During parsing, the original line numbers of the left and right braces are stored
+    // in the prepend and append strings.
+    // We parse them to guess the range of the compound statement.
     Location leftLocation = parseBrace(leftBrace);
     Location rightLocation = parseBrace(rightBrace);
 

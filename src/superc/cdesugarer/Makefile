@@ -64,7 +64,8 @@ SOURCE = \
 	Declaration.java \
 	DesugarOps.java \
 	CContext.java \
-	CActions.java
+	CActions.java \
+	LineNumbersTest.java
 
 JNI_SOURCE =
 

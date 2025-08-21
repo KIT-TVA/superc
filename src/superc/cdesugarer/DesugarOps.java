@@ -1159,8 +1159,18 @@ class DesugarOps {
       return r1;
     }
     //compare pointer with non-decimal
-    if ((r1.isPointer() || r1.isArray()) && ((r2.isNumber() && !((NumberT)r2).isDecimal()) || r2.isEnumerator() || r2.isEnum() || r2.isPointer() || r2.isArray())) {
-      return r1;
+    if (r1.isPointer() || r1.isArray()) {
+      if ((r2.isNumber() && !((NumberT) r2).isDecimal()) || r2.isEnumerator() || r2.isEnum()) {
+        return r1;
+      }
+      if (r2.isPointer() || r2.isArray()) {
+        // pointer - pointer
+        Type pt1 = r1.isPointer() ? r1.toPointer().getType() : r1.toArray().getType();
+        Type pt2 = r2.isPointer() ? r2.toPointer().getType() : r2.toArray().getType();
+        if (cOps.equal(pt1.resolve(), pt2.resolve())) {
+          return C.PTR_DIFF; // pointer difference is ptrdiff_t from stddef.h
+        }
+      }
     }
     return ErrorT.TYPE;
   };

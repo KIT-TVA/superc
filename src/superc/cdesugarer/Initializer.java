@@ -248,7 +248,9 @@ abstract class Initializer {
           temp.destruct();
           
         } else {
-          Multiverse<String> temp = i.renamedList(t,p,scope);
+          // TODO: Handle struct initializers without designators
+          Multiverse<Type> unwrappedType = DesugarOps.unwrapArrayType.transform(t);
+          Multiverse<String> temp = i.renamedList(unwrappedType,p,scope);
           Multiverse<String> st = ret.product(temp,DesugarOps.propEmptyString);
           ret.destruct(); temp.destruct(); ret = st; 
         }
@@ -512,7 +514,7 @@ abstract class Initializer {
     public Multiverse<String> renamedList(Multiverse<Type> t, PresenceCondition p, CContext scope) {
       Multiverse<String> ret = new Multiverse<String>();
       for (Element<Type> et : t) {
-        SymbolTable<Declaration> tagtab = scope.getLookasideTableAnyScope(et.getData().getName());
+        SymbolTable<Declaration> tagtab = scope.getLookasideTableAnyScope(et.getData().resolve().getName());
         Multiverse<List<Map.Entry<String,Declaration>>> m = tagtab.getLists(p);
         for (Element<List<Map.Entry<String,Declaration>>> em : m) {
           String toAdd = "";
@@ -534,7 +536,7 @@ abstract class Initializer {
       System.err.println("StartS:" +t);
       Multiverse<Type> ret = new Multiverse<Type>();
       for (Element<Type> et : t) {
-        SymbolTable<Declaration> tagtab = scope.getLookasideTableAnyScope(et.getData().getName());
+        SymbolTable<Declaration> tagtab = scope.getLookasideTableAnyScope(et.getData().resolve().getName());
         Multiverse<List<Map.Entry<String,Declaration>>> m = tagtab.getLists(p);
         for (Element<List<Map.Entry<String,Declaration>>> em : m) {
           Type toAdd = ErrorT.TYPE;

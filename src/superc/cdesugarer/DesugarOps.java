@@ -902,6 +902,22 @@ class DesugarOps {
     return concatLists(list1, list2);
   };
 
+  /**
+   * Unwraps an array type to its element type.  If the type is not
+   * an array, returns ErrorT.TYPE.
+   */
+  public final static Multiverse.Transformer<Type, Type> unwrapArrayType
+    = new Multiverse.Transformer<Type, Type>() {
+        @Override
+        Type transform(Type from) {
+          Type resolvedType = from.resolve();
+          if (resolvedType.isArray()) {
+            return resolvedType.toArray().getType();
+          }
+          return ErrorT.TYPE;
+        }
+      };
+
   /*****************************************************************************
    ********* Multiverse operators for Statements and Expressions
    *****************************************************************************/

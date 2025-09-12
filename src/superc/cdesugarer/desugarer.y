@@ -5453,7 +5453,7 @@ StringLiteralList:  /** list, nomerge **/ // ExpressionValue
           // TODO: use a fixed-size array instead of a pointer to char
           setTransformationValue(value,
                                  new ExpressionValue(((StringListPair) getTransformationValue(subparser, 1)).str,
-                                                     new PointerT(NumberT.CHAR),
+                                                     new PointerT(NumberT.CHAR).attribute(Constants.ATT_CONSTANT),
                                                      new Multiverse<LineNumbers>(((StringListPair) getTransformationValue(subparser, 1)).lines, subparser.getPresenceCondition()),
                                                      subparser.getPresenceCondition()));
         }

@@ -1285,7 +1285,7 @@ public class CContext implements ParsingContext {
     }
     sb.append("};\n");
     addDeclaration(sb.toString());
-    
+    System.err.println("SUGARC-BUILD-MARKER: reverted-fix1-comments-only-v1");
   }
 
   public Multiverse<String> getEnumMultiverse(String enumTag, PresenceCondition pc) {

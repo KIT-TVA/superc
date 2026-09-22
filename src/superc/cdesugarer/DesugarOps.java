@@ -617,19 +617,19 @@ class DesugarOps {
           PresenceCondition newvalidCond = validCond.or(rator.getCondition());
           validCond.delRef(); validCond = newvalidCond;
           String eToAdd = rator.getData().getTransformation();
+          LineNumbers eLines = rator.getData().getLines();
+          if (eLines != null) {
+            eToAdd = eToAdd + ";" + eLines.getComment();
+          }
           boolean found = false;
           for (String es : enums) {
-            if (eToAdd.equals(es)) {
-              found = true;
-              break;
-            }
+            if (eToAdd.equals(es)) { found = true; break; }
           }
-          if (!found) {
-            enums.add(eToAdd);
-          }
+          if (!found) { enums.add(eToAdd); }
         }
-      }  // end ratormv
-    } // end list
+      }
+    }
+
     if (enums.size() == 0) {
       Multiverse<TypeSpecifier> typespecmv = new Multiverse<TypeSpecifier>();
       TypeSpecifier typespecifier = new TypeSpecifier();

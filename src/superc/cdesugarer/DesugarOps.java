@@ -618,8 +618,9 @@ class DesugarOps {
           validCond.delRef(); validCond = newvalidCond;
           String eToAdd = rator.getData().getTransformation();
           LineNumbers eLines = rator.getData().getLines();
+          eToAdd = eToAdd + ",";
           if (eLines != null) {
-            eToAdd = eToAdd + ";" + eLines.getComment();
+            eToAdd = eToAdd + eLines.getComment();
           }
           boolean found = false;
           for (String es : enums) {

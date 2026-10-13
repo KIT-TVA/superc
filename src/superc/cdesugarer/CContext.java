@@ -1281,7 +1281,7 @@ public class CContext implements ParsingContext {
     sb.append(" {\n");
     for (String enumerator : enumerators) {
       sb.append(enumerator);
-      sb.append(",\n");
+      sb.append("\n");
     }
     sb.append("};\n");
     addDeclaration(sb.toString());

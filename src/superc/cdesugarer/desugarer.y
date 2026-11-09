@@ -10495,11 +10495,16 @@ public static class LineNumbers {
   }
 
   public LineNumbers(Syntax line1, Syntax line2) {
-    int earliestLine = line1.getLocation().line;
-    int latestLine = line2.getLocation().line;
-    String file = java.util.Objects.equals(line1.getLocation().file, line2.getLocation().file)
-            ? line1.getLocation().file : UNKNOWN_FILE;
-    this.rangesByFile.put(file, List.of(new Range(earliestLine, latestLine)));
+    String file1 = line1.getLocation().file;
+    String file2 = line2.getLocation().file;
+    int l1 = line1.getLocation().line;
+    int l2 = line2.getLocation().line;
+    if (java.util.Objects.equals(file1, file2)) {
+      this.rangesByFile.put(file1, List.of(new Range(Math.min(l1, l2), Math.max(l1, l2))));
+    } else {
+      this.rangesByFile.put(file1, List.of(new Range(l1, l1)));
+      this.rangesByFile.put(file2, List.of(new Range(l2, l2)));
+    }
   }
 
   public LineNumbers(String file, List<Range> ranges) {

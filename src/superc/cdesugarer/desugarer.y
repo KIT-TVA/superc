@@ -2889,7 +2889,6 @@ EnumSpecifier: /** complete **/  /* ADDED attributes */   // Multiverse<TypeSpec
           Multiverse<String> attrs = this.<String>getCompleteNodeMultiverseValue(getNodeAt(subparser, 2),
                                                                                  subparser.getPresenceCondition());
           String enumTag = freshCId("anonymous_tag");
-                    System.err.println(String.format("SUGARC-ENUM-TEST: anonymous enum assigned tag \"%s\" under presence condition %s", enumTag, pc));
           
           // TODO: add attributes to type spec
           List<Multiverse<EnumeratorValue>> list = this.<EnumeratorValue>getCompleteNodeListValue(getNodeAt(subparser, 1),
@@ -3023,8 +3022,8 @@ Enumerator: /** complete **/ // Multiverse<EnumeratorValue>
                 PresenceCondition combinedCond = valcond.and(entry.getCondition());
                 if (entry.getData().isError()) {
                   // this is already an error
-                  System.err.println(String.format("INFO: enumerator \"%s\" is being redeclared in an existing invalid configuration", name));
-
+                  System.err.println(String.format("INFO: enumerator \"%s\" is being redeclared in an existing invalid configuration",
+                                                   name));
                   enumeratorvaluemv.add(new EnumeratorValue(name, renaming, ErrorT.TYPE, enumeratorLines), combinedCond);
                 } else if (entry.getData().isUndeclared()) {
                   // create a new constant int declaration of the enumerator
@@ -3091,7 +3090,7 @@ Enumerator: /** complete **/ // Multiverse<EnumeratorValue>
               if (entry.getData().isError()) {
                 // this is already an error
                 System.err.println(String.format("INFO: enumerator \"%s\" is being redeclared in an existing invalid configuration", name));
-            
+                enumeratorvaluemv.add(new EnumeratorValue(name, renaming, ErrorT.TYPE, enumeratorLines), combinedCond);
               } else if (entry.getData().isUndeclared()) {
                 // create a new constant int declaration of the enumerator
                 TypeSpecifier ratortb = new TypeSpecifier();
@@ -10396,7 +10395,7 @@ protected static class EnumeratorValue {
   public LineNumbers getLines() {
     return this.lines;
   }
-  
+
 
   public String toString() {
     return name + "(" +transformation + ", " + type + ")";

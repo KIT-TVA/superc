@@ -3008,6 +3008,7 @@ Enumerator: /** complete **/ // Multiverse<EnumeratorValue>
           todoReminder("record enum type errors in the global or local scope");
           CContext scope = ((CContext) subparser.scope);
           String name = ((Syntax) getNodeAt(subparser, 3)).getTokenText();
+          LineNumbers enumeratorLines = new LineNumbers((Syntax) getNodeAt(subparser, 3));
           Multiverse<EnumeratorValValue> val = (Multiverse<EnumeratorValValue>) getTransformationValue(subparser, 1);
           Multiverse<EnumeratorValue> enumeratorvaluemv = new Multiverse<EnumeratorValue>();
           for (Element<EnumeratorValValue> elem : val) {
@@ -3023,7 +3024,7 @@ Enumerator: /** complete **/ // Multiverse<EnumeratorValue>
                   // this is already an error
                   System.err.println(String.format("INFO: enumerator \"%s\" is being redeclared in an existing invalid configuration",
                                                    name));
-                  enumeratorvaluemv.add(new EnumeratorValue(name, renaming, ErrorT.TYPE), combinedCond);
+                  enumeratorvaluemv.add(new EnumeratorValue(name, renaming, ErrorT.TYPE, enumeratorLines), combinedCond);
                 } else if (entry.getData().isUndeclared()) {
                   // create a new constant int declaration of the enumerator
                   TypeSpecifier ratortb = new TypeSpecifier();
@@ -3052,17 +3053,17 @@ Enumerator: /** complete **/ // Multiverse<EnumeratorValue>
                   } else {
                     transformation = renaming;
                   }
-                  enumeratorvaluemv.add(new EnumeratorValue(name, transformation, ratortype), combinedCond);
+                  enumeratorvaluemv.add(new EnumeratorValue(name, transformation, ratortype, enumeratorLines), combinedCond);
                 } else {
                   System.err.println(String.format("redeclaration of enumerator \"%s\"",
                                                    name));
                   scope.putError(name, combinedCond);
-                  enumeratorvaluemv.add(new EnumeratorValue(name, renaming, ErrorT.TYPE), combinedCond);
+                  enumeratorvaluemv.add(new EnumeratorValue(name, renaming, ErrorT.TYPE, enumeratorLines), combinedCond);
                 }
                 combinedCond.delRef();
               }
             } else { //the value being initialized is an error
-              enumeratorvaluemv.add(new EnumeratorValue(name, "<error>", ErrorT.TYPE), valcond);
+              enumeratorvaluemv.add(new EnumeratorValue(name, "<error>", ErrorT.TYPE, enumeratorLines), valcond);
             }
             valcond.delRef();
           }
@@ -3076,6 +3077,7 @@ Enumerator: /** complete **/ // Multiverse<EnumeratorValue>
           todoReminder("record enum type errors in the global or local scope");
           CContext scope = ((CContext) subparser.scope);
           String name = ((Syntax) getNodeAt(subparser, 3)).getTokenText();
+          LineNumbers enumeratorLines = new LineNumbers((Syntax) getNodeAt(subparser, 3));
           Multiverse<EnumeratorValValue> val = (Multiverse<EnumeratorValValue>) getTransformationValue(subparser, 1);
           Multiverse<EnumeratorValue> enumeratorvaluemv = new Multiverse<EnumeratorValue>();
           for (Element<EnumeratorValValue> elem : val) {
@@ -3088,7 +3090,7 @@ Enumerator: /** complete **/ // Multiverse<EnumeratorValue>
               if (entry.getData().isError()) {
                 // this is already an error
                 System.err.println(String.format("INFO: enumerator \"%s\" is being redeclared in an existing invalid configuration", name));
-                enumeratorvaluemv.add(new EnumeratorValue(name, renaming, ErrorT.TYPE), combinedCond);
+                enumeratorvaluemv.add(new EnumeratorValue(name, renaming, ErrorT.TYPE, enumeratorLines), combinedCond);
               } else if (entry.getData().isUndeclared()) {
                 // create a new constant int declaration of the enumerator
                 TypeSpecifier ratortb = new TypeSpecifier();
@@ -3114,12 +3116,12 @@ Enumerator: /** complete **/ // Multiverse<EnumeratorValue>
                 } else {
                   transformation = renaming;
                 }
-                enumeratorvaluemv.add(new EnumeratorValue(name, transformation, ratortype), combinedCond);
+                enumeratorvaluemv.add(new EnumeratorValue(name, transformation, ratortype, enumeratorLines), combinedCond);
               } else {
                 System.err.println(String.format("redeclaration of enumerator \"%s\"",
                                                  name));
                 scope.putError(name, combinedCond);
-                enumeratorvaluemv.add(new EnumeratorValue(name, renaming, ErrorT.TYPE), combinedCond);
+                enumeratorvaluemv.add(new EnumeratorValue(name, renaming, ErrorT.TYPE, enumeratorLines), combinedCond);
               }
               combinedCond.delRef();
             }
@@ -10368,11 +10370,13 @@ protected static class EnumeratorValue {
 
   /** The type of the expression, if set. */
   Type type;
+  public LineNumbers lines;
 
-  public EnumeratorValue(String name, String transformation, Type type) {
+  public EnumeratorValue(String name, String transformation, Type type, LineNumbers lines) {
     this.name = name;
     this.transformation = transformation;
     this.type = type;
+    this.lines = lines;
   }
 
   /**
@@ -10388,6 +10392,10 @@ protected static class EnumeratorValue {
   public Type getType() {
     return this.type;
   }
+  public LineNumbers getLines() {
+    return this.lines;
+  }
+
 
   public String toString() {
     return name + "(" +transformation + ", " + type + ")";
